@@ -7,8 +7,8 @@ use std::fs;
 mod part;
 pub use part::*;
 
-mod programmer;
-pub use programmer::*;
+mod isp;
+pub use isp::*;
 
 mod util;
 pub use util::*;
@@ -81,7 +81,7 @@ fn main() {
                 _ => ReadType::Normal,
             };
 
-            let result = Programmer::new(part).read_cycle(read_type);
+            let result = ISPDevice::new(part).read_cycle(read_type);
 
             let ihex = result.to_ihex();
 
@@ -103,7 +103,7 @@ fn main() {
 
             let (mut firmware, _) = load_file_vec(input_file, part.flash_size, 0).unwrap();
 
-            Programmer::new(part).write_cycle(&mut firmware);
+            ISPDevice::new(part).write_cycle(&mut firmware);
         }
         Some(("erase", sub_matches)) => {
             let part_name = sub_matches
@@ -113,7 +113,7 @@ fn main() {
 
             let part = PARTS.get(part_name).unwrap();
 
-            Programmer::new(part).erase_cycle();
+            ISPDevice::new(part).erase_cycle();
         }
         _ => unreachable!(),
     }

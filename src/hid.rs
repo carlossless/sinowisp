@@ -28,6 +28,7 @@ impl HidDevice {
             handle.set_auto_detach_kernel_driver(true).unwrap();
         }
 
+        // don't try claiming the interface on macos, it should not be necessary and will fail
         #[cfg(not(any(target_os = "macos")))]
         handle.claim_interface(interface).unwrap();
 

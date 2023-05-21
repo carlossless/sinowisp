@@ -6,7 +6,7 @@ use crate::HidDevice;
 use super::part::*;
 use super::util;
 
-pub struct Programmer<'a> {
+pub struct ISPDevice<'a> {
     device: HidDevice,
     part: &'a Part,
 }
@@ -37,7 +37,7 @@ pub enum ReadType {
     Full,
 }
 
-impl Programmer<'static> {
+impl ISPDevice<'static> {
     pub fn new(part: &'static Part) -> Self {
         let device = Self::find_isp_device(part);
         return Self {
@@ -52,31 +52,27 @@ impl Programmer<'static> {
                 info!("Retrying... Attempt {}/{}", attempt, MAX_RETRIES);
             }
 
-            let kb_device_info = HidDevice::open(part.vendor_id, part.product_id);
-
-            let Some(device_info) = kb_device_info else {
+            let Some(device) = HidDevice::open(part.vendor_id, part.product_id) else {
                 info!("No KB found. Trying bootloader directly...");
-                let device = HidDevice::open(GAMING_KB_VENDOR_ID, GAMING_KB_PRODUCT_ID).unwrap();
+                let isp_device = HidDevice::open(GAMING_KB_VENDOR_ID, GAMING_KB_PRODUCT_ID).unwrap();
                 info!("Connected!");
-                return device;
+                return isp_device;
             };
 
             info!("Found Device. Entering ISP mode...");
-            Self::enter_isp_mode(&device_info);
+            Self::enter_isp_mode(&device);
 
             info!("Waiting for bootloader device...");
             thread::sleep(time::Duration::from_millis(1000));
 
-            let kb_device_info = HidDevice::open(GAMING_KB_VENDOR_ID, GAMING_KB_PRODUCT_ID);
-
-            let Some(device) = kb_device_info else {
+            let Some(isp_device) = HidDevice::open(GAMING_KB_VENDOR_ID, GAMING_KB_PRODUCT_ID) else {
                 info!("Device didn't come up...");
                 continue;
             };
 
             info!("Connected!");
 
-            return device;
+            return isp_device;
         }
         panic!("Couldn't find ISP device");
     }
