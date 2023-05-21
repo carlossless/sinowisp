@@ -69,12 +69,11 @@ impl Programmer<'static> {
 
             let kb_device_info = HidDevice::open(GAMING_KB_VENDOR_ID, GAMING_KB_PRODUCT_ID);
 
-            let Some(_) = kb_device_info else {
+            let Some(device) = kb_device_info else {
                 info!("Device didn't come up...");
                 continue;
             };
 
-            let device = HidDevice::open(GAMING_KB_VENDOR_ID, GAMING_KB_PRODUCT_ID).unwrap();
             info!("Connected!");
 
             return device;
