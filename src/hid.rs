@@ -3,7 +3,7 @@ use std::time;
 
 pub struct HidDevice {
     handle: DeviceHandle<GlobalContext>,
-    interface_number: u8,
+    interface: u8,
 }
 
 impl HidDevice {
@@ -12,7 +12,7 @@ impl HidDevice {
             return None;
         };
 
-        let interface_number = handle
+        let interface = handle
             .device()
             .config_descriptor(0)
             .unwrap()
@@ -24,14 +24,16 @@ impl HidDevice {
             .last()
             .unwrap();
 
-        #[cfg(any(target_os = "linux"))]
-        if handle.kernel_driver_active(interface_number).unwrap() {
-            handle.detach_kernel_driver(interface_number).unwrap();
+        if supports_detach_kernel_driver() {
+            handle.set_auto_detach_kernel_driver(true).unwrap();
         }
+
+        #[cfg(not(any(target_os = "macos")))]
+        handle.claim_interface(interface).unwrap();
 
         return Some(HidDevice {
             handle: handle,
-            interface_number: interface_number,
+            interface: interface,
         });
     }
 
@@ -44,7 +46,7 @@ impl HidDevice {
                 | constants::LIBUSB_ENDPOINT_IN,
             0x01,
             (3/*HID feature*/ << 8) | report_number,
-            self.interface_number as u16,
+            self.interface as u16,
             buf,
             time::Duration::from_millis(1000),
         );
@@ -59,7 +61,7 @@ impl HidDevice {
                 | constants::LIBUSB_ENDPOINT_OUT,
             0x09,
             (3/*HID feature*/ << 8) | report_number,
-            self.interface_number as u16,
+            self.interface as u16,
             buf,
             time::Duration::from_millis(1000),
         );
