@@ -14,6 +14,20 @@ This is an experimental tool, so use it at your own risk.
 | Xinmeng K916 | unknown | SH68F90 | ❓ |
 | Hykker X Range 2017 (RE-K70-BYK800) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 (labeled as BYK801) | ✅ |
 
+## Prerequisites
+
+### Linux
+
+To enable running this tool without superuser privileges add the following udev rule with `xxxx` and `yyyy` replaced with your device Vendor ID and Product ID respectively.
+
+```udev
+# /etc/udev/rules.d/plugdev.rule
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="xxxx", ATTRS{idProduct}=="yyyy", MODE="0660", GROUP="plugdev"
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="0603", ATTRS{idProduct}=="1020", MODE="0660", GROUP="plugdev"
+```
+
+Make sure your user is part of the `plugdev` group.
+
 ## Acknowledgments
 
 * https://github.com/gashtaan/sinowealth-8051-dumper
