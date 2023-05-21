@@ -33,13 +33,10 @@ fn cli() -> Command {
                         .value_parser(PARTS.keys().map(|&s| s).collect::<Vec<_>>())
                         .required(true),
                 )
-                .arg(
-                    arg!(-b --bootloader "read only booloader")
-                        .conflicts_with("full")
-                )
+                .arg(arg!(-b --bootloader "read only booloader").conflicts_with("full"))
                 .arg(
                     arg!(-f --full "read complete flash (including the bootloader)")
-                        .conflicts_with("bootloader")
+                        .conflicts_with("bootloader"),
                 ),
         )
         .subcommand(
@@ -81,7 +78,7 @@ fn main() {
             let read_type = match (full, bootloader) {
                 (true, _) => ReadType::Full,
                 (_, true) => ReadType::Bootloader,
-                _ => ReadType::Normal
+                _ => ReadType::Normal,
             };
 
             let result = Programmer::new(part).read_cycle(read_type);

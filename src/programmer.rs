@@ -34,7 +34,7 @@ const XFER_WRITE_PAGE: u8 = 0x77;
 pub enum ReadType {
     Normal,
     Bootloader,
-    Full
+    Full,
 }
 
 impl Programmer<'static> {
@@ -47,7 +47,7 @@ impl Programmer<'static> {
     }
 
     fn find_isp_device(part: &Part) -> HidDevice {
-        for attempt in 1..MAX_RETRIES+1 {
+        for attempt in 1..MAX_RETRIES + 1 {
             if attempt > 1 {
                 info!("Retrying... Attempt {}/{}", attempt, MAX_RETRIES);
             }
@@ -93,7 +93,7 @@ impl Programmer<'static> {
         return match read_type {
             ReadType::Normal => self.read(0, self.part.flash_size),
             ReadType::Bootloader => self.read(self.part.flash_size, self.part.bootloader_size),
-            ReadType::Full => self.read(0, self.part.flash_size + self.part.bootloader_size)
+            ReadType::Full => self.read(0, self.part.flash_size + self.part.bootloader_size),
         };
     }
 
@@ -160,7 +160,11 @@ impl Programmer<'static> {
         let num_page = length / page_size;
         let mut result: Vec<u8> = vec![];
         for i in 0..num_page {
-            debug!("Reading page {} @ offset {:#06x}", i, start_addr + i * page_size);
+            debug!(
+                "Reading page {} @ offset {:#06x}",
+                i,
+                start_addr + i * page_size
+            );
             self.read_page(&mut result);
         }
         return result;
