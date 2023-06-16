@@ -42,7 +42,7 @@ fn cli() -> Command {
         .subcommand(
             Command::new("write")
                 .short_flag('w')
-                .about("Write file into flash.")
+                .about("Write file (ihex) into flash.")
                 .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
                 .arg(
                     arg!(-p --part <PART>)
@@ -86,6 +86,10 @@ fn main() {
             let ihex = result.to_ihex();
 
             let obj = create_object_file_representation(&ihex).unwrap();
+
+            let digest = md5::compute(&obj);
+            println!("MD5: {:x}", digest);
+
             fs::write(output_file, obj).expect("Unable to write file");
         }
         Some(("write", sub_matches)) => {

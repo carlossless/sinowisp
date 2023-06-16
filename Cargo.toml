@@ -9,6 +9,7 @@ clap = "4.1"
 rusb = "0.9"
 ihex = "3.0"
 ihex_ext = "1.0"
+md5 = "0.7"
 
 [dependencies.log]
 version = "0.4"
