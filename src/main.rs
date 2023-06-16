@@ -83,12 +83,12 @@ fn main() {
 
             let result = ISPDevice::new(part).read_cycle(read_type);
 
+            let digest = md5::compute(&result);
+            println!("MD5: {:x}", digest);
+
             let ihex = result.to_ihex();
 
             let obj = create_object_file_representation(&ihex).unwrap();
-
-            let digest = md5::compute(&obj);
-            println!("MD5: {:x}", digest);
 
             fs::write(output_file, obj).expect("Unable to write file");
         }

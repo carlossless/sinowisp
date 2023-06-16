@@ -11,8 +11,9 @@ This is an experimental tool, so use it at your own risk.
 | Keyboard | ISP MD5 | MCU | Supported |
 | -------- | ------- | --- | --------- |
 | [NuPhy Air60](https://nuphy.com/products/air60) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A (labeled as BYK916) | ✅ |
-| Xinmeng K916 | ee175d2a74711f32fdc8b56a9dad95d8 | SH68F90 | ❓ |
+| [NuPhy Halo65](https://nuphy.com/products/halo65) |  | ❓ | ✅ |
 | Hykker X Range 2017 (RE-K70-BYK800) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 (labeled as BYK801) | ✅ |
+| Xinmeng K916 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90 | ✅ |
 
 ## Prerequisites
 
