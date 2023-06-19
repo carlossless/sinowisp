@@ -1,19 +1,129 @@
-on: [push]
+name: Test & Build
 
-name: CI
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    # necessary for windows
+    shell: bash
 
 jobs:
-  build_and_test:
-    name: Rust project
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Install libudev
-        run: sudo apt-get install -y libudev-dev
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v3
+      - name: Cargo cache
+        uses: actions/cache@v3
         with:
-          toolchain: stable
-      - uses: actions-rs/cargo@v1
+          path: |
+            ~/.cargo/registry
+            ./target
+          key: test-cargo-registry
+      - name: List
+        run: find ./
+      - name: Run tests
+        run: cargo test --verbose
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - TARGET: x86_64-unknown-linux-gnu
+            OS: ubuntu-latest
+          - TARGET: aarch64-unknown-linux-gnu
+            OS: ubuntu-latest
+          - TARGET: armv7-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+          - TARGET: arm-unknown-linux-gnueabihf
+            OS: ubuntu-latest
+          - TARGET: x86_64-apple-darwin
+            OS: macos-latest
+          - TARGET: x86_64-pc-windows-msvc
+            OS: windows-latest
+    needs: test
+    runs-on: ${{ matrix.OS }}
+    env:
+      NAME: sinowealth-kb-tool
+      TARGET: ${{ matrix.TARGET }}
+      OS: ${{ matrix.OS }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cargo cache
+        uses: actions/cache@v3
         with:
-          command: build
-          args: --release --all-features
+          path: |
+            ~/.cargo/registry
+            ./target
+          key: build-cargo-registry-${{matrix.TARGET}}
+      - name: List
+        run: find ./
+      - name: Install and configure dependencies
+        run: |
+          # dependencies are only needed on ubuntu as that's the only place where
+          # we make cross-compilation
+          if [[ $OS =~ ^ubuntu.*$ ]]; then
+            sudo apt-get install -qq crossbuild-essential-arm64 crossbuild-essential-armhf
+          fi
+
+          # some additional configuration for cross-compilation on linux
+          cat >>~/.cargo/config <<EOF
+          [target.aarch64-unknown-linux-gnu]
+          linker = "aarch64-linux-gnu-gcc"
+          [target.armv7-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          [target.arm-unknown-linux-gnueabihf]
+          linker = "arm-linux-gnueabihf-gcc"
+          EOF
+      - name: Install rust target
+        run: rustup target add $TARGET
+      - name: Run build
+        run: cargo build --release --verbose --target $TARGET
+      - name: List target
+        run: find ./target
+      - name: Compress
+        run: |
+          mkdir -p ./artifacts
+          # windows is the only OS using a different convention for executable file name
+          if [[ $OS =~ ^windows.*$ ]]; then
+              EXEC=$NAME.exe
+          else
+              EXEC=$NAME
+          fi
+          if [[ $GITHUB_REF_TYPE =~ ^tag$ ]]; then
+            TAG=$GITHUB_REF_NAME
+          else
+            TAG=$GITHUB_SHA
+          fi
+          mv ./target/$TARGET/release/$EXEC ./$EXEC
+          tar -czf ./artifacts/$NAME-$TARGET-$TAG.tar.gz $EXEC
+      - name: Archive artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: result
+          path: |
+            ./artifacts
+
+  deploy:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: result
+          path: ./artifacts
+      - name: List
+        run: find ./artifacts
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          generate_release_notes: true
+          files: ./artifacts/*.tar.gz
