@@ -2,6 +2,7 @@ use log::*;
 use std::{thread, time};
 
 use crate::HidDevice;
+use crate::VerificationError;
 
 use super::part::*;
 use super::util;
@@ -29,6 +30,8 @@ const CMD_ERASE: u8 = 0x45;
 
 const XFER_READ_PAGE: u8 = 0x72;
 const XFER_WRITE_PAGE: u8 = 0x77;
+
+const LJMP_OPCODE: u8 = 0x02;
 
 #[derive(Debug, Clone)]
 pub enum ReadType {
@@ -92,7 +95,7 @@ impl ISPDevice<'static> {
         };
     }
 
-    pub fn write_cycle(&self, firmware: &mut Vec<u8>) {
+    pub fn write_cycle(&self, firmware: &mut Vec<u8>) -> Result<(), VerificationError> {
         let length = firmware.len();
 
         assert_eq!(
@@ -101,23 +104,22 @@ impl ISPDevice<'static> {
             self.part.flash_size, length
         );
 
-        // this is a bit of an arcane part and I'm not certain why this happens
-        firmware.copy_within(0..3, length - 5);
-        firmware[(length - 5)..(length - 2)].fill(0);
-
         self.erase();
         self.write(&firmware);
         let written = self.read(0, self.part.flash_size);
 
+        // ARCANE: the ISP will copy the LJMP instruction (if existing) from the end to the very start of memory.
+        // We need to make the modifications to the expected payload to account for this.
+        if firmware[length - 5] == LJMP_OPCODE {
+            firmware[0] = LJMP_OPCODE;
+        }
+        firmware.copy_within((length - 4)..(length - 2), 1); // Copy LJMP address
+        firmware[(length - 5)..(length - 2)].fill(0); // Cleanup
+
         info!("Verifying...");
-        match util::verify(&firmware, &written) {
-            Err(e) => {
-                error!("{}", e.to_message());
-                return;
-            }
-            Ok(_) => {}
-        };
+        util::verify(&firmware, &written)?;
         self.finalize();
+        return Ok(());
     }
 
     pub fn erase_cycle(&self) {
@@ -217,7 +219,6 @@ impl ISPDevice<'static> {
         thread::sleep(time::Duration::from_millis(2000));
     }
 
-    // TODO: verify what this command does and if it's actually needed
     fn finalize(&self) {
         info!("Finalizing...");
         let cmd: [u8; COMMAND_LENGTH] = [

@@ -1,8 +1,9 @@
 use clap::*;
 use ihex::*;
 use ihex_ext::*;
+use log::*;
 use simple_logger::SimpleLogger;
-use std::fs;
+use std::{fs, process};
 
 mod part;
 pub use part::*;
@@ -26,7 +27,7 @@ fn cli() -> Command {
         .subcommand(
             Command::new("read")
                 .short_flag('r')
-                .about("Read flash contents. (ihex)")
+                .about("Read flash contents. (Intel HEX)")
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
                 .arg(
                     arg!(-p --part <PART>)
@@ -42,7 +43,7 @@ fn cli() -> Command {
         .subcommand(
             Command::new("write")
                 .short_flag('w')
-                .about("Write file (ihex) into flash.")
+                .about("Write file (Intel HEX) into flash.")
                 .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
                 .arg(
                     arg!(-p --part <PART>)
@@ -107,7 +108,13 @@ fn main() {
 
             let (mut firmware, _) = load_file_vec(input_file, part.flash_size, 0).unwrap();
 
-            ISPDevice::new(part).write_cycle(&mut firmware);
+            match ISPDevice::new(part).write_cycle(&mut firmware) {
+                Err(e) => {
+                    error!("{}", e.to_message());
+                    process::exit(1);
+                }
+                Ok(_) => {}
+            };
         }
         Some(("erase", sub_matches)) => {
             let part_name = sub_matches

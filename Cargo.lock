@@ -387,7 +387,7 @@ dependencies = [
 
 [[package]]
 name = "sinowealth-kb-tool"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "clap",
  "ihex",
