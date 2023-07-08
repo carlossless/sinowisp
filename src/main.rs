@@ -20,7 +20,7 @@ pub use hid::*;
 fn cli() -> Command {
     return Command::new("sinowealth-kb-tool")
         .about("A programming tool for Sinowealth Gaming KB devices")
-        .version("0.0.1")
+        .version(env!("CARGO_PKG_VERSION"))
         .subcommand_required(true)
         .arg_required_else_help(true)
         .author("Karolis Stasaitis")
