@@ -1,24 +1,3 @@
-use ihex::*;
-
-pub trait IHexConversion {
-    // fn from_ihex() -> Self;
-    fn to_ihex(&self) -> Vec<Record>;
-}
-
-impl IHexConversion for Vec<u8> {
-    fn to_ihex(&self) -> Vec<Record> {
-        let mut result: Vec<Record> = vec![];
-        for (i, chunk) in self.chunks(16).enumerate() {
-            result.push(Record::Data {
-                offset: (i as u16) * 16,
-                value: chunk.to_vec(),
-            });
-        }
-        result.push(Record::EndOfFile);
-        return result;
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum VerificationError {
     ByteMismatch(usize, u8, u8),

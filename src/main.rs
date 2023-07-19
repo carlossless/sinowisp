@@ -1,21 +1,20 @@
 use clap::*;
-use ihex::*;
-use ihex_ext::*;
 use log::*;
 use simple_logger::SimpleLogger;
+use std::io::Read;
 use std::{fs, process};
 
 mod part;
-pub use part::*;
-
 mod isp;
-pub use isp::*;
-
-mod util;
-pub use util::*;
-
 mod hid;
-pub use hid::*;
+mod util;
+mod ihex;
+
+pub use crate::part::*;
+pub use crate::isp::*;
+pub use crate::hid::*;
+pub use crate::ihex::*;
+pub use crate::util::*;
 
 fn cli() -> Command {
     return Command::new("sinowealth-kb-tool")
@@ -87,11 +86,8 @@ fn main() {
             let digest = md5::compute(&result);
             println!("MD5: {:x}", digest);
 
-            let ihex = result.to_ihex();
-
-            let obj = create_object_file_representation(&ihex).unwrap();
-
-            fs::write(output_file, obj).expect("Unable to write file");
+            let ihex = to_ihex(result).expect("Failed converting to IHEX");
+            fs::write(output_file, ihex).expect("Unable to write file");
         }
         Some(("write", sub_matches)) => {
             let input_file = sub_matches
@@ -106,7 +102,15 @@ fn main() {
 
             let part = PARTS.get(part_name).unwrap();
 
-            let (mut firmware, _) = load_file_vec(input_file, part.flash_size, 0).unwrap();
+            let mut file = fs::File::open(input_file).unwrap();
+            let mut file_buf = Vec::new();
+            file.read_to_end(&mut file_buf).unwrap();
+            let file_str = String::from_utf8_lossy(&file_buf[..]);
+            let mut firmware = from_ihex(&file_str, part.flash_size).unwrap();
+
+            if firmware.len() < part.flash_size {
+                firmware.resize(part.flash_size, 0);
+            }
 
             match ISPDevice::new(part).write_cycle(&mut firmware) {
                 Err(e) => {

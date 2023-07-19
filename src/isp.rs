@@ -98,18 +98,12 @@ impl ISPDevice<'static> {
     pub fn write_cycle(&self, firmware: &mut Vec<u8>) -> Result<(), VerificationError> {
         let length = firmware.len();
 
-        assert_eq!(
-            self.part.flash_size, length,
-            "Wrong firmware size. Expected {}, but got {}",
-            self.part.flash_size, length
-        );
-
         self.erase();
         self.write(&firmware);
         let written = self.read(0, self.part.flash_size);
 
         // ARCANE: the ISP will copy the LJMP instruction (if existing) from the end to the very start of memory.
-        // We need to make the modifications to the expected payload to account for this.
+        // We need to make modifications to the expected payload to account for this.
         if firmware[length - 5] == LJMP_OPCODE {
             firmware[0] = LJMP_OPCODE;
         }
