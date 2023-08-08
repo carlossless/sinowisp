@@ -35,6 +35,7 @@ pub const PART_RE_K70_BYK800: Part = Part {
 pub static PARTS: phf::Map<&'static str, Part> = phf_map! {
     "nuphy-air60" => PART_NUPHY_AIR60,
     "nuphy-halo65" => PART_NUPHY_AIR60, // same as nuphy-air60
+    "nuphy-air75" => PART_NUPHY_AIR60, // same as nuphy-air60
     "xinmeng-k916" => PART_XINMENG_K916,
     "re-k70-byk800" => PART_RE_K70_BYK800,
 };

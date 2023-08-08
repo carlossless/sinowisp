@@ -7,6 +7,7 @@ repository = "https://github.com/carlossless/sinowealth-kb-tool"
 version = "0.0.3"
 edition = "2021"
 license = "MIT"
+rust-version = "1.65"
 
 [dependencies]
 clap = "4.1"
