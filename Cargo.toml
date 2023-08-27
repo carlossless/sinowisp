@@ -11,10 +11,14 @@ rust-version = "1.65"
 
 [dependencies]
 clap = "4.1"
-rusb = "0.9"
 ihex = "3.0"
 md5 = "0.7"
 thiserror = "1.0"
+
+[dependencies.hidapi]
+version = "2.4"
+default-features = false
+features = ["linux-static-libusb"]
 
 [dependencies.log]
 version = "0.4"

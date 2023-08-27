@@ -1,38 +1,34 @@
-#[derive(Debug, Clone)]
-pub enum VerificationError {
-    ByteMismatch(usize, u8, u8),
-    LengthMismatch(usize, usize),
-}
+use thiserror::Error;
 
-impl VerificationError {
-    pub fn to_message(&self) -> String {
-        return match self {
-            Self::LengthMismatch(expected, actual) => {
-                format!("LENGTH MISMATCH {} {}", expected, actual)
-            }
-            Self::ByteMismatch(addr, expected, actual) => {
-                format!(
-                    "FIRMWARE MISMATCH @ 0x{:04x} --- {:02x} != {:02x}",
-                    addr, expected, actual
-                )
-            }
-        };
-    }
+#[derive(Debug, Clone, Error)]
+pub enum VerificationError {
+    #[error("Firmware Mismatch @ {addr:#06x} --- {expected:#04x} != {actual:#04x}")]
+    ByteMismatch {
+        addr: usize,
+        expected: u8,
+        actual: u8,
+    },
+    #[error("Length Mismatch {expected} {actual}")]
+    LengthMismatch { expected: usize, actual: usize },
 }
 
 pub fn verify(expected: &Vec<u8>, actual: &Vec<u8>) -> Result<(), VerificationError> {
     if expected.len() != actual.len() {
-        return Err(VerificationError::LengthMismatch(
-            expected.len(),
-            actual.len(),
-        ));
+        return Err(VerificationError::LengthMismatch {
+            expected: expected.len(),
+            actual: actual.len(),
+        });
     }
 
     for i in 0..expected.len() {
         if expected[i] != actual[i] {
-            return Err(VerificationError::ByteMismatch(i, expected[i], actual[i]));
+            return Err(VerificationError::ByteMismatch {
+                addr: i,
+                expected: expected[i],
+                actual: actual[i],
+            });
         }
     }
 
-    return Ok(());
+    Ok(())
 }

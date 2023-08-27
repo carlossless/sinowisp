@@ -1,20 +1,32 @@
+use std::{
+    fs,
+    io::{self, Read},
+    process::ExitCode,
+};
+
 use clap::*;
 use log::*;
 use simple_logger::SimpleLogger;
-use std::io::Read;
-use std::{fs, process};
+use thiserror::Error;
 
-mod part;
 mod isp;
-mod hid;
-mod util;
+mod part;
+// mod hid;
 mod ihex;
+mod util;
 
-pub use crate::part::*;
-pub use crate::isp::*;
-pub use crate::hid::*;
-pub use crate::ihex::*;
-pub use crate::util::*;
+// pub use crate::hid::*;
+pub use crate::{ihex::*, isp::*, part::*, util::*};
+
+#[derive(Debug, Error)]
+pub enum CLIError {
+    #[error(transparent)]
+    IOError(#[from] io::Error),
+    #[error(transparent)]
+    ISPError(#[from] ISPError),
+    #[error(transparent)]
+    IHEXError(#[from] ConversionError),
+}
 
 fn cli() -> Command {
     return Command::new("sinowealth-kb-tool")
@@ -30,7 +42,7 @@ fn cli() -> Command {
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
                 .arg(
                     arg!(-p --part <PART>)
-                        .value_parser(PARTS.keys().map(|&s| s).collect::<Vec<_>>())
+                        .value_parser(PARTS.keys().copied().collect::<Vec<_>>())
                         .required(true),
                 )
                 .arg(arg!(-b --bootloader "read only booloader").conflicts_with("full"))
@@ -46,13 +58,13 @@ fn cli() -> Command {
                 .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
                 .arg(
                     arg!(-p --part <PART>)
-                        .value_parser(PARTS.keys().map(|&s| s).collect::<Vec<_>>())
+                        .value_parser(PARTS.keys().copied().collect::<Vec<_>>())
                         .required(true),
                 ),
         );
 }
 
-fn main() {
+fn err_main() -> Result<(), CLIError> {
     SimpleLogger::new().init().unwrap();
 
     let matches = cli().get_matches();
@@ -81,13 +93,14 @@ fn main() {
                 _ => ReadType::Normal,
             };
 
-            let result = ISPDevice::new(part).read_cycle(read_type);
+            let isp = ISPDevice::new(part).map_err(CLIError::from)?;
+            let result = isp.read_cycle(read_type).map_err(CLIError::from)?;
 
             let digest = md5::compute(&result);
-            println!("MD5: {:x}", digest);
+            info!("MD5: {:x}", digest);
 
-            let ihex = to_ihex(result).expect("Failed converting to IHEX");
-            fs::write(output_file, ihex).expect("Unable to write file");
+            let ihex = to_ihex(result).map_err(CLIError::from)?;
+            fs::write(output_file, ihex).map_err(CLIError::from)?;
         }
         Some(("write", sub_matches)) => {
             let input_file = sub_matches
@@ -102,23 +115,18 @@ fn main() {
 
             let part = PARTS.get(part_name).unwrap();
 
-            let mut file = fs::File::open(input_file).unwrap();
+            let mut file = fs::File::open(input_file).map_err(CLIError::from)?;
             let mut file_buf = Vec::new();
-            file.read_to_end(&mut file_buf).unwrap();
+            file.read_to_end(&mut file_buf).map_err(CLIError::from)?;
             let file_str = String::from_utf8_lossy(&file_buf[..]);
-            let mut firmware = from_ihex(&file_str, part.flash_size).unwrap();
+            let mut firmware = from_ihex(&file_str, part.flash_size).map_err(CLIError::from)?;
 
             if firmware.len() < part.flash_size {
                 firmware.resize(part.flash_size, 0);
             }
 
-            match ISPDevice::new(part).write_cycle(&mut firmware) {
-                Err(e) => {
-                    error!("{}", e.to_message());
-                    process::exit(1);
-                }
-                Ok(_) => {}
-            };
+            let isp = ISPDevice::new(part).map_err(CLIError::from)?;
+            isp.write_cycle(&mut firmware).map_err(CLIError::from)?;
         }
         Some(("erase", sub_matches)) => {
             let part_name = sub_matches
@@ -128,8 +136,20 @@ fn main() {
 
             let part = PARTS.get(part_name).unwrap();
 
-            ISPDevice::new(part).erase_cycle();
+            let isp = ISPDevice::new(part).map_err(CLIError::from)?;
+            isp.erase_cycle().map_err(CLIError::from)?;
         }
         _ => unreachable!(),
+    }
+    Ok(())
+}
+
+fn main() -> ExitCode {
+    match err_main() {
+        Ok(_) => ExitCode::SUCCESS,
+        Err(e) => {
+            error!("{}", e.to_string());
+            ExitCode::FAILURE
+        }
     }
 }

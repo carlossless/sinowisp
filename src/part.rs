@@ -43,7 +43,7 @@ pub static PARTS: phf::Map<&'static str, Part> = phf_map! {
 
 impl Part {
     pub fn num_pages(&self) -> usize {
-        return self.flash_size / self.page_size;
+        self.flash_size / self.page_size
     }
 }
 
