@@ -203,7 +203,7 @@ impl ISPDevice<'static> {
         Self::enter_isp_mode(&device)?;
 
         info!("Waiting for ISP device...");
-        thread::sleep(time::Duration::from_millis(2000));
+        thread::sleep(time::Duration::from_secs(2));
 
         let Ok(isp_device) = Self::open_isp_devices() else {
             info!("ISP device didn't come up...");
@@ -220,6 +220,7 @@ impl ISPDevice<'static> {
     fn find_isp_device_retry(part: &Part, retries: usize) -> Result<HIDDevices, ISPError> {
         for attempt in 1..retries + 1 {
             if attempt > 1 {
+                thread::sleep(time::Duration::from_millis(500));
                 info!("Retrying... Attempt {}/{}", attempt, retries);
             }
 
