@@ -1,13 +1,13 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+    utils.url = "github:numtide/flake-utils";
     naersk.url = "github:nix-community/naersk";
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
-  outputs = { self, nixpkgs, flake-utils, naersk, rust-overlay }:
-    flake-utils.lib.eachDefaultSystem (
+  outputs = { self, nixpkgs, utils, naersk, rust-overlay }:
+    utils.lib.eachDefaultSystem (
       system:
       let
         overlays = [ (import rust-overlay) ];
