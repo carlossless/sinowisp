@@ -1,7 +1,7 @@
 use ihex::*;
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq)]
 pub enum UnpackingError {
     #[error("Unsupported record type")]
     UnsupportedRecordType(Record),
@@ -11,7 +11,7 @@ pub enum UnpackingError {
     AddressTooHigh(usize, usize),
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq)]
 pub enum ConversionError {
     #[error("Error while unpacking IHEX into array")]
     Unpacking(#[from] UnpackingError),
@@ -70,4 +70,55 @@ fn unpack_records(
         }
     }
     Ok(result)
+}
+
+#[test]
+fn test_from_ihex() {
+    let result = from_ihex(
+        ":100000000200660227BD010A32646402CB9053DA13\n:00000001FF",
+        16,
+    )
+    .unwrap();
+    let expected = vec![
+        2, 0, 102, 2, 39, 189, 1, 10, 50, 100, 100, 2, 203, 144, 83, 218,
+    ];
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_from_ihex_address_start_at_0x0001() {
+    let result = from_ihex(
+        ":100010000200660227BD010A32646402CB9053DA03\n:00000001FF",
+        32,
+    );
+    let mut expected: Vec<u8> = Vec::new();
+    expected.resize(16, 0);
+    expected.extend_from_slice(&[
+        2, 0, 102, 2, 39, 189, 1, 10, 50, 100, 100, 2, 203, 144, 83, 218,
+    ]);
+    assert_eq!(result, Ok(expected));
+}
+
+#[test]
+fn test_from_ihex_err_checksum_mismatch() {
+    let result = from_ihex(
+        ":100000000200660227BD010A32646402CB9053DA00\n:00000001FF",
+        16,
+    );
+    let expected = Err(ConversionError::Unpacking(UnpackingError::Parsing(
+        ReaderError::ChecksumMismatch(19, 0),
+    )));
+    assert_eq!(result, expected);
+}
+
+#[test]
+fn test_from_ihex_err_address_too_high() {
+    let result = from_ihex(
+        ":100010000200660227BD010A32646402CB9053DA03\n:00000001FF",
+        16,
+    );
+    let expected = Err(ConversionError::Unpacking(UnpackingError::AddressTooHigh(
+        32, 16,
+    )));
+    assert_eq!(result, expected);
 }
