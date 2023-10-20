@@ -7,8 +7,8 @@ pub enum UnpackingError {
     UnsupportedRecordType(Record),
     #[error("Error while parsing IHEX records")]
     Parsing(#[from] ReaderError),
-    #[error("Address ({0}) greater than binary size ({1})")]
-    AddressTooHigh(usize, usize),
+    #[error("Address {addr:#06x} greater than binary size {size:#06x}")]
+    AddressTooHigh { addr: usize, size: usize },
 }
 
 #[derive(Debug, Error, PartialEq)]
@@ -47,7 +47,10 @@ fn unpack_records(
                 Record::Data { offset, value } => {
                     let end_addr = offset as usize + value.len();
                     if end_addr > max_length {
-                        return Err(UnpackingError::AddressTooHigh(end_addr, max_length));
+                        return Err(UnpackingError::AddressTooHigh {
+                            addr: end_addr,
+                            size: max_length,
+                        });
                     }
                     if end_addr > result.len() {
                         result.resize(end_addr, 0);
@@ -106,7 +109,7 @@ fn test_from_ihex_err_checksum_mismatch() {
         16,
     );
     let expected = Err(ConversionError::Unpacking(UnpackingError::Parsing(
-        ReaderError::ChecksumMismatch(19, 0),
+        ReaderError::ChecksumMismatch(0x13, 0x00),
     )));
     assert_eq!(result, expected);
 }
@@ -117,8 +120,9 @@ fn test_from_ihex_err_address_too_high() {
         ":100010000200660227BD010A32646402CB9053DA03\n:00000001FF",
         16,
     );
-    let expected = Err(ConversionError::Unpacking(UnpackingError::AddressTooHigh(
-        32, 16,
-    )));
+    let expected = Err(ConversionError::Unpacking(UnpackingError::AddressTooHigh {
+        addr: 0x20,
+        size: 0x10,
+    }));
     assert_eq!(result, expected);
 }
