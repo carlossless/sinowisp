@@ -199,7 +199,7 @@ impl ISPDevice<'static> {
 
         let device = api.open_path(request_device_info.path()).unwrap();
 
-        info!("Found Regular evice. Entering ISP mode...");
+        info!("Found Regular device. Entering ISP mode...");
         Self::enter_isp_mode(&device)?;
 
         info!("Waiting for ISP device...");
