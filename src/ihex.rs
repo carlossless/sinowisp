@@ -1,4 +1,4 @@
-use ihex::*;
+use ihex::{create_object_file_representation, Reader, ReaderError, Record, WriterError};
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq)]

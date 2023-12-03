@@ -1,5 +1,6 @@
-use phf::*;
+use phf::{phf_map, Map};
 
+#[derive(Default, Clone, Copy)]
 pub struct Part {
     pub flash_size: usize,
     pub bootloader_size: usize,
@@ -40,17 +41,21 @@ pub const PART_TERPORT_TR95: Part = Part {
     product_id: 0x0049,
 };
 
-pub static PARTS: phf::Map<&'static str, Part> = phf_map! {
+pub static PARTS: Map<&'static str, Part> = phf_map! {
     "nuphy-air60" => PART_NUPHY_AIR60,
     "nuphy-air75" => PART_NUPHY_AIR60, // same as nuphy-air60
     "nuphy-air96" => PART_NUPHY_AIR60, // same as nuphy-air60
     "nuphy-halo65" => PART_NUPHY_AIR60, // same as nuphy-air60
     "xinmeng-k916" => PART_XINMENG_K916,
     "re-k70-byk800" => PART_RE_K70_BYK800,
-    "terport-tr95" => PART_TERPORT_TR95
+    "terport-tr95" => PART_TERPORT_TR95,
 };
 
 impl Part {
+    pub fn available_parts() -> Vec<&'static str> {
+        PARTS.keys().copied().collect::<Vec<_>>()
+    }
+
     pub fn num_pages(&self) -> usize {
         self.flash_size / self.page_size
     }

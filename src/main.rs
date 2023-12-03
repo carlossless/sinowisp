@@ -4,8 +4,9 @@ use std::{
     process::ExitCode,
 };
 
-use clap::*;
-use log::*;
+use clap::{arg, ArgMatches, Command};
+use clap_num::maybe_hex;
+use log::{error, info};
 use simple_logger::SimpleLogger;
 use thiserror::Error;
 
@@ -15,7 +16,6 @@ mod part;
 mod ihex;
 mod util;
 
-// pub use crate::hid::*;
 pub use crate::{ihex::*, isp::*, part::*, util::*};
 
 #[derive(Debug, Error)]
@@ -26,6 +26,16 @@ pub enum CLIError {
     ISPError(#[from] ISPError),
     #[error(transparent)]
     IHEXError(#[from] ConversionError),
+}
+
+fn main() -> ExitCode {
+    match err_main() {
+        Ok(_) => ExitCode::SUCCESS,
+        Err(e) => {
+            error!("{}", e.to_string());
+            ExitCode::FAILURE
+        }
+    }
 }
 
 fn cli() -> Command {
@@ -40,11 +50,7 @@ fn cli() -> Command {
                 .short_flag('r')
                 .about("Read flash contents. (Intel HEX)")
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
-                .arg(
-                    arg!(-p --part <PART>)
-                        .value_parser(PARTS.keys().copied().collect::<Vec<_>>())
-                        .required(true),
-                )
+                .part_args()
                 .arg(arg!(-b --bootloader "read only booloader").conflicts_with("full"))
                 .arg(
                     arg!(-f --full "read complete flash (including the bootloader)")
@@ -56,11 +62,7 @@ fn cli() -> Command {
                 .short_flag('w')
                 .about("Write file (Intel HEX) into flash.")
                 .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
-                .arg(
-                    arg!(-p --part <PART>)
-                        .value_parser(PARTS.keys().copied().collect::<Vec<_>>())
-                        .required(true),
-                ),
+                .part_args(),
         );
 }
 
@@ -71,11 +73,6 @@ fn err_main() -> Result<(), CLIError> {
 
     match matches.subcommand() {
         Some(("read", sub_matches)) => {
-            let part_name = sub_matches
-                .get_one::<String>("part")
-                .map(|s| s.as_str())
-                .unwrap();
-
             let output_file = sub_matches
                 .get_one::<String>("output_file")
                 .map(|s| s.as_str())
@@ -85,7 +82,7 @@ fn err_main() -> Result<(), CLIError> {
 
             let bootloader = sub_matches.get_flag("bootloader");
 
-            let part = PARTS.get(part_name).unwrap();
+            let part = get_part_from_matches(sub_matches);
 
             let read_type = match (full, bootloader) {
                 (true, _) => ReadType::Full,
@@ -108,12 +105,7 @@ fn err_main() -> Result<(), CLIError> {
                 .map(|s| s.as_str())
                 .unwrap();
 
-            let part_name = sub_matches
-                .get_one::<String>("part")
-                .map(|s| s.as_str())
-                .unwrap();
-
-            let part = PARTS.get(part_name).unwrap();
+            let part = get_part_from_matches(sub_matches);
 
             let mut file = fs::File::open(input_file).map_err(CLIError::from)?;
             let mut file_buf = Vec::new();
@@ -128,28 +120,84 @@ fn err_main() -> Result<(), CLIError> {
             let isp = ISPDevice::new(part).map_err(CLIError::from)?;
             isp.write_cycle(&mut firmware).map_err(CLIError::from)?;
         }
-        Some(("erase", sub_matches)) => {
-            let part_name = sub_matches
-                .get_one::<String>("part")
-                .map(|s| s.as_str())
-                .unwrap();
-
-            let part = PARTS.get(part_name).unwrap();
-
-            let isp = ISPDevice::new(part).map_err(CLIError::from)?;
-            isp.erase_cycle().map_err(CLIError::from)?;
-        }
         _ => unreachable!(),
     }
     Ok(())
 }
 
-fn main() -> ExitCode {
-    match err_main() {
-        Ok(_) => ExitCode::SUCCESS,
-        Err(e) => {
-            error!("{}", e.to_string());
-            ExitCode::FAILURE
-        }
+trait PartCommand {
+    fn part_args(self) -> Command;
+}
+
+impl PartCommand for Command {
+    fn part_args(self) -> Command {
+        self.arg(
+            arg!(-p --part <PART>)
+                .value_parser(Part::available_parts())
+                .required_unless_present_all([
+                    "flash_size",
+                    "bootloader_size",
+                    "page_size",
+                    "vendor_id",
+                    "product_id",
+                ]),
+        )
+        .arg(
+            arg!(--flash_size <SIZE>)
+                .required_unless_present("part")
+                .value_parser(clap::value_parser!(usize)),
+        )
+        .arg(
+            arg!(--bootloader_size <SIZE>)
+                .required_unless_present("part")
+                .value_parser(clap::value_parser!(usize)),
+        )
+        .arg(
+            arg!(--page_size <SIZE>)
+                .required_unless_present("part")
+                .value_parser(clap::value_parser!(usize)),
+        )
+        .arg(
+            arg!(--vendor_id <VID>)
+                .required_unless_present("part")
+                .value_parser(maybe_hex::<u16>),
+        )
+        .arg(
+            arg!(--product_id <PID>)
+                .required_unless_present("part")
+                .value_parser(maybe_hex::<u16>),
+        )
     }
+}
+
+fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
+    let part_name = sub_matches.get_one::<String>("part").map(|s| s.as_str());
+
+    let mut part = match part_name {
+        Some(part_name) => *PARTS.get(part_name).unwrap(),
+        _ => Part::default(),
+    };
+
+    let flash_size = sub_matches.get_one::<usize>("flash_size");
+    let bootloader_size = sub_matches.get_one::<usize>("bootloader_size");
+    let page_size = sub_matches.get_one::<usize>("page_size");
+    let vendor_id = sub_matches.get_one::<u16>("vendor_id");
+    let product_id = sub_matches.get_one::<u16>("product_id");
+
+    if let Some(flash_size) = flash_size {
+        part.flash_size = *flash_size;
+    }
+    if let Some(bootloader_size) = bootloader_size {
+        part.bootloader_size = *bootloader_size;
+    }
+    if let Some(page_size) = page_size {
+        part.page_size = *page_size;
+    }
+    if let Some(vendor_id) = vendor_id {
+        part.vendor_id = *vendor_id;
+    }
+    if let Some(product_id) = product_id {
+        part.product_id = *product_id;
+    }
+    return part;
 }
