@@ -8,6 +8,46 @@ A utility for reading and writing flash contents on Sinowealth 8051-based device
 
 This is an experimental tool, so use it at your own risk.
 
+## Usage
+
+### Reading
+
+```sh
+# reads firmware excluding isp bootloader 
+sinowealth-kb-tool read -p nuphy-air60 foobar.hex
+
+# reads only isp bootloader section
+sinowealth-kb-tool read -p nuphy-air60 -b bootloader.hex
+
+# full dump including firmware and bootloader
+sinowealth-kb-tool read -p nuphy-air60 --full full.hex
+
+# custom device
+sinowealth-kb-tool read \
+    --flash_size 61440 \
+    --bootloader_size 4096 \
+    --page_size 2048 \
+    --vendor_id 0x05ac \
+    --product_id 0x024f \
+    foobar.hex
+```
+
+### Writing
+
+```sh
+# overwrites firmware (does not touch the bootloader section)
+sinowealth-kb-tool write -p nuphy-air60 foobar.hex
+
+# custom device
+sinowealth-kb-tool write \
+    --flash_size 61440 \
+    --bootloader_size 4096 \
+    --page_size 2048 \
+    --vendor_id 0x05ac \
+    --product_id 0x024f \
+    foobar.hex
+```
+
 ## Supported Hardware
 
 | Keyboard | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |

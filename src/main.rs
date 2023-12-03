@@ -51,9 +51,9 @@ fn cli() -> Command {
                 .about("Read flash contents. (Intel HEX)")
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
                 .part_args()
-                .arg(arg!(-b --bootloader "read only booloader").conflicts_with("full"))
+                .arg(arg!(-b --bootloader --isp "read only booloader").conflicts_with("full"))
                 .arg(
-                    arg!(-f --full "read complete flash (including the bootloader)")
+                    arg!(--full "read complete flash (including the bootloader)")
                         .conflicts_with("bootloader"),
                 ),
         )
