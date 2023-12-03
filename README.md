@@ -10,7 +10,13 @@ This is an experimental tool, so use it at your own risk.
 
 ## Usage
 
+Read [here](https://github.com/carlossless/sinowealth-kb-tool/issues/19) for ISP quirks.
+
 ### Reading
+
+⚠️ Reading is not entirely an idempotent operation. A read operation can change values in the `0xeffb - 0xeffd` region.
+
+⚠️ The ISP bootloader will blank out bytes in the `0xeffb - 0xeffd` region, therefore the produced dump might not reflect the actual state in ROM.
 
 ```sh
 # reads firmware excluding isp bootloader 

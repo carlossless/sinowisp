@@ -40,6 +40,17 @@ pub struct ISPDevice {
 }
 
 #[derive(Debug, Error)]
+pub enum FirmwareError {
+    #[error("No LJMP found at {location_addr:#06x}")]
+    NoLJMP { location_addr: u16 },
+    #[error("LJMP at {location_addr:#06x} points to invalid address {target_addr:#06x}")]
+    InvalidLJMPAddr {
+        location_addr: u16,
+        target_addr: u16,
+    },
+}
+
+#[derive(Debug, Error)]
 pub enum ISPError {
     #[error("Duplicate devices found")]
     DuplicateDevices(String, String),
@@ -49,6 +60,8 @@ pub enum ISPError {
     HidError(#[from] HidError),
     #[error(transparent)]
     VerificationError(#[from] VerificationError),
+    #[error(transparent)]
+    FirmwareError(#[from] FirmwareError),
 }
 
 #[derive(Debug, Clone)]
@@ -256,9 +269,10 @@ impl ISPDevice {
     pub fn write_cycle(&self, firmware: &mut Vec<u8>) -> Result<(), ISPError> {
         let length = firmware.len();
 
+        self.check_firmware(firmware)?;
+
         self.erase()?;
         self.write(firmware)?;
-        let written = self.read(0, self.part.flash_size)?;
 
         // ARCANE: the ISP will copy the LJMP instruction (if existing) from the end to the very start of memory.
         // We need to make modifications to the expected payload to account for this.
@@ -269,6 +283,7 @@ impl ISPDevice {
         }
 
         info!("Verifying...");
+        let written = self.read(0, self.part.flash_size)?;
         util::verify(firmware, &written).map_err(ISPError::from)?;
         self.finalize()?;
         Ok(())
@@ -279,6 +294,37 @@ impl ISPDevice {
         return &self.data_device;
         #[cfg(not(target_os = "windows"))]
         &self.request_device
+    }
+
+    fn check_firmware(&self, firmware: &mut Vec<u8>) -> Result<(), ISPError> {
+        let length = firmware.len();
+        if firmware[length - 5] != LJMP_OPCODE {
+            info!("No LJMP detected at {:#06x}", length - 5);
+            if firmware[0] != LJMP_OPCODE {
+                return Err(ISPError::FirmwareError(FirmwareError::NoLJMP {
+                    location_addr: 0x0000,
+                }));
+            }
+            let ljmp_addr = (firmware[1] as u16) << 8 | firmware[2] as u16;
+            if ljmp_addr == 0x0000 {
+                return Err(ISPError::FirmwareError(FirmwareError::InvalidLJMPAddr {
+                    location_addr: 0x0000,
+                    target_addr: ljmp_addr,
+                }));
+            }
+            info!("Copying LJMP from {:#06x} to {:#06x}", 0x0000, length - 5);
+            firmware[length - 5] = LJMP_OPCODE;
+            firmware.copy_within(1..3, length - 4); // Copy LJMP address
+        } else {
+            let ljmp_addr = (firmware[length - 4] as u16) << 8 | firmware[length - 3] as u16;
+            if ljmp_addr == 0x0000 {
+                return Err(ISPError::FirmwareError(FirmwareError::InvalidLJMPAddr {
+                    location_addr: (length - 5) as u16,
+                    target_addr: ljmp_addr,
+                }));
+            }
+        }
+        return Ok(());
     }
 
     /// Allows firmware to be read prior to erasing it

@@ -27,6 +27,7 @@
         buildInputs = with pkgs; [
           pkg-config
           libusb1
+          binutils
         ] ++
         (lib.optionals (stdenv.hostPlatform.isLinux) [
           udev
