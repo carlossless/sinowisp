@@ -10,13 +10,11 @@ This is an experimental tool, so use it at your own risk.
 
 ## Usage
 
-Read [here](https://github.com/carlossless/sinowealth-kb-tool/issues/19) for ISP quirks.
-
 ### Reading
 
-⚠️ Reading is not entirely an idempotent operation. A read operation can change values in the `0xeffb - 0xeffd` region.
+⚠️ A read operation will set an LJMP (0x02) opcode at address `<firmware_size-5>` if it's not already present there. When this opcode is set, the bootloader considers the main firmware enabled and jumps to it when the device is powered on. This opcode should already be set on most devices and therefore the read operation **should** not cause any issues.
 
-⚠️ The ISP bootloader will blank out bytes in the `0xeffb - 0xeffd` region, therefore the produced dump might not reflect the actual state in ROM.
+⚠️ During reading the ISP bootloader will redirect values in `0x0001 - 0x0002` to `<firmware_size-4> - <firmware_size-3>`. Because of this, the produced payload will be different from how memory is actually laid out in the MCU flash.
 
 ```sh
 # reads firmware excluding isp bootloader 
@@ -30,7 +28,7 @@ sinowealth-kb-tool read -p nuphy-air60 --full full.hex
 
 # custom device
 sinowealth-kb-tool read \
-    --flash_size 61440 \
+    --firmware_size 61440 \
     --bootloader_size 4096 \
     --page_size 2048 \
     --vendor_id 0x05ac \
@@ -40,13 +38,15 @@ sinowealth-kb-tool read \
 
 ### Writing
 
+⚠️ Same as the [read](#reading) operation, the ISP bootloader will write values meant for addresses `0x0001-0x0002` to `<firmware_size-4> - <firmware_size-3>`. 
+
 ```sh
 # overwrites firmware (does not touch the bootloader section)
 sinowealth-kb-tool write -p nuphy-air60 foobar.hex
 
 # custom device
 sinowealth-kb-tool write \
-    --flash_size 61440 \
+    --firmware_size 61440 \
     --bootloader_size 4096 \
     --page_size 2048 \
     --vendor_id 0x05ac \
@@ -83,5 +83,4 @@ Make sure your user is part of the `plugdev` group.
 
 ## Acknowledgments
 
-* https://github.com/gashtaan/sinowealth-8051-dumper
-* https://github.com/ayufan-rock64/pinebook-pro-keyboard-updater
+Thanks to [@gashtaan](https://github.com/gashtaan) for analyzing and explaining the inner workings of the ISP bootloaders. Without his help, this tool wouldn't be here!

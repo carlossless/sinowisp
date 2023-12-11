@@ -111,10 +111,10 @@ fn err_main() -> Result<(), CLIError> {
             let mut file_buf = Vec::new();
             file.read_to_end(&mut file_buf).map_err(CLIError::from)?;
             let file_str = String::from_utf8_lossy(&file_buf[..]);
-            let mut firmware = from_ihex(&file_str, part.flash_size).map_err(CLIError::from)?;
+            let mut firmware = from_ihex(&file_str, part.firmware_size).map_err(CLIError::from)?;
 
-            if firmware.len() < part.flash_size {
-                firmware.resize(part.flash_size, 0);
+            if firmware.len() < part.firmware_size {
+                firmware.resize(part.firmware_size, 0);
             }
 
             let isp = ISPDevice::new(part).map_err(CLIError::from)?;
@@ -135,7 +135,7 @@ impl PartCommand for Command {
             arg!(-p --part <PART>)
                 .value_parser(Part::available_parts())
                 .required_unless_present_all([
-                    "flash_size",
+                    "firmware_size",
                     "bootloader_size",
                     "page_size",
                     "vendor_id",
@@ -143,7 +143,7 @@ impl PartCommand for Command {
                 ]),
         )
         .arg(
-            arg!(--flash_size <SIZE>)
+            arg!(--firmware_size <SIZE>)
                 .required_unless_present("part")
                 .value_parser(clap::value_parser!(usize)),
         )
@@ -178,14 +178,14 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
         _ => Part::default(),
     };
 
-    let flash_size = sub_matches.get_one::<usize>("flash_size");
+    let firmware_size = sub_matches.get_one::<usize>("firmware_size");
     let bootloader_size = sub_matches.get_one::<usize>("bootloader_size");
     let page_size = sub_matches.get_one::<usize>("page_size");
     let vendor_id = sub_matches.get_one::<u16>("vendor_id");
     let product_id = sub_matches.get_one::<u16>("product_id");
 
-    if let Some(flash_size) = flash_size {
-        part.flash_size = *flash_size;
+    if let Some(firmware_size) = firmware_size {
+        part.firmware_size = *firmware_size;
     }
     if let Some(bootloader_size) = bootloader_size {
         part.bootloader_size = *bootloader_size;

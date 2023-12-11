@@ -2,7 +2,7 @@ use phf::{phf_map, Map};
 
 #[derive(Default, Clone, Copy)]
 pub struct Part {
-    pub flash_size: usize,
+    pub firmware_size: usize,
     pub bootloader_size: usize,
     pub page_size: usize,
     pub vendor_id: u16,
@@ -10,7 +10,7 @@ pub struct Part {
 }
 
 pub const PART_NUPHY_AIR60: Part = Part {
-    flash_size: 61440, // 61440 until bootloader
+    firmware_size: 61440, // 61440 until bootloader
     bootloader_size: 4096,
     page_size: 2048,
     vendor_id: 0x05ac,
@@ -18,7 +18,7 @@ pub const PART_NUPHY_AIR60: Part = Part {
 };
 
 pub const PART_XINMENG_K916: Part = Part {
-    flash_size: 61440, // 61440 until bootloader
+    firmware_size: 61440, // 61440 until bootloader
     bootloader_size: 4096,
     page_size: 2048,
     vendor_id: 0x258a,
@@ -26,7 +26,7 @@ pub const PART_XINMENG_K916: Part = Part {
 };
 
 pub const PART_RE_K70_BYK800: Part = Part {
-    flash_size: 28672, // 28672 until bootloader
+    firmware_size: 28672, // 28672 until bootloader
     bootloader_size: 4096,
     page_size: 2048,
     vendor_id: 0x258a,
@@ -34,7 +34,7 @@ pub const PART_RE_K70_BYK800: Part = Part {
 };
 
 pub const PART_TERPORT_TR95: Part = Part {
-    flash_size: 61440, // 61440 until bootloader
+    firmware_size: 61440, // 61440 until bootloader
     bootloader_size: 4096,
     page_size: 2048,
     vendor_id: 0x258a,
@@ -42,7 +42,7 @@ pub const PART_TERPORT_TR95: Part = Part {
 };
 
 pub const PART_REDRAGON_FIZZ_K617: Part = Part {
-    flash_size: 61440, // 61440 until bootloader
+    firmware_size: 61440, // 61440 until bootloader
     bootloader_size: 4096,
     page_size: 2048,
     vendor_id: 0x258a,
@@ -66,7 +66,7 @@ impl Part {
     }
 
     pub fn num_pages(&self) -> usize {
-        self.flash_size / self.page_size
+        self.firmware_size / self.page_size
     }
 }
 

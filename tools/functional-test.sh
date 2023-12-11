@@ -57,7 +57,7 @@ reboot_device
 
 echo "Custom read..."
 $TOOL read \
-    --flash_size 61440 \
+    --firmware_size 61440 \
     --bootloader_size 4096 \
     --page_size 2048 \
     --vendor_id 0x05ac \
