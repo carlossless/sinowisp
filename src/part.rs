@@ -49,6 +49,14 @@ pub const PART_REDRAGON_FIZZ_K617: Part = Part {
     product_id: 0x0049,
 };
 
+pub const PART_REDRAGON_ANIVIA_K614: Part = Part {
+    firmware_size: 61440, // 61440 until bootloader
+    bootloader_size: 4096,
+    page_size: 2048,
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+};
+
 pub static PARTS: Map<&'static str, Part> = phf_map! {
     "nuphy-air60" => PART_NUPHY_AIR60,
     "nuphy-air75" => PART_NUPHY_AIR60, // same as nuphy-air60
@@ -57,7 +65,8 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "xinmeng-k916" => PART_XINMENG_K916,
     "re-k70-byk800" => PART_RE_K70_BYK800,
     "terport-tr95" => PART_TERPORT_TR95,
-    "redragon-k6170-fizz" => PART_REDRAGON_FIZZ_K617
+    "redragon-k6170-fizz" => PART_REDRAGON_FIZZ_K617,
+    "redragon-k614-anivia" => PART_REDRAGON_ANIVIA_K614
 };
 
 impl Part {
