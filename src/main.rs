@@ -140,6 +140,7 @@ impl PartCommand for Command {
                     "page_size",
                     "vendor_id",
                     "product_id",
+                    "isp_index"
                 ]),
         )
         .arg(
@@ -167,6 +168,11 @@ impl PartCommand for Command {
                 .required_unless_present("part")
                 .value_parser(maybe_hex::<u16>),
         )
+        .arg(
+            arg!(--isp_index <PID>)
+                .required_unless_present("part")
+                .value_parser(clap::value_parser!(usize)),
+        )
     }
 }
 
@@ -183,6 +189,7 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
     let page_size = sub_matches.get_one::<usize>("page_size");
     let vendor_id = sub_matches.get_one::<u16>("vendor_id");
     let product_id = sub_matches.get_one::<u16>("product_id");
+    let isp_index = sub_matches.get_one::<usize>("isp_index");
 
     if let Some(firmware_size) = firmware_size {
         part.firmware_size = *firmware_size;
@@ -198,6 +205,9 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
     }
     if let Some(product_id) = product_id {
         part.product_id = *product_id;
+    }
+    if let Some(isp_index) = isp_index {
+        part.isp_index = *isp_index;
     }
     return part;
 }

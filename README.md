@@ -33,6 +33,7 @@ sinowealth-kb-tool read \
     --page_size 2048 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
+    --isp_index 0
     foobar.hex
 ```
 
@@ -51,6 +52,7 @@ sinowealth-kb-tool write \
     --page_size 2048 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
+    --isp_index 0
     foobar.hex
 ```
 

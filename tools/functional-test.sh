@@ -62,6 +62,7 @@ $TOOL read \
     --page_size 2048 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
+    --isp_index 1 \
     "$FILE_CUSTOM"
 
 reboot_device
