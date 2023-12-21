@@ -66,6 +66,15 @@ pub const PART_REDRAGON_ANIVIA_K614: Part = Part {
     isp_index: 1,
 };
 
+pub const PART_GENESIS_THOR_300: Part = Part {
+    firmware_size: 28672, // 28672 until bootloader
+    bootloader_size: 4096,
+    page_size: 2048,
+    vendor_id: 0x258a,
+    product_id: 0x001f,
+    isp_index: 0,
+};
+
 pub const PART_ROYALKLUDGE_RK100: Part = Part {
     firmware_size: 61440, // 61440 until bootloader
     bootloader_size: 4096,
@@ -86,6 +95,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "redragon-k617-fizz" => PART_REDRAGON_FIZZ_K617,
     "redragon-k614-anivia" => PART_REDRAGON_ANIVIA_K614,
     "royalkludge-rk100" => PART_ROYALKLUDGE_RK100,
+    "genesis-thor-300" => PART_GENESIS_THOR_300,
 };
 
 impl Part {
