@@ -87,7 +87,8 @@ impl ISPDevice {
     fn open_isp_devices() -> Result<HIDDevices, ISPError> {
         let api = Self::hidapi();
 
-        let devices: Vec<_> = api.device_list()
+        let devices: Vec<_> = api
+            .device_list()
             .filter(|d| {
                 #[cfg(not(target_os = "linux"))]
                 return d.vendor_id() == GAMING_KB_VENDOR_ID
@@ -102,14 +103,19 @@ impl ISPDevice {
 
         for d in &devices {
             #[cfg(not(target_os = "linux"))]
-            debug!("Found Device: {:?} {:#06x} {:#06x}", d.path(), d.usage_page(), d.usage());
+            debug!(
+                "Found Device: {:?} {:#06x} {:#06x}",
+                d.path(),
+                d.usage_page(),
+                d.usage()
+            );
             #[cfg(target_os = "linux")]
             debug!("Found Device: {:?}", d.path());
         }
 
         let device_count = devices.len();
         if device_count == 0 {
-            return Err(ISPError::NotFound)
+            return Err(ISPError::NotFound);
         }
 
         #[cfg(not(target_os = "windows"))]
@@ -120,12 +126,12 @@ impl ISPDevice {
                 request: api.open_path(request_device.path()).unwrap(),
             });
         } else {
-            return Err(ISPError::IrregularDeviceCount(device_count))
+            return Err(ISPError::IrregularDeviceCount(device_count));
         }
 
         #[cfg(target_os = "windows")]
         if device_count == 1 {
-            return Err(ISPError::IrregularDeviceCount(device_count))
+            return Err(ISPError::IrregularDeviceCount(device_count));
         } else if device_count == 2 {
             let request_device = devices[0];
             let data_device = devices[1];
@@ -136,7 +142,7 @@ impl ISPDevice {
                 data: api.open_path(data_device.path()).unwrap(),
             });
         } else {
-            return Err(ISPError::IrregularDeviceCount(device_count))
+            return Err(ISPError::IrregularDeviceCount(device_count));
         }
     }
 
@@ -157,13 +163,17 @@ impl ISPDevice {
                     && d.usage_page() == HID_ISP_USAGE_PAGE
                     && d.usage() == HID_ISP_USAGE;
                 #[cfg(target_os = "linux")]
-                return d.vendor_id() == part.vendor_id
-                    && d.product_id() == part.product_id;
+                return d.vendor_id() == part.vendor_id && d.product_id() == part.product_id;
             })
             .enumerate()
             .find_map(|(_i, d)| {
                 #[cfg(not(target_os = "linux"))]
-                debug!("Found Device: {:?} {:#06x} {:#06x}", d.path(), d.usage_page(), d.usage());
+                debug!(
+                    "Found Device: {:?} {:#06x} {:#06x}",
+                    d.path(),
+                    d.usage_page(),
+                    d.usage()
+                );
                 #[cfg(target_os = "linux")]
                 debug!("Found Device: {:?}", d.path());
                 #[cfg(target_os = "windows")]
@@ -369,8 +379,7 @@ impl ISPDevice {
     /// Credits to @gashtaan for finding this out.
     fn enable_firmware(&self) -> Result<(), ISPError> {
         info!("Enabling firmware...");
-        let cmd: [u8; COMMAND_LENGTH] =
-            [REPORT_ID_CMD, CMD_ENABLE_FIRMWARE, 0, 0, 0, 0];
+        let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_ENABLE_FIRMWARE, 0, 0, 0, 0];
 
         self.request_device.send_feature_report(&cmd)?;
         Ok(())

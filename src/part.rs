@@ -9,7 +9,7 @@ pub struct Part {
     pub product_id: u16,
     /// Index of usage_page == 0xff00 && usage == 0x0001 collections at which the isp report appears in.
     /// Important only for windows because its HIDAPI requires us to use a specific device for each collection
-    pub isp_index: usize
+    pub isp_index: usize,
 }
 
 pub const PART_NUPHY_AIR60: Part = Part {

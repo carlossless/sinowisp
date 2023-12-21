@@ -140,7 +140,7 @@ impl PartCommand for Command {
                     "page_size",
                     "vendor_id",
                     "product_id",
-                    "isp_index"
+                    "isp_index",
                 ]),
         )
         .arg(
