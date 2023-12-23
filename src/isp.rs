@@ -160,8 +160,8 @@ impl ISPDevice {
                 #[cfg(not(target_os = "linux"))]
                 return d.vendor_id() == part.vendor_id
                     && d.product_id() == part.product_id
-                    && d.usage_page() == HID_ISP_USAGE_PAGE
-                    && d.usage() == HID_ISP_USAGE;
+                    && d.usage_page() == part.isp_usage_page
+                    && d.usage() == part.isp_usage;
                 #[cfg(target_os = "linux")]
                 return d.vendor_id() == part.vendor_id && d.product_id() == part.product_id;
             })

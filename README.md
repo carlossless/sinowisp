@@ -28,12 +28,14 @@ sinowealth-kb-tool read -p nuphy-air60 --full full.hex
 
 # custom device
 sinowealth-kb-tool read \
-    --firmware_size 61440 \
-    --bootloader_size 4096 \
-    --page_size 2048 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
-    --isp_index 0
+    --firmware_size 61440 \
+    --bootloader_size 4096 \ # optional
+    --page_size 2048 \ # optional
+    --isp_usage_page 0xff00 \ # optional
+    --isp_usage 0x0001 \ # optional
+    --isp_index 0 \ # optional
     foobar.hex
 ```
 
@@ -47,12 +49,14 @@ sinowealth-kb-tool write -p nuphy-air60 foobar.hex
 
 # custom device
 sinowealth-kb-tool write \
-    --firmware_size 61440 \
-    --bootloader_size 4096 \
-    --page_size 2048 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
-    --isp_index 0
+    --firmware_size 61440 \
+    --bootloader_size 4096 \ # optional
+    --page_size 2048 \ # optional
+    --isp_usage_page 0xff00 \ # optional
+    --isp_usage 0x0001 \ # optional
+    --isp_index 0 \ # optional
     foobar.hex
 ```
 

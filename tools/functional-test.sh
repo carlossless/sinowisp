@@ -15,13 +15,14 @@ FILE_FULL="$FILE_PREFIX-read-full.hex"
 FILE_CUSTOM="$FILE_PREFIX-read-custom.hex"
 FILE_OVERRIDE="$FILE_PREFIX-read-override.hex"
 FILE_POST_WRITE="$FILE_PREFIX-post-write.hex"
+FILE_POST_WRITE_CUSTOM="$FILE_PREFIX-post-write-custom.hex"
 
 function reboot_device () {
     echo "Turning off port..."
-    uhubctl -a off -p 1 -l 65-1
+    #uhubctl -a off -p 1 -l 65-1
     sleep 1
     echo "Turning on port..."
-    uhubctl -a on -p 1 -l 65-1
+    #uhubctl -a on -p 1 -l 65-1
     echo "Waiting..."
     sleep 5
 }
@@ -58,10 +59,12 @@ reboot_device
 echo "Custom read..."
 $TOOL read \
     --firmware_size 61440 \
-    --bootloader_size 4096 \
-    --page_size 2048 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
+    --bootloader_size 4096 \
+    --page_size 2048 \
+    --isp_usage_page 0xff00 \
+    --isp_usage 0x0001 \
     --isp_index 1 \
     "$FILE_CUSTOM"
 
@@ -121,6 +124,33 @@ READ_POST_WRITE_MD5=$(get_md5_from_hex "$FILE_POST_WRITE")
 echo "Checking post-write checksum"
 if [[ "$READ_POST_WRITE_MD5" != "$READ_MD5" ]]; then
     echo "MD5 mismatch $READ_POST_WRITE_MD5 != $READ_MD5"
+    exit 1
+fi
+
+reboot_device
+
+echo "Custom write..."
+$TOOL write \
+    --firmware_size 61440 \
+    --vendor_id 0x05ac \
+    --product_id 0x024f \
+    --bootloader_size 4096 \
+    --page_size 2048 \
+    --isp_usage_page 0xff00 \
+    --isp_usage 0x0001 \
+    --isp_index 1 \
+    "$FILE_DEFAULT"
+
+reboot_device
+
+echo "Post-write read..."
+$TOOL read --part "$PART" "$FILE_POST_WRITE_CUSTOM"
+
+READ_POST_WRITE_CUSTOM_MD5=$(get_md5_from_hex "$FILE_POST_WRITE_CUSTOM")
+
+echo "Checking post-write checksum"
+if [[ "$READ_POST_WRITE_CUSTOM_MD5" != "$READ_MD5" ]]; then
+    echo "MD5 mismatch $READ_POST_WRITE_CUSTOM_MD5 != $READ_MD5"
     exit 1
 fi
 
