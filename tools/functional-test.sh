@@ -19,10 +19,10 @@ FILE_POST_WRITE_CUSTOM="$FILE_PREFIX-post-write-custom.hex"
 
 function reboot_device () {
     echo "Turning off port..."
-    #uhubctl -a off -p 1 -l 65-1
+    uhubctl -a off -p 1 -l 65-1
     sleep 1
     echo "Turning on port..."
-    #uhubctl -a on -p 1 -l 65-1
+    uhubctl -a on -p 1 -l 65-1
     echo "Waiting..."
     sleep 5
 }
