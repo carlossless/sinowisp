@@ -110,7 +110,9 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
 
 impl Part {
     pub fn available_parts() -> Vec<&'static str> {
-        PARTS.keys().copied().collect::<Vec<_>>()
+        let mut parts = PARTS.keys().copied().collect::<Vec<_>>();
+        parts.sort();
+        parts
     }
 
     pub fn num_pages(&self) -> usize {
