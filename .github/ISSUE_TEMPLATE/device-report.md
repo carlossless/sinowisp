@@ -17,11 +17,13 @@ assignees: ''
 
 ```
 firmware_size: 61440
-bootloader_size: 4096
-page_size: 2048
 vendor_id: 0x258a
 product_id: 0x0049
-isp_index: 0
+bootloader_size: 4096 # necessary if not default
+page_size: 2048 # necessary if not default
+isp_usage_page: 0xff00 # necessary if not default
+isp_usage: 0x0001 # necessary if not default
+isp_index: 0 # necessary if not default
 ```
 
 ## Operations Tested
