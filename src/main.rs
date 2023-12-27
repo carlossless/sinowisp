@@ -139,7 +139,7 @@ impl PartCommand for Command {
         .arg(
             arg!(--firmware_size <SIZE>)
                 .required_unless_present("part")
-                .value_parser(clap::value_parser!(usize)),
+                .value_parser(maybe_hex::<usize>),
         )
         .arg(
             arg!(--vendor_id <VID>)
@@ -151,11 +151,11 @@ impl PartCommand for Command {
                 .required_unless_present("part")
                 .value_parser(maybe_hex::<u16>),
         )
-        .arg(arg!(--bootloader_size <SIZE>).value_parser(clap::value_parser!(usize)))
-        .arg(arg!(--page_size <SIZE>).value_parser(clap::value_parser!(usize)))
+        .arg(arg!(--bootloader_size <SIZE>).value_parser(maybe_hex::<usize>))
+        .arg(arg!(--page_size <SIZE>).value_parser(maybe_hex::<usize>))
         .arg(arg!(--isp_usage_page <PID>).value_parser(maybe_hex::<u16>))
         .arg(arg!(--isp_usage <PID>).value_parser(maybe_hex::<u16>))
-        .arg(arg!(--isp_index <PID>).value_parser(clap::value_parser!(usize)))
+        .arg(arg!(--isp_index <PID>).value_parser(maybe_hex::<usize>))
     }
 }
 
