@@ -94,6 +94,12 @@ pub const PART_GENESIS_THOR_300_RGB: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_ROYALKLUDGE_RK61: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x00c7,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_ROYALKLUDGE_RK100: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0056,
@@ -117,6 +123,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "terport-tr95" => PART_TERPORT_TR95,
     "redragon-k617-fizz" => PART_REDRAGON_FIZZ_K617,
     "redragon-k614-anivia" => PART_REDRAGON_ANIVIA_K614,
+    "royalkludge-rk61" => PART_ROYALKLUDGE_RK61,
     "royalkludge-rk100" => PART_ROYALKLUDGE_RK100,
     "genesis-thor-300" => PART_GENESIS_THOR_300,
     "genesis-thor-300-rgb" => PART_GENESIS_THOR_300_RGB,
