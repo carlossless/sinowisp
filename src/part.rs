@@ -114,20 +114,20 @@ pub const PART_WEIKAV_SUGAR65: Part = Part {
 };
 
 pub static PARTS: Map<&'static str, Part> = phf_map! {
+    "genesis-thor-300-rgb" => PART_GENESIS_THOR_300_RGB,
+    "genesis-thor-300" => PART_GENESIS_THOR_300,
     "nuphy-air60" => PART_NUPHY_AIR60,
     "nuphy-air75" => PART_NUPHY_AIR60, // same as nuphy-air60
     "nuphy-air96" => PART_NUPHY_AIR60, // same as nuphy-air60
     "nuphy-halo65" => PART_NUPHY_AIR60, // same as nuphy-air60
-    "xinmeng-k916" => PART_XINMENG_K916,
     "re-k70-byk800" => PART_RE_K70_BYK800,
-    "terport-tr95" => PART_TERPORT_TR95,
-    "redragon-k617-fizz" => PART_REDRAGON_FIZZ_K617,
     "redragon-k614-anivia" => PART_REDRAGON_ANIVIA_K614,
-    "royalkludge-rk61" => PART_ROYALKLUDGE_RK61,
+    "redragon-k617-fizz" => PART_REDRAGON_FIZZ_K617,
     "royalkludge-rk100" => PART_ROYALKLUDGE_RK100,
-    "genesis-thor-300" => PART_GENESIS_THOR_300,
-    "genesis-thor-300-rgb" => PART_GENESIS_THOR_300_RGB,
+    "royalkludge-rk61" => PART_ROYALKLUDGE_RK61,
+    "terport-tr95" => PART_TERPORT_TR95,
     "weikav-sugar65" => PART_WEIKAV_SUGAR65,
+    "xinmeng-k916" => PART_XINMENG_K916,
 };
 
 impl Part {
