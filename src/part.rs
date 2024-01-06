@@ -106,6 +106,12 @@ pub const PART_ROYALKLUDGE_RK100: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_DIGITALALLIANCE_MECA_WARRIOR_X: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x0090,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_WEIKAV_SUGAR65: Part = Part {
     vendor_id: 0x05ac,
     product_id: 0x024f,
@@ -114,6 +120,7 @@ pub const PART_WEIKAV_SUGAR65: Part = Part {
 };
 
 pub static PARTS: Map<&'static str, Part> = phf_map! {
+    "digitalalliance-meca-warrior-x" => PART_DIGITALALLIANCE_MECA_WARRIOR_X,
     "genesis-thor-300-rgb" => PART_GENESIS_THOR_300_RGB,
     "genesis-thor-300" => PART_GENESIS_THOR_300,
     "nuphy-air60" => PART_NUPHY_AIR60,
