@@ -1,5 +1,5 @@
 use std::{
-    fs,
+    env, fs,
     io::{self, Read},
     process::ExitCode,
 };
@@ -66,8 +66,26 @@ fn cli() -> Command {
         );
 }
 
+fn get_log_level() -> log::LevelFilter {
+    return if let Ok(debug) = env::var("DEBUG") {
+        if debug == "1" {
+            log::LevelFilter::Debug
+        } else {
+            log::LevelFilter::Info
+        }
+    } else {
+        #[cfg(debug_assertions)]
+        return log::LevelFilter::Debug;
+        #[cfg(not(debug_assertions))]
+        log::LevelFilter::Info
+    };
+}
+
 fn err_main() -> Result<(), CLIError> {
-    SimpleLogger::new().init().unwrap();
+    SimpleLogger::new()
+        .with_level(get_log_level())
+        .init()
+        .unwrap();
 
     let matches = cli().get_matches();
 

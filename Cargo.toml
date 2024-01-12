@@ -23,7 +23,7 @@ features = ["linux-static-libusb"]
 
 [dependencies.log]
 version = "0.4"
-features = ["max_level_debug", "release_max_level_info"]
+features = ["max_level_debug"]
 
 [dependencies.simple_logger]
 version = "4.3"
