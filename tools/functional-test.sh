@@ -63,6 +63,7 @@ $TOOL read \
     --product_id 0x024f \
     --bootloader_size 4096 \
     --page_size 2048 \
+    --isp_iface_num 1 \
     --isp_usage_page 0xff00 \
     --isp_usage 0x0001 \
     --isp_index 1 \
@@ -136,6 +137,7 @@ $TOOL write \
     --product_id 0x024f \
     --bootloader_size 4096 \
     --page_size 2048 \
+    --isp_iface_num 1 \
     --isp_usage_page 0xff00 \
     --isp_usage 0x0001 \
     --isp_index 1 \
