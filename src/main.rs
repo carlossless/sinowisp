@@ -154,9 +154,9 @@ impl PartCommand for Command {
         .arg(arg!(--bootloader_size <SIZE>).value_parser(maybe_hex::<usize>))
         .arg(arg!(--page_size <SIZE>).value_parser(maybe_hex::<usize>))
         .arg(arg!(--isp_iface_num <NUM>).value_parser(maybe_hex::<u8>))
-        .arg(arg!(--isp_usage_page <PID>).value_parser(maybe_hex::<u16>))
-        .arg(arg!(--isp_usage <PID>).value_parser(maybe_hex::<u16>))
-        .arg(arg!(--isp_index <PID>).value_parser(maybe_hex::<usize>))
+        .arg(arg!(--isp_usage_page <PAGE>).value_parser(maybe_hex::<u16>))
+        .arg(arg!(--isp_usage <USAGE>).value_parser(maybe_hex::<u16>))
+        .arg(arg!(--isp_index <INDEX>).value_parser(maybe_hex::<usize>))
     }
 }
 
