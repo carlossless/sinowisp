@@ -11,6 +11,20 @@ defaults:
     shell: bash
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ./target
+          key: test-cargo-registry
+      - name: Lint
+        run: cargo fmt -- --check
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -22,8 +36,6 @@ jobs:
             ~/.cargo/registry
             ./target
           key: test-cargo-registry
-      - name: List
-        run: find ./
       - name: Install and configure dependencies
         run: |
           sudo apt-get install -qq libusb-1.0.0-dev
@@ -56,8 +68,6 @@ jobs:
             ~/.cargo/registry
             ./target
           key: build-cargo-registry-${{matrix.TARGET}}
-      - name: List
-        run: find ./
       - name: Install and configure dependencies
         run: |
           # dependencies are only needed on ubuntu as that's the only place where
@@ -69,8 +79,6 @@ jobs:
         run: rustup target add $TARGET
       - name: Run build
         run: cargo build --release --verbose --target $TARGET
-      - name: List target
-        run: find ./target
       - name: Compress
         run: |
           mkdir -p ./artifacts
@@ -106,8 +114,6 @@ jobs:
         with:
           name: result
           path: ./artifacts
-      - name: List
-        run: find ./artifacts
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
