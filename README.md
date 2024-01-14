@@ -78,6 +78,7 @@ sinowealth-kb-tool write \
 | [Redragon K617 FIZZ 60%](https://www.redragonzone.com/collections/keyboard/products/redragon-k617-fizz-60-wired-rgb-gaming-keyboard-61-keys-compact-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ❓ |
 | [Royal Kludge RK100](http://en.rkgaming.com/product/14/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK916 | ✅ | ❓ |
 | [Royal Kludge RK61](http://en.rkgaming.com/product/11/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK916 | ✅ | ✅ |
+| [Royal Kludge RK71](http://en.rkgaming.com/product/12/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | ❓ | ✅ | ✅ |
 | Terport TR95 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ❓ |
 | Weikav Sugar65 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ❓ |
 | Xinmeng K916 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90 | ❓ | ✅ | ✅ |

@@ -109,6 +109,12 @@ pub const PART_ROYALKLUDGE_RK61: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_ROYALKLUDGE_RK71: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x00ea,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_ROYALKLUDGE_RK100: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0056,
@@ -141,6 +147,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "redragon-k617-fizz" => PART_REDRAGON_FIZZ_K617,
     "royalkludge-rk100" => PART_ROYALKLUDGE_RK100,
     "royalkludge-rk61" => PART_ROYALKLUDGE_RK61,
+    "royalkludge-rk71" => PART_ROYALKLUDGE_RK71,
     "terport-tr95" => PART_TERPORT_TR95,
     "weikav-sugar65" => PART_WEIKAV_SUGAR65,
     "xinmeng-k916" => PART_XINMENG_K916,
