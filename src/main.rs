@@ -4,7 +4,7 @@ use std::{
     process::ExitCode,
 };
 
-use clap::{arg, ArgMatches, Command};
+use clap::{arg, value_parser, ArgMatches, Command};
 use clap_num::maybe_hex;
 use log::{error, info};
 use simple_logger::SimpleLogger;
@@ -45,6 +45,11 @@ fn cli() -> Command {
         .subcommand_required(true)
         .arg_required_else_help(true)
         .author("Karolis Stasaitis")
+        .subcommand(
+            Command::new("list")
+                .short_flag('l')
+                .about("List all connected devices and their identifiers. This is useful to find the manufacturer and product id for your keyboard.")
+        )
         .subcommand(
             Command::new("read")
                 .short_flag('r')
@@ -138,6 +143,9 @@ fn err_main() -> Result<(), CLIError> {
             let isp = ISPDevice::new(part).map_err(CLIError::from)?;
             isp.write_cycle(&mut firmware).map_err(CLIError::from)?;
         }
+        Some(("list", _)) => {
+            ISPDevice::print_connected_devices().map_err(CLIError::from)?;
+        }
         _ => unreachable!(),
     }
     Ok(())
@@ -175,6 +183,7 @@ impl PartCommand for Command {
         .arg(arg!(--isp_usage_page <PAGE>).value_parser(maybe_hex::<u16>))
         .arg(arg!(--isp_usage <USAGE>).value_parser(maybe_hex::<u16>))
         .arg(arg!(--isp_index <INDEX>).value_parser(maybe_hex::<usize>))
+        .arg(arg!(--reboot <BOOL>).value_parser(value_parser!(bool)))
     }
 }
 
@@ -195,6 +204,7 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
     let isp_usage_page = sub_matches.get_one::<u16>("isp_usage_page");
     let isp_usage = sub_matches.get_one::<u16>("isp_usage");
     let isp_index = sub_matches.get_one::<usize>("isp_index");
+    let reboot = sub_matches.get_one::<bool>("reboot");
 
     if let Some(firmware_size) = firmware_size {
         part.firmware_size = *firmware_size;
@@ -222,6 +232,9 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
     }
     if let Some(isp_index) = isp_index {
         part.isp_index = *isp_index;
+    }
+    if let Some(reboot) = reboot {
+        part.reboot = *reboot;
     }
     return part;
 }

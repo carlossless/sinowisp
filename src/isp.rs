@@ -17,7 +17,9 @@ const GAMING_KB_PRODUCT_ID: u16 = 0x1020;
 
 const COMMAND_LENGTH: usize = 6;
 
+#[cfg(not(target_os = "linux"))]
 const HID_ISP_USAGE_PAGE: u16 = 0xff00;
+#[cfg(not(target_os = "linux"))]
 const HID_ISP_USAGE: u16 = 0x0001;
 
 const REPORT_ID_CMD: u8 = 0x05;
@@ -28,6 +30,7 @@ const CMD_ENABLE_FIRMWARE: u8 = 0x55;
 const CMD_INIT_READ: u8 = 0x52;
 const CMD_INIT_WRITE: u8 = 0x57;
 const CMD_ERASE: u8 = 0x45;
+const CMD_REBOOT: u8 = 0x5a;
 
 const XFER_READ_PAGE: u8 = 0x72;
 const XFER_WRITE_PAGE: u8 = 0x77;
@@ -75,6 +78,42 @@ impl ISPDevice {
         })
     }
 
+    /// Prints out all connected HID devices and their paths.
+    pub fn print_connected_devices() -> Result<(), ISPError> {
+        let api = ISPDevice::hidapi();
+
+        info!("Listing all connected HID devices...");
+        let mut devices: Vec<_> = api.device_list().collect();
+
+        devices.sort_by_key(|d| d.path());
+
+        for d in &devices {
+            #[cfg(not(target_os = "linux"))]
+            info!(
+                "{:}: ID {:04x}:{:04x} manufacturer=\"{:}\" product=\"{:}\" usage_page={:#06x} usage={:#06x}",
+                d.path().to_str().unwrap(),
+                d.vendor_id(),
+                d.product_id(),
+                d.manufacturer_string().unwrap_or("None"),
+                d.product_string().unwrap_or("None"),
+                d.usage_page(),
+                d.usage()
+            );
+            #[cfg(target_os = "linux")]
+            info!(
+                "{:}: ID {:#04x}:{:#04x} manufacturer=\"{:}\" product=\"{:}\"",
+                d.path().to_str().unwrap(),
+                d.vendor_id(),
+                d.product_id(),
+                d.manufacturer_string().unwrap_or("None"),
+                d.product_string().unwrap_or("None")
+            );
+        }
+        info!("Found {} devices", devices.len());
+
+        Ok(())
+    }
+
     fn hidapi() -> HidApi {
         let api = HidApi::new().unwrap();
 
@@ -87,7 +126,7 @@ impl ISPDevice {
     fn open_isp_devices() -> Result<HIDDevices, ISPError> {
         let api = Self::hidapi();
 
-        let devices: Vec<_> = api
+        let mut devices: Vec<_> = api
             .device_list()
             .filter(|d| {
                 #[cfg(not(target_os = "linux"))]
@@ -102,6 +141,8 @@ impl ISPDevice {
                     && d.interface_number() == 0;
             })
             .collect();
+
+        devices.sort_by_key(|d| d.path());
 
         for d in &devices {
             #[cfg(not(target_os = "linux"))]
@@ -255,6 +296,10 @@ impl ISPDevice {
             ReadType::Full => self.read(0, self.part.firmware_size + self.part.bootloader_size)?,
         };
 
+        if self.part.reboot {
+            self.reboot()?;
+        }
+
         return Ok(firmware);
     }
 
@@ -274,6 +319,11 @@ impl ISPDevice {
         util::verify(firmware, &read_back).map_err(ISPError::from)?;
 
         self.enable_firmware()?;
+
+        if self.part.reboot {
+            self.reboot()?;
+        }
+
         Ok(())
     }
 
@@ -398,6 +448,16 @@ impl ISPDevice {
         self.request_device
             .send_feature_report(&cmd)
             .map_err(ISPError::from)?;
+        thread::sleep(time::Duration::from_millis(2000));
+        Ok(())
+    }
+
+    fn reboot(&self) -> Result<(), ISPError> {
+        info!("Rebooting...");
+        let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_REBOOT, 0, 0, 0, 0];
+        // explicitly ignore the result
+        let _ = self.request_device.send_feature_report(&cmd);
+
         thread::sleep(time::Duration::from_millis(2000));
         Ok(())
     }
