@@ -35,7 +35,7 @@ pub const PART_BASE_DEFAULT: Part = Part {
     isp_usage: 0x0001,
     isp_index: 0,
 
-    reboot: false,
+    reboot: true,
 };
 
 pub const PART_BASE_SH68F90: Part = Part {
@@ -122,28 +122,24 @@ pub const PART_ROYALKLUDGE_RK68_ISO_RETURN: Part = Part {
 pub const PART_ROYALKLUDGE_RK68_BT_DUAL: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x008b,
-    reboot: true,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_ROYALKLUDGE_RK71: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x00ea,
-    reboot: true,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_ROYALKLUDGE_RK84_ISO_RETURN: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x00f4,
-    reboot: true,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_ROYALKLUDGE_RK100: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0056,
-    reboot: true,
     ..PART_BASE_SH68F90
 };
 

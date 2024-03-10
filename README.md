@@ -95,23 +95,13 @@ sinowealth-kb-tool write \
 
 | ISP MD5                          | Windows  | macOS    | Linux |
 | -------------------------------- | -------- | -------- | ----- |
+| 13df4ce2933f9654ffef80d6a3c27199 | ?        | ?        | ok    |
+| 2d169670eae0d36eae8188562c1f66e8 | ok       | ?        | ok    |
 | 3e0ebd0c440af5236d7ff8872343f85d | ok       | ok       | ok    |
 | cfc8661da8c9d7e351b36c0a763426aa | ok       | fail[^1] | ok    |
-| 2d169670eae0d36eae8188562c1f66e8 | ok       | ?        | ok    |
 | e57490acebcaabfcff84a0ff013955d9 | ok       | ?        | ?     |
-| 13df4ce2933f9654ffef80d6a3c27199 | ?        | ?        | ok    |
 
 [^1]: macOS does not recognize the composite device as an HID device
-
-### Functions
-
-| ISP MD5                          | Reboot |
-| -------------------------------- | ------ |
-| 3e0ebd0c440af5236d7ff8872343f85d | no     |
-| cfc8661da8c9d7e351b36c0a763426aa | yes    |
-| 2d169670eae0d36eae8188562c1f66e8 | ?      |
-| e57490acebcaabfcff84a0ff013955d9 | ?      |
-| 13df4ce2933f9654ffef80d6a3c27199 | ?      |
 
 ## Prerequisites
 

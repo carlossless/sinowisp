@@ -452,12 +452,14 @@ impl ISPDevice {
         Ok(())
     }
 
+    /// Causes the device to start running the main firmware
     fn reboot(&self) -> Result<(), ISPError> {
         info!("Rebooting...");
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_REBOOT, 0, 0, 0, 0];
-        // explicitly ignore the result
-        let _ = self.request_device.send_feature_report(&cmd);
-
+        if let Err(err) = self.request_device.send_feature_report(&cmd) {
+            // only log failures
+            debug!("Reboot error: {:}", err);
+        }
         thread::sleep(time::Duration::from_millis(2000));
         Ok(())
     }
