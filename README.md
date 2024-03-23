@@ -66,8 +66,10 @@ sinowealth-kb-tool write \
 
 ## Supported Hardware
 
-| Keyboard | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
-| -------- | ------- | --- | --------- | ----------- | ------------ |
+### Keyboards
+
+| Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
+| ----- | ------- | --- | --------- | ----------- | ------------ |
 | Digital Alliance Meca Warrior X | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ❓ |
 | [Genesis Thor 300 RGB](https://genesis-zone.com/product/thor-300-rgb-brown) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | [Genesis Thor 300](https://genesis-zone.com/product/thor-300-outemu-blue) | e57490acebcaabfcff84a0ff013955d9 | SH68F881 | SH68F881W | ✅ | ✅ |
@@ -90,6 +92,12 @@ sinowealth-kb-tool write \
 | Xinmeng K916 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90 | ❓ | ✅ | ✅ |
 | Xinmeng XM-RF68 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90U | ✅ | ✅ |
 
+### Mice
+
+| Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
+| ----- | ------- | --- | --------- | ----------- | ------------ |
+| [Trust GXT 960](https://www.trust.com/en/product/23758-gxt-960-graphin-ultra-lightweight-gaming-mouse) | 620f0b67a91f7f74151bc5be745b7110 | ❓ | BY8801 | ✅ | ❓ |
+
 ## Bootloader Support
 
 ### Platforms
@@ -99,6 +107,7 @@ sinowealth-kb-tool write \
 | 13df4ce2933f9654ffef80d6a3c27199 | ?        | ?        | ok    |
 | 2d169670eae0d36eae8188562c1f66e8 | ok       | ?        | ok    |
 | 3e0ebd0c440af5236d7ff8872343f85d | ok       | ok       | ok    |
+| 620f0b67a91f7f74151bc5be745b7110 | ?        | ?        | ok    |
 | cfc8661da8c9d7e351b36c0a763426aa | ok       | fail[^1] | ok    |
 | e57490acebcaabfcff84a0ff013955d9 | ok       | ?        | ?     |
 

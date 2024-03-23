@@ -48,7 +48,7 @@ fn cli() -> Command {
         .subcommand(
             Command::new("list")
                 .short_flag('l')
-                .about("List all connected devices and their identifiers. This is useful to find the manufacturer and product id for your keyboard.")
+                .about("List all connected devices and their identifiers. This is useful to find the manufacturer and product id for your device.")
         )
         .subcommand(
             Command::new("read")
