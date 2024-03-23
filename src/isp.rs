@@ -14,6 +14,7 @@ const MAX_RETRIES: usize = 10;
 
 const GAMING_KB_VENDOR_ID: u16 = 0x0603;
 const GAMING_KB_PRODUCT_ID: u16 = 0x1020;
+const GAMING_KB_V2_PRODUCT_ID: u16 = 0x1021;
 
 const COMMAND_LENGTH: usize = 6;
 
@@ -131,13 +132,19 @@ impl ISPDevice {
             .filter(|d| {
                 #[cfg(not(target_os = "linux"))]
                 return d.vendor_id() == GAMING_KB_VENDOR_ID
-                    && d.product_id() == GAMING_KB_PRODUCT_ID
+                    && matches!(
+                        d.product_id(),
+                        GAMING_KB_PRODUCT_ID | GAMING_KB_V2_PRODUCT_ID
+                    )
                     && d.interface_number() == 0
                     && d.usage_page() == HID_ISP_USAGE_PAGE
                     && d.usage() == HID_ISP_USAGE;
                 #[cfg(target_os = "linux")]
                 return d.vendor_id() == GAMING_KB_VENDOR_ID
-                    && d.product_id() == GAMING_KB_PRODUCT_ID
+                    && matches!(
+                        d.product_id(),
+                        GAMING_KB_PRODUCT_ID | GAMING_KB_V2_PRODUCT_ID
+                    )
                     && d.interface_number() == 0;
             })
             .collect();
@@ -147,13 +154,20 @@ impl ISPDevice {
         for d in &devices {
             #[cfg(not(target_os = "linux"))]
             debug!(
-                "Found Device: {:?} {:#06x} {:#06x}",
+                "Found ISP Device: {:#06x} {:#06x} {:?} {:#06x} {:#06x}",
+                d.vendor_id(),
+                d.product_id(),
                 d.path(),
                 d.usage_page(),
                 d.usage()
             );
             #[cfg(target_os = "linux")]
-            debug!("Found Device: {:?}", d.path());
+            debug!(
+                "Found ISP Device: {:#06x} {:#06x} {:?}",
+                d.vendor_id(),
+                d.product_id(),
+                d.path()
+            );
         }
 
         let device_count = devices.len();
