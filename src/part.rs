@@ -169,10 +169,17 @@ pub const PART_TRUST_GXT_960: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_GLORIOUS_MODEL_O: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x0036,
+    ..PART_BASE_SH68F90
+};
+
 pub static PARTS: Map<&'static str, Part> = phf_map! {
     "digitalalliance-meca-warrior-x" => PART_DIGITALALLIANCE_MECA_WARRIOR_X,
     "genesis-thor-300-rgb" => PART_GENESIS_THOR_300_RGB,
     "genesis-thor-300" => PART_GENESIS_THOR_300,
+    "glorious-model-o" => PART_GLORIOUS_MODEL_O,
     "nuphy-air60" => PART_NUPHY_AIR60,
     "nuphy-air75" => PART_NUPHY_AIR60, // same as nuphy-air60
     "nuphy-air96" => PART_NUPHY_AIR60, // same as nuphy-air60
