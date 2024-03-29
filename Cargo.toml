@@ -1,7 +1,7 @@
 [package]
 name = "sinowealth-kb-tool"
 description = """
-A utility for reading and writing flash contents on Sinowealth 8051-based devices
+A utility for reading and writing flash contents on Sinowealth 8051-based HID devices through the commonly found ISP bootloader
 """
 repository = "https://github.com/carlossless/sinowealth-kb-tool"
 version = "0.0.9"
