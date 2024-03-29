@@ -178,6 +178,7 @@ pub const PART_GLORIOUS_MODEL_O: Part = Part {
 pub const PART_MACHENIKE_K500_B61: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0049,
+    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
