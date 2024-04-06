@@ -110,7 +110,7 @@ sinowealth-kb-tool write \
 | 2d169670eae0d36eae8188562c1f66e8 | ok       | ?        | ok    |
 | 3e0ebd0c440af5236d7ff8872343f85d | ok       | ok       | ok    |
 | 46459c31e58194fa076b8ce8fb1f3eaa | ?        | ?        | ok    |
-| 620f0b67a91f7f74151bc5be745b7110 | ?        | ?        | ok    |
+| 620f0b67a91f7f74151bc5be745b7110 | ?        | fail[^1] | ok    |
 | cfc8661da8c9d7e351b36c0a763426aa | ok       | fail[^1] | ok    |
 | e57490acebcaabfcff84a0ff013955d9 | ok       | ?        | ?     |
 
