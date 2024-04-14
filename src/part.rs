@@ -188,8 +188,15 @@ pub const PART_REDRAGON_K530_DRACONIC_PRO: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_EYOOSO_Z11: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x002a,
+    ..PART_BASE_SH68F90
+};
+
 pub static PARTS: Map<&'static str, Part> = phf_map! {
     "digitalalliance-meca-warrior-x" => PART_DIGITALALLIANCE_MECA_WARRIOR_X,
+    "eyooso-z11" => PART_EYOOSO_Z11,
     "genesis-thor-300-rgb" => PART_GENESIS_THOR_300_RGB,
     "genesis-thor-300" => PART_GENESIS_THOR_300,
     "glorious-model-o" => PART_GLORIOUS_MODEL_O,
