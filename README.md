@@ -84,6 +84,7 @@ sinowealth-kb-tool write \
 | [Redragon K614 Anivia 60%](https://www.redragonzone.com/products/redragon-k614-anivia-60-ultra-thin-wired-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | [Redragon K617 FIZZ 60%](https://www.redragonzone.com/collections/keyboard/products/redragon-k617-fizz-60-wired-rgb-gaming-keyboard-61-keys-compact-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | [Redragon K641 SHACO PRO](https://www.redragonzone.com/products/redragon-k641-shaco-pro-65-aluminum-rgb-mechanical-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
+| [Redragon K658 PRO SE](https://www.redragonzone.com/products/k658-pro-se-90-wireless-rgb-gaming-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Royal Kludge RK100](http://en.rkgaming.com/product/14/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK916 | ✅ | ✅ |
 | [Royal Kludge RK61](http://en.rkgaming.com/product/11/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK916 | ✅ | ✅ |
 | Royal Kludge RK68 BT Dual | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK901 | ✅ | ✅ |
