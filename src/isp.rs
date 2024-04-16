@@ -102,7 +102,7 @@ impl ISPDevice {
             );
             #[cfg(target_os = "linux")]
             info!(
-                "{:}: ID {:#04x}:{:#04x} manufacturer=\"{:}\" product=\"{:}\"",
+                "{:}: ID {:04x}:{:04x} manufacturer=\"{:}\" product=\"{:}\"",
                 d.path().to_str().unwrap(),
                 d.vendor_id(),
                 d.product_id(),
