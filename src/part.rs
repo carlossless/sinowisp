@@ -68,6 +68,13 @@ pub const PART_XINMENG_XM_RF68: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_XINMENG_M71: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    isp_index: 1,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_RE_K70_BYK800: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x001a,
@@ -235,7 +242,9 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "trust-gxt-960" => PART_TRUST_GXT_960,
     "weikav-sugar65" => PART_WEIKAV_SUGAR65,
     "xinmeng-k916" => PART_XINMENG_K916,
+    "xinmeng-m71" => PART_XINMENG_M71,
     "xinmeng-xm-rf68" => PART_XINMENG_XM_RF68,
+    "yunzii-al71" => PART_XINMENG_M71, // same as xinmeng-m71
 };
 
 impl Part {
