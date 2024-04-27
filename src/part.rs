@@ -132,6 +132,12 @@ pub const PART_ROYALKLUDGE_RK68_BT_DUAL: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_ROYALKLUDGE_RKG68: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_ROYALKLUDGE_RK71: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x00ea,
@@ -219,11 +225,12 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "redragon-k641-shaco-pro" => PART_REDRAGON_K641_SHACO_PRO,
     "redragon-k658-pro-se" => PART_REDRAGON_K658_PRO_SE,
     "royalkludge-rk100" => PART_ROYALKLUDGE_RK100,
-    "royalkludge-rk84-iso-return" => PART_ROYALKLUDGE_RK84_ISO_RETURN,
     "royalkludge-rk61" => PART_ROYALKLUDGE_RK61,
     "royalkludge-rk68-bt-dual" => PART_ROYALKLUDGE_RK68_BT_DUAL,
     "royalkludge-rk68-iso-return" => PART_ROYALKLUDGE_RK68_ISO_RETURN,
     "royalkludge-rk71" => PART_ROYALKLUDGE_RK71,
+    "royalkludge-rk84-iso-return" => PART_ROYALKLUDGE_RK84_ISO_RETURN,
+    "royalkludge-rkg68" => PART_ROYALKLUDGE_RKG68,
     "terport-tr95" => PART_TERPORT_TR95,
     "trust-gxt-960" => PART_TRUST_GXT_960,
     "weikav-sugar65" => PART_WEIKAV_SUGAR65,
