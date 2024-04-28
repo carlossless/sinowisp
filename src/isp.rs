@@ -256,7 +256,10 @@ impl ISPDevice {
         let device = api.open_path(request_device_info.path()).unwrap();
 
         info!("Found regular device. Entering ISP mode...");
-        Self::enter_isp_mode(&device)?;
+        if let Err(err) = Self::enter_isp_mode(&device) {
+            debug!("Error: {:}", err);
+            return Err(err);
+        }
 
         info!("Waiting for ISP device...");
         thread::sleep(time::Duration::from_secs(2));
@@ -472,7 +475,7 @@ impl ISPDevice {
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_REBOOT, 0, 0, 0, 0];
         if let Err(err) = self.request_device.send_feature_report(&cmd) {
             // only log failures
-            debug!("Reboot error: {:}", err);
+            debug!("Error: {:}", err);
         }
         thread::sleep(time::Duration::from_millis(2000));
         Ok(())

@@ -31,8 +31,8 @@ pub enum CLIError {
 fn main() -> ExitCode {
     match err_main() {
         Ok(_) => ExitCode::SUCCESS,
-        Err(e) => {
-            error!("{}", e.to_string());
+        Err(err) => {
+            error!("{:}", err);
             ExitCode::FAILURE
         }
     }
