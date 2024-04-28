@@ -39,8 +39,8 @@ isp_index: 0 # necessary if not default, otherwise remove this line
 
 ## Checksums
 
-- Bootloader MD5: `beefcafebeefcafebeefcafebeefcafe`
 - Stock Firmware MD5: `deadbeefdeadbeefdeadbeefdeadbeef`
+- Bootloader MD5: `beefcafebeefcafebeefcafebeefcafe` _(shown when running `sinowealth-kb-tool read -b ...`)_
 
 ## HID Dump
 
@@ -72,3 +72,7 @@ DESCRIPTOR:
 ```
 
 </details>
+
+## PCB Photos
+
+_If possible, include photos of your device PCB clearly showing MCU and wireless IC labels_
