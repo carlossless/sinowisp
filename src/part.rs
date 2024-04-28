@@ -55,6 +55,13 @@ pub const PART_NUPHY_AIR60: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_LEOBOG_HI75: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    isp_index: 1,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_XINMENG_K916: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x00a1,
@@ -220,6 +227,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "genesis-thor-300-rgb" => PART_GENESIS_THOR_300_RGB,
     "genesis-thor-300" => PART_GENESIS_THOR_300,
     "glorious-model-o" => PART_GLORIOUS_MODEL_O,
+    "leobog-hi75" => PART_LEOBOG_HI75,
     "machenike-k500-b61" => PART_MACHENIKE_K500_B61,
     "nuphy-air60" => PART_NUPHY_AIR60,
     "nuphy-air75" => PART_NUPHY_AIR60, // same as nuphy-air60
