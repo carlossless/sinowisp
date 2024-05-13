@@ -176,6 +176,13 @@ pub const PART_DIGITALALLIANCE_MECA_WARRIOR_X: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_KZZI_K68PRO: Part = Part{
+    vendor_id: 0x258a,
+    product_id: 0x0186,
+    isp_index: 0x0001,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_WEIKAV_SUGAR65: Part = Part {
     vendor_id: 0x05ac,
     product_id: 0x024f,
@@ -246,6 +253,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "royalkludge-rk71" => PART_ROYALKLUDGE_RK71,
     "royalkludge-rk84-iso-return" => PART_ROYALKLUDGE_RK84_ISO_RETURN,
     "royalkludge-rkg68" => PART_ROYALKLUDGE_RKG68,
+    "kzzi-k68pro" => PART_KZZI_K68PRO,
     "terport-tr95" => PART_TERPORT_TR95,
     "trust-gxt-960" => PART_TRUST_GXT_960,
     "weikav-sugar65" => PART_WEIKAV_SUGAR65,

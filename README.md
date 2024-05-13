@@ -93,6 +93,7 @@ sinowealth-kb-tool write \
 | [Royal Kludge RK71](http://en.rkgaming.com/product/12/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | ❓ | ✅ | ✅ |
 | [Royal Kludge RK84](http://en.rkgaming.com/product/16/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK916 | ✅ | ✅ |
 | Royal Kludge RKG68 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | SH68F90AS | ✅ | ✅ |
+| [Kzzi K68Pro](http://en.kzzi.com/product/37/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ❓ |
 | Terport TR95 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | Weikav Sugar65 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | Xinmeng K916 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90 | ❓ | ✅ | ✅ |
