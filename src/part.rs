@@ -62,6 +62,13 @@ pub const PART_LEOBOG_HI75: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_AULA_F87: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    isp_index: 1,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_XINMENG_K916: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x00a1,
@@ -229,6 +236,7 @@ pub const PART_EYOOSO_Z11: Part = Part {
 };
 
 pub static PARTS: Map<&'static str, Part> = phf_map! {
+    "aula-f87" => PART_AULA_F87,
     "digitalalliance-meca-warrior-x" => PART_DIGITALALLIANCE_MECA_WARRIOR_X,
     "eyooso-z11" => PART_EYOOSO_Z11,
     "genesis-thor-300-rgb" => PART_GENESIS_THOR_300_RGB,
