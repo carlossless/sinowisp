@@ -70,7 +70,7 @@ sinowealth-kb-tool write \
 
 | Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
 | ----- | ------- | --- | --------- | ----------- | ------------ |
-| [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ❓ |
+| [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | Digital Alliance Meca Warrior X | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | E-Yooso Z11 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK901 | ✅ | ✅ |
 | [Genesis Thor 300 RGB](https://genesis-zone.com/product/thor-300-rgb-brown) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
