@@ -3,8 +3,7 @@ use std::{thread, time};
 use log::{debug, info};
 use thiserror::Error;
 
-use super::{part::*, util};
-use crate::VerificationError;
+use crate::{part::*, util, VerificationError};
 
 extern crate hidapi;
 
@@ -317,10 +316,10 @@ impl ISPDevice {
             self.reboot()?;
         }
 
-        return Ok(firmware);
+        Ok(firmware)
     }
 
-    pub fn write_cycle(&self, firmware: &mut Vec<u8>) -> Result<(), ISPError> {
+    pub fn write_cycle(&self, firmware: &mut [u8]) -> Result<(), ISPError> {
         // ensure that the address at <firmware_size-4> is the same as the reset vector
         firmware.copy_within(1..3, self.part.firmware_size - 4);
 

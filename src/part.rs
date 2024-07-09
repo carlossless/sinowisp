@@ -288,6 +288,10 @@ impl Part {
     pub fn num_pages(&self) -> usize {
         self.firmware_size / self.page_size
     }
+
+    pub fn total_flash_size(&self) -> usize {
+        self.firmware_size + self.bootloader_size
+    }
 }
 
 #[test]

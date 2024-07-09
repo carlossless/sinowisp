@@ -26,6 +26,8 @@ pub enum CLIError {
     ISPError(#[from] ISPError),
     #[error(transparent)]
     IHEXError(#[from] ConversionError),
+    #[error(transparent)]
+    PayloadConversionError(#[from] PayloadConversionError),
 }
 
 fn main() -> ExitCode {
@@ -39,7 +41,7 @@ fn main() -> ExitCode {
 }
 
 fn cli() -> Command {
-    return Command::new("sinowealth-kb-tool")
+    Command::new("sinowealth-kb-tool")
         .about("A programming tool for Sinowealth Gaming KB devices")
         .version(env!("CARGO_PKG_VERSION"))
         .subcommand_required(true)
@@ -49,6 +51,15 @@ fn cli() -> Command {
             Command::new("list")
                 .short_flag('l')
                 .about("List all connected devices and their identifiers. This is useful to find the manufacturer and product id for your device.")
+        )
+        .subcommand(
+            Command::new("convert")
+                .short_flag('c')
+                .about("Convert payload from bootloader to JTAG and vice versa.")
+                .arg(arg!(-d --direction <DIRECTION> "direction of conversion").value_parser(["to_jtag", "to_isp"]).required(true))
+                .part_args()
+                .arg(arg!(input_file: <INPUT_FILE> "file to convert"))
+                .arg(arg!(output_file: <OUTPUT_FILE> "file to write results to"))
         )
         .subcommand(
             Command::new("read")
@@ -68,11 +79,11 @@ fn cli() -> Command {
                 .about("Write file (Intel HEX) into flash.")
                 .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
                 .part_args(),
-        );
+        )
 }
 
 fn get_log_level() -> log::LevelFilter {
-    return if let Ok(debug) = env::var("DEBUG") {
+    if let Ok(debug) = env::var("DEBUG") {
         if debug == "1" {
             log::LevelFilter::Debug
         } else {
@@ -83,7 +94,7 @@ fn get_log_level() -> log::LevelFilter {
         return log::LevelFilter::Debug;
         #[cfg(not(debug_assertions))]
         log::LevelFilter::Info
-    };
+    }
 }
 
 fn err_main() -> Result<(), CLIError> {
@@ -145,6 +156,67 @@ fn err_main() -> Result<(), CLIError> {
         }
         Some(("list", _)) => {
             ISPDevice::print_connected_devices().map_err(CLIError::from)?;
+        }
+        Some(("convert", sub_matches)) => {
+            let input_file = sub_matches
+                .get_one::<String>("input_file")
+                .map(|s| s.as_str())
+                .unwrap();
+
+            let output_file = sub_matches
+                .get_one::<String>("output_file")
+                .map(|s| s.as_str())
+                .unwrap();
+
+            let direction = sub_matches
+                .get_one::<String>("direction")
+                .map(|s| s.as_str())
+                .unwrap();
+
+            let part = get_part_from_matches(sub_matches);
+
+            let mut file = fs::File::open(input_file).map_err(CLIError::from)?;
+            let mut file_buf = Vec::new();
+            file.read_to_end(&mut file_buf).map_err(CLIError::from)?;
+            let file_str = String::from_utf8_lossy(&file_buf[..]);
+            let mut firmware = from_ihex(&file_str, part.firmware_size + part.bootloader_size)
+                .map_err(CLIError::from)?;
+
+            if firmware.len() < part.firmware_size {
+                log::warn!(
+                    "Firmware size is more than expected ({}). Increasing to {}",
+                    firmware.len(),
+                    part.firmware_size
+                );
+                firmware.resize(part.firmware_size, 0);
+            }
+
+            match direction {
+                "to_jtag" => {
+                    convert_to_jtag_payload(&mut firmware, part).map_err(CLIError::from)?;
+                    if firmware.len() < part.total_flash_size() {
+                        log::warn!(
+                            "Firmware is smaller ({} bytes) than expected ({} bytes). This payload might not be suitable for JTAG flashing.",
+                            firmware.len(),
+                            part.total_flash_size()
+                        );
+                    }
+                }
+                "to_isp" => {
+                    convert_to_isp_payload(&mut firmware, part).map_err(CLIError::from)?;
+                    if firmware.len() > part.firmware_size {
+                        log::warn!(
+                            "Firmware size is larger ({} bytes) than expected ({} bytes). This payload might not be suitable for ISP flashing.",
+                            firmware.len(),
+                            part.firmware_size
+                        );
+                    }
+                }
+                _ => unreachable!(),
+            }
+
+            let ihex = to_ihex(firmware).map_err(CLIError::from)?;
+            fs::write(output_file, ihex).map_err(CLIError::from)?;
         }
         _ => unreachable!(),
     }
@@ -236,5 +308,5 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
     if let Some(reboot) = reboot {
         part.reboot = *reboot;
     }
-    return part;
+    part
 }

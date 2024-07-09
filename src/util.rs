@@ -1,4 +1,8 @@
+use crate::part::Part;
 use thiserror::Error;
+
+#[cfg(test)]
+use crate::part::PART_BASE_SH68F90;
 
 #[derive(Debug, Clone, Error, PartialEq)]
 pub enum VerificationError {
@@ -12,7 +16,7 @@ pub enum VerificationError {
     LengthMismatch { expected: usize, actual: usize },
 }
 
-pub fn verify(expected: &Vec<u8>, actual: &Vec<u8>) -> Result<(), VerificationError> {
+pub fn verify(expected: &[u8], actual: &[u8]) -> Result<(), VerificationError> {
     if expected.len() != actual.len() {
         return Err(VerificationError::LengthMismatch {
             expected: expected.len(),
@@ -29,6 +33,62 @@ pub fn verify(expected: &Vec<u8>, actual: &Vec<u8>) -> Result<(), VerificationEr
             });
         }
     }
+
+    Ok(())
+}
+
+#[derive(Debug, Error)]
+pub enum PayloadConversionError {
+    #[error("Expected LJMP not found at {addr:#06x}")]
+    LJMPNotFoundError { addr: u16 },
+    #[error("Unexpected addr at {source_addr:#06x} pointing to {target_addr:#06x}")]
+    UnexpectedAddressError { source_addr: u16, target_addr: u16 },
+}
+
+pub fn convert_to_jtag_payload(input: &mut [u8], part: Part) -> Result<(), PayloadConversionError> {
+    if input[0] != 0x02 {
+        return Err(PayloadConversionError::LJMPNotFoundError { addr: 0x0000 });
+    }
+
+    let main_fw_address = u16::from_be_bytes(input[1..3].try_into().unwrap());
+    if main_fw_address > 0xefff {
+        return Err(PayloadConversionError::UnexpectedAddressError {
+            source_addr: 0x0001,
+            target_addr: main_fw_address,
+        });
+    }
+
+    let bootloader_ljmp_addr = (part.firmware_size as u16).to_be_bytes();
+    let ljmp_addr = part.firmware_size - 5;
+
+    input[1..3].copy_from_slice(&bootloader_ljmp_addr);
+    input[ljmp_addr] = 0x02;
+    input[ljmp_addr + 1..ljmp_addr + 3].copy_from_slice(&main_fw_address.to_be_bytes());
+
+    Ok(())
+}
+
+pub fn convert_to_isp_payload(input: &mut [u8], part: Part) -> Result<(), PayloadConversionError> {
+    if input[0] != 0x02 {
+        return Err(PayloadConversionError::LJMPNotFoundError { addr: 0 });
+    }
+
+    let ljmp_addr = part.firmware_size - 5;
+    if input[ljmp_addr] != 0x02 {
+        return Err(PayloadConversionError::LJMPNotFoundError { addr: 0x0000 });
+    }
+
+    let main_fw_address =
+        u16::from_be_bytes(input[ljmp_addr + 1..ljmp_addr + 3].try_into().unwrap());
+    if main_fw_address > 0xefff {
+        return Err(PayloadConversionError::UnexpectedAddressError {
+            source_addr: (ljmp_addr + 1) as u16,
+            target_addr: main_fw_address,
+        });
+    }
+
+    input[1..3].copy_from_slice(&main_fw_address.to_be_bytes());
+    input[ljmp_addr..ljmp_addr + 3].fill(0x00);
 
     Ok(())
 }
@@ -59,4 +119,35 @@ fn test_verify_error_byte_mismatch() {
             actual: 4
         })
     );
+}
+
+#[test]
+fn test_convert_to_jtag_payload() {
+    let part = PART_BASE_SH68F90;
+    let mut firmware: [u8; 65536] = [0; 65536];
+    firmware[0] = 0x02;
+    firmware[1] = 0x00;
+    firmware[2] = 0x66;
+
+    convert_to_jtag_payload(&mut firmware, part).unwrap();
+
+    assert_eq!(firmware[0..3], [0x02, 0xf0, 0x00]);
+    assert_eq!(firmware[0xeffb..0xeffe], [0x02, 0x00, 0x66]);
+}
+
+#[test]
+fn test_convert_to_isp_payload() {
+    let part = PART_BASE_SH68F90;
+    let mut firmware: [u8; 65536] = [0; 65536];
+    firmware[0] = 0x02;
+    firmware[1] = 0xf0;
+    firmware[2] = 0x00;
+    firmware[0xeffb] = 0x02;
+    firmware[0xeffc] = 0x00;
+    firmware[0xeffd] = 0x66;
+
+    convert_to_isp_payload(&mut firmware, part).unwrap();
+
+    assert_eq!(firmware[0..3], [0x02, 0x00, 0x66]);
+    assert_eq!(firmware[0xeffb..0xeffe], [0x00, 0x00, 0x00]);
 }
