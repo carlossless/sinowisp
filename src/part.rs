@@ -273,8 +273,10 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "trust-gxt-960" => PART_TRUST_GXT_960,
     "weikav-sugar65" => PART_WEIKAV_SUGAR65,
     "xinmeng-k916" => PART_XINMENG_K916,
+    "xinmeng-m66" => PART_XINMENG_M71,
     "xinmeng-m71" => PART_XINMENG_M71,
     "xinmeng-xm-rf68" => PART_XINMENG_XM_RF68,
+    "yunzii-al66" => PART_XINMENG_M71, // same as xinmeng-m71
     "yunzii-al71" => PART_XINMENG_M71, // same as xinmeng-m71
 };
 
