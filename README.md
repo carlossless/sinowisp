@@ -135,7 +135,7 @@ sinowealth-kb-tool write \
 To enable running this tool without superuser privileges add the following udev rule with `xxxx` and `yyyy` replaced with your device Vendor ID and Product ID respectively.
 
 ```udev
-# /etc/udev/rules.d/plugdev.rule
+# /etc/udev/rules.d/plugdev.rules
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="xxxx", ATTRS{idProduct}=="yyyy", MODE="0660", GROUP="plugdev"
 SUBSYSTEMS=="usb", ATTRS{idVendor}=="0603", ATTRS{idProduct}=="1020", MODE="0660", GROUP="plugdev"
 ```
