@@ -241,6 +241,12 @@ pub const PART_EYOOSO_Z11: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_PORTRONICS_HYDRA10: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..PART_BASE_SH68F90
+};
+
 pub static PARTS: Map<&'static str, Part> = phf_map! {
     "aula-f87" => PART_AULA_F87,
     "deltaco-wk95r" => PART_DELTACO_WK95R,
@@ -256,6 +262,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "nuphy-air75" => PART_NUPHY_AIR60, // same as nuphy-air60
     "nuphy-air96" => PART_NUPHY_AIR60, // same as nuphy-air60
     "nuphy-halo65" => PART_NUPHY_AIR60, // same as nuphy-air60
+    "portronics-hydra10" => PART_PORTRONICS_HYDRA10,
     "re-k70-byk800" => PART_RE_K70_BYK800,
     "redragon-k530-draconic-pro" => PART_REDRAGON_K530_DRACONIC_PRO,
     "redragon-k614-anivia" => PART_REDRAGON_ANIVIA_K614,
