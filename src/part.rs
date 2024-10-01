@@ -247,6 +247,12 @@ pub const PART_PORTRONICS_HYDRA10: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_REDRAGON_K633_RYZE: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..PART_BASE_SH68F90
+};
+
 pub static PARTS: Map<&'static str, Part> = phf_map! {
     "aula-f87" => PART_AULA_F87,
     "deltaco-wk95r" => PART_DELTACO_WK95R,
@@ -267,6 +273,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "redragon-k530-draconic-pro" => PART_REDRAGON_K530_DRACONIC_PRO,
     "redragon-k614-anivia" => PART_REDRAGON_ANIVIA_K614,
     "redragon-k617-fizz" => PART_REDRAGON_FIZZ_K617,
+    "redragon-k633-ryze" => PART_REDRAGON_K633_RYZE,
     "redragon-k641-shaco-pro" => PART_REDRAGON_K641_SHACO_PRO,
     "redragon-k658-pro-se" => PART_REDRAGON_K658_PRO_SE,
     "royalkludge-rk100" => PART_ROYALKLUDGE_RK100,
