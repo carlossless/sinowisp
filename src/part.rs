@@ -235,6 +235,12 @@ pub const PART_REDRAGON_K530_DRACONIC_PRO: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_REDRAGON_K630_NO_RGB: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x002a,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_EYOOSO_Z11: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x002a,
@@ -271,6 +277,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "portronics-hydra10" => PART_PORTRONICS_HYDRA10,
     "re-k70-byk800" => PART_RE_K70_BYK800,
     "redragon-k530-draconic-pro" => PART_REDRAGON_K530_DRACONIC_PRO,
+    "redragon-k630-norgb" => PART_REDRAGON_K630_NO_RGB,
     "redragon-k614-anivia" => PART_REDRAGON_ANIVIA_K614,
     "redragon-k617-fizz" => PART_REDRAGON_FIZZ_K617,
     "redragon-k633-ryze" => PART_REDRAGON_K633_RYZE,
