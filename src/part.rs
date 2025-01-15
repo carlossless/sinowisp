@@ -62,6 +62,13 @@ pub const PART_LEOBOG_HI75: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_AULA_F75: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    isp_index: 1,
+    ..PART_BASE_SH68F90
+};
+
 pub const PART_AULA_F87: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x010c,
@@ -267,6 +274,7 @@ pub const PART_YINREN_R108: Part = Part {
 };
 
 pub static PARTS: Map<&'static str, Part> = phf_map! {
+    "aula-f75" => PART_AULA_F75,
     "aula-f87" => PART_AULA_F87,
     "deltaco-wk95r" => PART_DELTACO_WK95R,
     "digitalalliance-meca-warrior-x" => PART_DIGITALALLIANCE_MECA_WARRIOR_X,
