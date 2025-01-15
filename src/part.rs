@@ -259,6 +259,13 @@ pub const PART_REDRAGON_K633_RYZE: Part = Part {
     ..PART_BASE_SH68F90
 };
 
+pub const PART_YINREN_R108: Part = Part {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    isp_index: 1,
+    ..PART_BASE_SH68F90
+};
+
 pub static PARTS: Map<&'static str, Part> = phf_map! {
     "aula-f87" => PART_AULA_F87,
     "deltaco-wk95r" => PART_DELTACO_WK95R,
@@ -297,6 +304,7 @@ pub static PARTS: Map<&'static str, Part> = phf_map! {
     "xinmeng-m66" => PART_XINMENG_M71,
     "xinmeng-m71" => PART_XINMENG_M71,
     "xinmeng-xm-rf68" => PART_XINMENG_XM_RF68,
+    "yinren-r108" => PART_YINREN_R108,
     "yunzii-al66" => PART_XINMENG_M71, // same as xinmeng-m71
     "yunzii-al71" => PART_XINMENG_M71, // same as xinmeng-m71
 };

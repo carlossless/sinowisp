@@ -105,6 +105,7 @@ sinowealth-kb-tool write \
 | Xinmeng M66 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | SH68F90AS | ✅ | ✅ |
 | Xinmeng M71 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | SH68F90AS | ✅ | ✅ |
 | Xinmeng XM-RF68 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90U | ✅ | ✅ |
+| Yinren R108 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | Yunzii AL66 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | SH68F90AS | ✅ | ✅ |
 | Yunzii AL71 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | SH68F90AS | ✅ | ✅ |
 
