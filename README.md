@@ -81,6 +81,7 @@ sinowealth-kb-tool write \
 | Hykker X Range 2017 (RE-K70-BYK800) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 | BYK801 | ✅ | ❓ |
 | [Leobog Hi75](https://leobogtech.com/products/leobog-hi75) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Machenike K500-B61](https://global.machenike.com/products/k500-b61) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90? | BYK916 | ✅ | ✅ |
+| [MageGee MK-STAR61](https://www.magegee.com/products2.html?pid=1644595&_t=1737191677) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [NuPhy Air60](https://nuphy.com/products/air60) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [NuPhy Air75](https://nuphy.com/products/air75) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [NuPhy Air96](https://nuphy.com/products/air96-wireless-mechanical-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
