@@ -1,4 +1,6 @@
 use crate::part::Part;
+use hidapi::HidError;
+use log::error;
 use thiserror::Error;
 
 #[cfg(test)]
@@ -91,6 +93,23 @@ pub fn convert_to_isp_payload(input: &mut [u8], part: Part) -> Result<(), Payloa
     input[ljmp_addr..ljmp_addr + 3].fill(0x00);
 
     Ok(())
+}
+
+pub fn to_hex_string(bytes: &[u8]) -> String {
+    let strs: Vec<String> = bytes.iter().map(|b| format!("{:02X}", b)).collect();
+    strs.join(" ")
+}
+
+pub fn is_expected_error(err: &HidError) -> bool {
+    match err {
+        #[cfg(target_os = "macos")]
+        HidError::HidApiError { ref message } if message == "IOHIDDeviceSetReport failed: (0xE0005000) unknown error code" => true,
+        #[cfg(target_os = "linux")]
+        HidError::HidApiError { ref message } if message == "hid_error is not implemented yet" => true,
+        #[cfg(target_os = "windows")]
+        HidError::HidApiError { ref message } if message == "HidD_SetFeature: (0x0000001F) A device attached to the system is not functioning." => true,
+        _ => false,
+    }
 }
 
 #[test]

@@ -44,12 +44,12 @@ $TOOL read --part "$PART" "$FILE_DEFAULT"
 reboot_device
 
 echo "Bootloader read..."
-$TOOL read --part "$PART" -b "$FILE_BOOTLOADER"
+$TOOL read --part "$PART" -f bootloader "$FILE_BOOTLOADER"
 
 reboot_device
 
 echo "Full read..."
-$TOOL read --part "$PART" --full "$FILE_FULL"
+$TOOL read --part "$PART" -f full "$FILE_FULL"
 
 reboot_device
 
@@ -61,9 +61,7 @@ $TOOL read \
     --bootloader_size 4096 \
     --page_size 2048 \
     --isp_iface_num 1 \
-    --isp_usage_page 0xff00 \
-    --isp_usage 0x0001 \
-    --isp_index 1 \
+    --isp_report_id 5 \
     "$FILE_CUSTOM"
 
 reboot_device
@@ -135,9 +133,7 @@ $TOOL write \
     --bootloader_size 4096 \
     --page_size 2048 \
     --isp_iface_num 1 \
-    --isp_usage_page 0xff00 \
-    --isp_usage 0x0001 \
-    --isp_index 1 \
+    --isp_report_id 5 \
     "$FILE_DEFAULT"
 
 reboot_device
@@ -154,5 +150,13 @@ if [[ "$READ_POST_WRITE_CUSTOM_MD5" != "$READ_MD5" ]]; then
 fi
 
 reboot_device
+
+$TOOL list
+
+$TOOL list --product_id 0x024f
+
+$TOOL list --vendor_id 0x05ac
+
+$TOOL list --vendor_id 0x05ac  --product_id 0x024f
 
 echo "Passed all tests!"

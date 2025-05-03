@@ -9,15 +9,9 @@ pub struct Part {
     pub product_id: u16,
 
     /// USB interface number with the ISP report
-    pub isp_iface_num: u8,
-    // The following properties and values are important only for windows support because its
-    // HIDAPI requires us to use a specific device for each collection
-    /// HID collection `usage_page` with the ISP report
-    pub isp_usage_page: u16,
-    /// HID collection `usage` with the ISP report
-    pub isp_usage: u16,
-    /// Index of matching (usage_page && usage) collection at which the ISP report appears in.
-    pub isp_index: usize,
+    pub isp_iface_num: i32,
+    /// HID report ID
+    pub isp_report_id: u32,
 
     pub reboot: bool,
 }
@@ -31,9 +25,7 @@ pub const PART_BASE_DEFAULT: Part = Part {
     product_id: 0x0000,
 
     isp_iface_num: 1,
-    isp_usage_page: 0xff00,
-    isp_usage: 0x0001,
-    isp_index: 0,
+    isp_report_id: 5,
 
     reboot: true,
 };
@@ -51,35 +43,30 @@ pub const PART_BASE_SH68F881: Part = Part {
 pub const PART_NUPHY_AIR60: Part = Part {
     vendor_id: 0x05ac,
     product_id: 0x024f,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_LEOBOG_HI75: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x010c,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_AULA_F75: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x010c,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_AULA_F87: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x010c,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_XINMENG_K916: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x00a1,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
@@ -92,7 +79,6 @@ pub const PART_XINMENG_XM_RF68: Part = Part {
 pub const PART_XINMENG_M71: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x010c,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
@@ -105,28 +91,24 @@ pub const PART_RE_K70_BYK800: Part = Part {
 pub const PART_TERPORT_TR95: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0049,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_REDRAGON_FIZZ_K617: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0049,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_REDRAGON_ANIVIA_K614: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0049,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_REDRAGON_K641_SHACO_PRO: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0049,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
@@ -199,14 +181,12 @@ pub const PART_DIGITALALLIANCE_MECA_WARRIOR_X: Part = Part {
 pub const PART_KZZI_K68PRO: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0186,
-    isp_index: 0x0001,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_WEIKAV_SUGAR65: Part = Part {
     vendor_id: 0x05ac,
     product_id: 0x024f,
-    isp_usage: 0x0002,
     ..PART_BASE_SH68F90
 };
 
@@ -225,21 +205,18 @@ pub const PART_GLORIOUS_MODEL_O: Part = Part {
 pub const PART_MACHENIKE_K500_B61: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0049,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_MAGEGEE_MKSTAR61: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x010c,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
 pub const PART_REDRAGON_K658_PRO_SE: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0049,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 
@@ -276,7 +253,6 @@ pub const PART_REDRAGON_K633_RYZE: Part = Part {
 pub const PART_YINREN_R108: Part = Part {
     vendor_id: 0x258a,
     product_id: 0x0049,
-    isp_index: 1,
     ..PART_BASE_SH68F90
 };
 

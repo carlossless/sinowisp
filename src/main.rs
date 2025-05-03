@@ -6,17 +6,20 @@ use std::{
 
 use clap::{arg, value_parser, ArgMatches, Command};
 use clap_num::maybe_hex;
+use device_selector::{DeviceSelector, DeviceSelectorError};
+use hid_tree::TreeDisplay;
 use log::{error, info};
 use simple_logger::SimpleLogger;
 use thiserror::Error;
 
-mod isp;
-mod part;
-// mod hid;
+mod device_selector;
+mod hid_tree;
 mod ihex;
+mod isp_device;
+mod part;
 mod util;
 
-pub use crate::{ihex::*, isp::*, part::*, util::*};
+pub use crate::{ihex::*, isp_device::*, part::*, util::*};
 
 #[derive(Debug, Error)]
 pub enum CLIError {
@@ -28,6 +31,8 @@ pub enum CLIError {
     IHEXError(#[from] ConversionError),
     #[error(transparent)]
     PayloadConversionError(#[from] PayloadConversionError),
+    #[error(transparent)]
+    DeviceSelectorError(#[from] DeviceSelectorError),
 }
 
 fn main() -> ExitCode {
@@ -51,33 +56,33 @@ fn cli() -> Command {
             Command::new("list")
                 .short_flag('l')
                 .about("List all connected devices and their identifiers. This is useful to find the manufacturer and product id for your device.")
+                .arg(arg!(--vendor_id <VID>).value_parser(maybe_hex::<u16>))
+                .arg(arg!(--product_id <PID>).value_parser(maybe_hex::<u16>))
         )
         .subcommand(
             Command::new("convert")
                 .short_flag('c')
                 .about("Convert payload from bootloader to JTAG and vice versa.")
                 .arg(arg!(-d --direction <DIRECTION> "direction of conversion").value_parser(["to_jtag", "to_isp"]).required(true))
-                .part_args()
                 .arg(arg!(input_file: <INPUT_FILE> "file to convert"))
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write results to"))
+                .part_args()
         )
         .subcommand(
             Command::new("read")
                 .short_flag('r')
                 .about("Read flash contents. (Intel HEX)")
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
+                .arg(arg!(-f --fragment <fragment> "firmware fragment to read").value_parser(["firmware", "bootloader", "full"]).default_value("firmware"))
+                .arg(arg!(-r --retry <NUM> "number of retries trying to find device").value_parser(value_parser!(usize)).default_value("5"))
                 .part_args()
-                .arg(arg!(-b --bootloader --isp "read only booloader").conflicts_with("full"))
-                .arg(
-                    arg!(--full "read complete flash (including the bootloader)")
-                        .conflicts_with("bootloader"),
-                ),
         )
         .subcommand(
             Command::new("write")
                 .short_flag('w')
                 .about("Write file (Intel HEX) into flash.")
                 .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
+                .arg(arg!(-r --retry <NUM> "number of retries trying to find device").value_parser(value_parser!(usize)).default_value("5"))
                 .part_args(),
         )
 }
@@ -112,20 +117,30 @@ fn err_main() -> Result<(), CLIError> {
                 .map(|s| s.as_str())
                 .unwrap();
 
-            let full = sub_matches.get_flag("full");
+            let retry_count = sub_matches
+                .get_one::<usize>("retry")
+                .map(|s| s.to_owned())
+                .unwrap();
 
-            let bootloader = sub_matches.get_flag("bootloader");
+            let fragment = sub_matches
+                .get_one::<String>("fragment")
+                .map(|s| s.as_str())
+                .unwrap();
 
             let part = get_part_from_matches(sub_matches);
 
-            let read_type = match (full, bootloader) {
-                (true, _) => ReadType::Full,
-                (_, true) => ReadType::Bootloader,
-                _ => ReadType::Normal,
+            let fragment: ReadFragment = match fragment {
+                "firmware" => ReadFragment::Firmware,
+                "bootloader" => ReadFragment::Bootloader,
+                "full" => ReadFragment::Full,
+                _ => panic!("Invalid read fragment"),
             };
 
-            let isp = ISPDevice::new(part).map_err(CLIError::from)?;
-            let result = isp.read_cycle(read_type).map_err(CLIError::from)?;
+            let mut ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
+            let device = ds
+                .find_isp_device(part, retry_count)
+                .map_err(CLIError::from)?;
+            let result = device.read_cycle(fragment).map_err(CLIError::from)?;
 
             let digest = md5::compute(&result);
             info!("MD5: {:x}", digest);
@@ -137,6 +152,11 @@ fn err_main() -> Result<(), CLIError> {
             let input_file = sub_matches
                 .get_one::<String>("input_file")
                 .map(|s| s.as_str())
+                .unwrap();
+
+            let retry_count = sub_matches
+                .get_one::<usize>("retry")
+                .map(|s| s.to_owned())
                 .unwrap();
 
             let part = get_part_from_matches(sub_matches);
@@ -151,11 +171,38 @@ fn err_main() -> Result<(), CLIError> {
                 firmware.resize(part.firmware_size, 0);
             }
 
-            let isp = ISPDevice::new(part).map_err(CLIError::from)?;
-            isp.write_cycle(&mut firmware).map_err(CLIError::from)?;
+            let mut ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
+            let device = ds
+                .find_isp_device(part, retry_count)
+                .map_err(CLIError::from)?;
+            device.write_cycle(&mut firmware).map_err(CLIError::from)?;
         }
-        Some(("list", _)) => {
-            ISPDevice::print_connected_devices().map_err(CLIError::from)?;
+        Some(("list", sub_matches)) => {
+            let vendor_id = sub_matches.get_one::<u16>("vendor_id");
+            let product_id = sub_matches.get_one::<u16>("product_id");
+
+            let ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
+            let devices = ds
+                .connected_devices_tree()
+                .map_err(CLIError::DeviceSelectorError)?;
+            let tree = devices
+                .into_iter()
+                .filter(|device| {
+                    if let Some(vendor_id) = vendor_id {
+                        if device.vendor_id != *vendor_id {
+                            return false;
+                        }
+                    }
+                    if let Some(product_id) = product_id {
+                        if device.product_id != *product_id {
+                            return false;
+                        }
+                    }
+                    true
+                })
+                .to_tree_string(0);
+
+            println!("{}", tree);
         }
         Some(("convert", sub_matches)) => {
             let input_file = sub_matches
@@ -251,10 +298,8 @@ impl PartCommand for Command {
         )
         .arg(arg!(--bootloader_size <SIZE>).value_parser(maybe_hex::<usize>))
         .arg(arg!(--page_size <SIZE>).value_parser(maybe_hex::<usize>))
-        .arg(arg!(--isp_iface_num <NUM>).value_parser(maybe_hex::<u8>))
-        .arg(arg!(--isp_usage_page <PAGE>).value_parser(maybe_hex::<u16>))
-        .arg(arg!(--isp_usage <USAGE>).value_parser(maybe_hex::<u16>))
-        .arg(arg!(--isp_index <INDEX>).value_parser(maybe_hex::<usize>))
+        .arg(arg!(--isp_iface_num <NUM>).value_parser(clap::value_parser!(i32)))
+        .arg(arg!(--isp_report_id <USAGE>).value_parser(maybe_hex::<u32>))
         .arg(arg!(--reboot <BOOL>).value_parser(value_parser!(bool)))
     }
 }
@@ -272,10 +317,8 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
     let page_size = sub_matches.get_one::<usize>("page_size");
     let vendor_id = sub_matches.get_one::<u16>("vendor_id");
     let product_id = sub_matches.get_one::<u16>("product_id");
-    let isp_iface_num = sub_matches.get_one::<u8>("isp_iface_num");
-    let isp_usage_page = sub_matches.get_one::<u16>("isp_usage_page");
-    let isp_usage = sub_matches.get_one::<u16>("isp_usage");
-    let isp_index = sub_matches.get_one::<usize>("isp_index");
+    let isp_iface_num = sub_matches.get_one::<i32>("isp_iface_num");
+    let isp_report_id = sub_matches.get_one::<u32>("isp_report_id");
     let reboot = sub_matches.get_one::<bool>("reboot");
 
     if let Some(firmware_size) = firmware_size {
@@ -296,14 +339,8 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
     if let Some(isp_iface_num) = isp_iface_num {
         part.isp_iface_num = *isp_iface_num;
     }
-    if let Some(isp_usage_page) = isp_usage_page {
-        part.isp_usage_page = *isp_usage_page;
-    }
-    if let Some(isp_usage) = isp_usage {
-        part.isp_usage = *isp_usage;
-    }
-    if let Some(isp_index) = isp_index {
-        part.isp_index = *isp_index;
+    if let Some(isp_report_id) = isp_report_id {
+        part.isp_report_id = *isp_report_id;
     }
     if let Some(reboot) = reboot {
         part.reboot = *reboot;

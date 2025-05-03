@@ -79,6 +79,8 @@ jobs:
         run: rustup target add $TARGET
       - name: Run build
         run: cargo build --release --verbose --target $TARGET
+      - name: Run integration tests
+        run: cargo run --release -- list
       - name: Compress
         run: |
           mkdir -p ./artifacts
