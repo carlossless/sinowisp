@@ -1,6 +1,7 @@
 use std::{
     env, fs,
     io::{self, Read},
+    path::Path,
     process::ExitCode,
 };
 
@@ -8,7 +9,7 @@ use clap::{arg, value_parser, ArgMatches, Command};
 use clap_num::maybe_hex;
 use device_selector::{DeviceSelector, DeviceSelectorError};
 use hid_tree::TreeDisplay;
-use log::{error, info};
+use log::error;
 use simple_logger::SimpleLogger;
 use thiserror::Error;
 
@@ -33,6 +34,12 @@ pub enum CLIError {
     PayloadConversionError(#[from] PayloadConversionError),
     #[error(transparent)]
     DeviceSelectorError(#[from] DeviceSelectorError),
+}
+
+#[derive(Clone, Copy)]
+enum Format {
+    IntelHex,
+    Binary,
 }
 
 fn main() -> ExitCode {
@@ -64,16 +71,19 @@ fn cli() -> Command {
                 .short_flag('c')
                 .about("Convert payload from bootloader to JTAG and vice versa.")
                 .arg(arg!(-d --direction <DIRECTION> "direction of conversion").value_parser(["to_jtag", "to_isp"]).required(true))
+                .arg(arg!(--input_format <FORMAT>).value_parser(["ihex", "bin"]))
+                .arg(arg!(--output_format <FORMAT>).value_parser(["ihex", "bin"]))
                 .arg(arg!(input_file: <INPUT_FILE> "file to convert"))
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write results to"))
-                .part_args()
+                .part_args() // TODO: not all of these args are needed and should be removed
         )
         .subcommand(
             Command::new("read")
                 .short_flag('r')
                 .about("Read flash contents. (Intel HEX)")
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
-                .arg(arg!(-f --fragment <fragment> "firmware fragment to read").value_parser(["firmware", "bootloader", "full"]).default_value("firmware"))
+                .arg(arg!(-f --format <FORMAT>).value_parser(["ihex", "bin"]))
+                .arg(arg!(-s --section <SECTION> "firmware section to read").value_parser(["firmware", "bootloader", "full"]).default_value("firmware"))
                 .arg(arg!(-r --retry <NUM> "number of retries trying to find device").value_parser(value_parser!(usize)).default_value("5"))
                 .part_args()
         )
@@ -82,29 +92,17 @@ fn cli() -> Command {
                 .short_flag('w')
                 .about("Write file (Intel HEX) into flash.")
                 .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
+                .arg(arg!(-f --format <FORMAT>).value_parser(["ihex", "bin"]))
                 .arg(arg!(-r --retry <NUM> "number of retries trying to find device").value_parser(value_parser!(usize)).default_value("5"))
                 .part_args(),
         )
 }
 
-fn get_log_level() -> log::LevelFilter {
-    if let Ok(debug) = env::var("DEBUG") {
-        if debug == "1" {
-            log::LevelFilter::Debug
-        } else {
-            log::LevelFilter::Info
-        }
-    } else {
-        #[cfg(debug_assertions)]
-        return log::LevelFilter::Debug;
-        #[cfg(not(debug_assertions))]
-        log::LevelFilter::Info
-    }
-}
-
 fn err_main() -> Result<(), CLIError> {
     SimpleLogger::new()
-        .with_level(get_log_level())
+        .with_utc_timestamps()
+        .with_level(log::LevelFilter::Off)
+        .env()
         .init()
         .unwrap();
 
@@ -122,31 +120,32 @@ fn err_main() -> Result<(), CLIError> {
                 .map(|s| s.to_owned())
                 .unwrap();
 
-            let fragment = sub_matches
-                .get_one::<String>("fragment")
+            let section = sub_matches
+                .get_one::<String>("section")
                 .map(|s| s.as_str())
                 .unwrap();
 
+            let format = get_format_from_matches(sub_matches, output_file, "format");
+
             let part = get_part_from_matches(sub_matches);
 
-            let fragment: ReadFragment = match fragment {
-                "firmware" => ReadFragment::Firmware,
-                "bootloader" => ReadFragment::Bootloader,
-                "full" => ReadFragment::Full,
+            let section: ReadSection = match section {
+                "firmware" => ReadSection::Firmware,
+                "bootloader" => ReadSection::Bootloader,
+                "full" => ReadSection::Full,
                 _ => panic!("Invalid read fragment"),
             };
 
             let mut ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
             let device = ds
-                .find_isp_device(part, retry_count)
+                .try_fetch_isp_device(part, retry_count)
                 .map_err(CLIError::from)?;
-            let result = device.read_cycle(fragment).map_err(CLIError::from)?;
+            let firmware = device.read_cycle(section).map_err(CLIError::from)?;
 
-            let digest = md5::compute(&result);
-            info!("MD5: {:x}", digest);
+            let digest = md5::compute(&firmware);
+            eprintln!("MD5: {:x}", digest);
 
-            let ihex = to_ihex(result).map_err(CLIError::from)?;
-            fs::write(output_file, ihex).map_err(CLIError::from)?;
+            write_with_format(output_file, &firmware, format).map_err(CLIError::from)?;
         }
         Some(("write", sub_matches)) => {
             let input_file = sub_matches
@@ -159,13 +158,11 @@ fn err_main() -> Result<(), CLIError> {
                 .map(|s| s.to_owned())
                 .unwrap();
 
+            let format = get_format_from_matches(sub_matches, input_file, "format");
+
             let part = get_part_from_matches(sub_matches);
 
-            let mut file = fs::File::open(input_file).map_err(CLIError::from)?;
-            let mut file_buf = Vec::new();
-            file.read_to_end(&mut file_buf).map_err(CLIError::from)?;
-            let file_str = String::from_utf8_lossy(&file_buf[..]);
-            let mut firmware = from_ihex(&file_str, part.firmware_size).map_err(CLIError::from)?;
+            let mut firmware = read_with_format(input_file, format).map_err(CLIError::from)?;
 
             if firmware.len() < part.firmware_size {
                 firmware.resize(part.firmware_size, 0);
@@ -173,7 +170,7 @@ fn err_main() -> Result<(), CLIError> {
 
             let mut ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
             let device = ds
-                .find_isp_device(part, retry_count)
+                .try_fetch_isp_device(part, retry_count)
                 .map_err(CLIError::from)?;
             device.write_cycle(&mut firmware).map_err(CLIError::from)?;
         }
@@ -220,18 +217,17 @@ fn err_main() -> Result<(), CLIError> {
                 .map(|s| s.as_str())
                 .unwrap();
 
+            let input_format = get_format_from_matches(sub_matches, input_file, "input_format");
+            let output_format = get_format_from_matches(sub_matches, output_file, "output_format");
+
             let part = get_part_from_matches(sub_matches);
 
-            let mut file = fs::File::open(input_file).map_err(CLIError::from)?;
-            let mut file_buf = Vec::new();
-            file.read_to_end(&mut file_buf).map_err(CLIError::from)?;
-            let file_str = String::from_utf8_lossy(&file_buf[..]);
-            let mut firmware = from_ihex(&file_str, part.firmware_size + part.bootloader_size)
-                .map_err(CLIError::from)?;
+            let mut firmware =
+                read_with_format(input_file, input_format).map_err(CLIError::from)?;
 
             if firmware.len() < part.firmware_size {
                 log::warn!(
-                    "Firmware size is more than expected ({}). Increasing to {}",
+                    "Firmware size is less than expected ({}). Increasing to {}",
                     firmware.len(),
                     part.firmware_size
                 );
@@ -242,7 +238,7 @@ fn err_main() -> Result<(), CLIError> {
                 "to_jtag" => {
                     convert_to_jtag_payload(&mut firmware, part).map_err(CLIError::from)?;
                     if firmware.len() < part.total_flash_size() {
-                        log::warn!(
+                        eprintln!(
                             "Firmware is smaller ({} bytes) than expected ({} bytes). This payload might not be suitable for JTAG flashing.",
                             firmware.len(),
                             part.total_flash_size()
@@ -252,7 +248,7 @@ fn err_main() -> Result<(), CLIError> {
                 "to_isp" => {
                     convert_to_isp_payload(&mut firmware, part).map_err(CLIError::from)?;
                     if firmware.len() > part.firmware_size {
-                        log::warn!(
+                        eprintln!(
                             "Firmware size is larger ({} bytes) than expected ({} bytes). This payload might not be suitable for ISP flashing.",
                             firmware.len(),
                             part.firmware_size
@@ -262,8 +258,7 @@ fn err_main() -> Result<(), CLIError> {
                 _ => unreachable!(),
             }
 
-            let ihex = to_ihex(firmware).map_err(CLIError::from)?;
-            fs::write(output_file, ihex).map_err(CLIError::from)?;
+            write_with_format(output_file, &firmware, output_format).map_err(CLIError::from)?;
         }
         _ => unreachable!(),
     }
@@ -302,6 +297,49 @@ impl PartCommand for Command {
         .arg(arg!(--isp_report_id <USAGE>).value_parser(maybe_hex::<u32>))
         .arg(arg!(--reboot <BOOL>).value_parser(value_parser!(bool)))
     }
+}
+
+fn get_format_from_matches(
+    sub_matches: &ArgMatches,
+    file_path: &str,
+    format_option: &str,
+) -> Format {
+    let input_ext = Path::new(file_path).extension();
+
+    let assumed_format = input_ext
+        .map(|ext| {
+            if ext == "ihex" || ext == "ihx" || ext == "hex" {
+                Format::IntelHex
+            } else {
+                Format::Binary
+            }
+        })
+        .unwrap_or(Format::Binary);
+
+    let format = sub_matches
+        .get_one::<String>(format_option)
+        .map(|s| s.as_str())
+        .map(|format| match format {
+            "ihex" => Format::IntelHex,
+            "bin" => Format::Binary,
+            _ => panic!("Invalid format"),
+        })
+        .unwrap_or(assumed_format);
+
+    match (assumed_format, format) {
+        (Format::IntelHex, Format::Binary) => {
+            eprintln!(
+                "Warning: binary file has {} extension. This might be unintended.",
+                input_ext.unwrap().to_string_lossy()
+            );
+        }
+        (Format::Binary, Format::IntelHex) => {
+            eprintln!("Warning: ihex file does not have .ihex or .ihx or .hex extension. This might be unintended.");
+        }
+        _ => {}
+    }
+
+    format
 }
 
 fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
@@ -346,4 +384,28 @@ fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
         part.reboot = *reboot;
     }
     part
+}
+
+fn read_with_format(file: &str, format: Format) -> Result<Vec<u8>, CLIError> {
+    let mut file = fs::File::open(file).map_err(CLIError::from)?;
+    let mut file_buf = Vec::new();
+    file.read_to_end(&mut file_buf).map_err(CLIError::from)?;
+
+    match format {
+        Format::IntelHex => {
+            let file_str = String::from_utf8_lossy(&file_buf[..]);
+            from_ihex(&file_str, 0xFFFF).map_err(CLIError::from) // TODO reasonable length
+        }
+        Format::Binary => Ok(file_buf),
+    }
+}
+
+fn write_with_format(file: &str, data: &[u8], format: Format) -> Result<(), CLIError> {
+    match format {
+        Format::IntelHex => {
+            let ihex = to_ihex(data).map_err(CLIError::from)?;
+            fs::write(file, ihex).map_err(CLIError::from)
+        }
+        Format::Binary => fs::write(file, data).map_err(CLIError::from),
+    }
 }

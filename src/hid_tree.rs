@@ -20,6 +20,7 @@ pub struct InterfaceNode {
     pub children: Vec<ItemNode>,
 }
 
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 pub struct ItemNode {
     #[cfg(target_os = "windows")]
     pub path: String,
@@ -104,7 +105,7 @@ impl TreeDisplay for InterfaceNode {
                         "{indent}feature_report_ids=[{}]",
                         feature_report_ids
                             .iter()
-                            .map(|rid| format!("{:#04x}", rid))
+                            .map(|rid| format!("{}", rid))
                             .collect::<Vec<String>>()
                             .join(", ")
                     ));
@@ -124,6 +125,7 @@ impl TreeDisplay for InterfaceNode {
     }
 }
 
+#[cfg(any(target_os = "macos", target_os = "windows"))]
 impl TreeDisplay for ItemNode {
     fn to_tree_string(self, level: usize) -> String {
         let indent = " ".repeat(INDENT_SIZE).repeat(level);
@@ -158,7 +160,7 @@ impl TreeDisplay for ItemNode {
                         "{indent}feature_report_ids=[{}]",
                         feature_report_ids
                             .iter()
-                            .map(|rid| format!("{:#04x}", rid))
+                            .map(|rid| format!("{}", rid))
                             .collect::<Vec<String>>()
                             .join(", ")
                     ));

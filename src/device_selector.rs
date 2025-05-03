@@ -1,16 +1,20 @@
 use core::time;
-use std::{ffi::CStr, thread};
+use std::{ffi::CStr, thread, time::Duration};
 
 use hidapi::{BusType, DeviceInfo, HidDevice, HidError, MAX_REPORT_DESCRIPTOR_SIZE};
 use hidparser::parse_report_descriptor;
+use indicatif::ProgressBar;
 use itertools::Itertools;
 use log::{debug, error, info};
 use thiserror::Error;
 
 use crate::{
-    hid_tree::{DeviceNode, InterfaceNode, ItemNode},
+    hid_tree::{DeviceNode, InterfaceNode},
     is_expected_error, ISPDevice, Part,
 };
+
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+use crate::hid_tree::ItemNode;
 
 const REPORT_ID_ISP: u8 = 0x05;
 const CMD_ISP_MODE: u8 = 0x75;
@@ -61,8 +65,8 @@ impl DeviceSelector {
             return (
                 d.vendor_id(),
                 d.product_id(),
-                d.path(),
                 d.interface_number(),
+                d.path(),
                 d.usage_page(),
                 d.usage(),
             );
@@ -70,8 +74,8 @@ impl DeviceSelector {
             return (
                 d.vendor_id(),
                 d.product_id(),
-                d.path(),
                 d.interface_number(),
+                d.path(),
             );
         });
         devices
@@ -168,7 +172,7 @@ impl DeviceSelector {
         Err(DeviceSelectorError::NotFound)
     }
 
-    fn open_isp_devices(&self, part: Part) -> Result<ISPDevice, DeviceSelectorError> {
+    fn find_isp_device(&self, part: Part) -> Result<ISPDevice, DeviceSelectorError> {
         let sorted_devices = self.sorted_usb_device_list();
         let isp_devices: Vec<_> = sorted_devices
             .clone()
@@ -212,12 +216,7 @@ impl DeviceSelector {
         }
     }
 
-    fn switch_kb_device(&mut self, part: Part) -> Result<ISPDevice, DeviceSelectorError> {
-        info!(
-            "Looking for vId:{:#06x} pId:{:#06x}",
-            part.vendor_id, part.product_id
-        );
-
+    fn find_device(&self, part: Part) -> Result<HidDevice, DeviceSelectorError> {
         let filtered_devices = self.sorted_usb_device_list().into_iter().filter(|d| {
             d.vendor_id() == part.vendor_id
                 && d.product_id() == part.product_id
@@ -237,7 +236,7 @@ impl DeviceSelector {
         }
 
         let Some(cmd_device_info) = cmd_device_info else {
-            info!("Regular device didn't come up...");
+            info!("Device didn't come up...");
             return Err(DeviceSelectorError::NotFound);
         };
 
@@ -246,8 +245,14 @@ impl DeviceSelector {
             .api
             .open_path(cmd_device_info.path())
             .map_err(DeviceSelectorError::from)?;
+        Ok(device)
+    }
 
-        info!("Found regular device. Entering ISP mode...");
+    fn switch_to_isp_device(
+        &mut self,
+        device: HidDevice,
+        part: Part,
+    ) -> Result<ISPDevice, DeviceSelectorError> {
         if let Err(err) = self.enter_isp_mode(&device) {
             debug!("Error: {:}", err);
             match err {
@@ -266,35 +271,52 @@ impl DeviceSelector {
 
         self.api.refresh_devices()?;
 
-        let Ok(isp_device) = self.open_isp_devices(part) else {
+        let Ok(isp_device) = self.find_isp_device(part) else {
             info!("ISP device didn't come up...");
             return Err(DeviceSelectorError::NotFound);
         };
         Ok(isp_device)
     }
 
-    pub fn find_isp_device(
+    pub fn try_fetch_isp_device(
         &mut self,
         part: Part,
         retries: usize,
     ) -> Result<ISPDevice, DeviceSelectorError> {
+        eprintln!(
+            "Looking for {:04x}:{:04x} (interface_num={} report_id={})",
+            part.vendor_id, part.product_id, part.isp_iface_num, part.isp_report_id
+        );
+
+        let bar = ProgressBar::new_spinner()
+            .with_message(format!("Searching for device... Attempt {}/{}", 1, retries));
+        bar.enable_steady_tick(Duration::from_millis(100));
+
         for attempt in 1..retries + 1 {
             self.api.refresh_devices()?;
             if attempt > 1 {
-                thread::sleep(time::Duration::from_millis(500));
+                thread::sleep(time::Duration::from_millis(1000));
+                bar.set_message(format!("Retrying... Attempt {}/{}", attempt, retries));
                 info!("Retrying... Attempt {}/{}", attempt, retries);
             }
 
-            if let Ok(devices) = self.switch_kb_device(part) {
-                info!("Connected!");
-                return Ok(devices);
+            if let Ok(device) = self.find_device(part) {
+                bar.set_message("Regular device found. Switching to ISP mode...");
+                if let Ok(isp_device) = self.switch_to_isp_device(device, part) {
+                    bar.finish_and_clear();
+                    eprintln!("Connected!");
+                    return Ok(isp_device);
+                }
             }
             info!("Regular device not found. Trying ISP device...");
-            if let Ok(devices) = self.open_isp_devices(part) {
-                info!("Connected!");
-                return Ok(devices);
+            if let Ok(isp_device) = self.find_isp_device(part) {
+                bar.finish_and_clear();
+                eprintln!("Connected!");
+                return Ok(isp_device);
             }
         }
+        bar.finish();
+        eprintln!("Device not found");
         Err(DeviceSelectorError::NotFound)
     }
 
@@ -307,42 +329,36 @@ impl DeviceSelector {
     pub fn connected_devices_tree(&self) -> Result<Vec<DeviceNode>, DeviceSelectorError> {
         let devices: Vec<_> = self.sorted_usb_device_list();
 
-        let id_chunks = devices.iter().chunk_by(|d| {
-            return (
-                d.vendor_id(),
-                d.product_id(),
-                d.manufacturer_string().unwrap_or("None"),
-                d.product_string().unwrap_or("None"),
-            );
-        });
+        let id_chunks = devices
+            .into_iter()
+            .chunk_by(|d| (d.vendor_id(), d.product_id()));
 
         let mut device_tree_devices: Vec<DeviceNode> = vec![];
 
-        for ((vid, pid, manufacturer, product), devices) in &id_chunks {
-            let mut node = DeviceNode {
-                product_id: pid,
-                vendor_id: vid,
-                product_string: product.to_string(),
-                manufacturer_string: manufacturer.to_string(),
-                children: vec![],
-            };
+        for (key, devices) in &id_chunks {
+            let (vid, pid) = key;
 
-            let path_chunks = devices.chunk_by(|d| {
-                #[cfg(any(target_os = "macos", target_os = "linux"))]
-                return (d.path(), d.interface_number());
-                #[cfg(target_os = "windows")]
-                return (d.path(), d.interface_number(), d.usage_page(), d.usage());
-            });
+            let mut interface_nodes: Vec<InterfaceNode> = vec![];
+
+            // for some reason on linux-libusb the same device might not have the same manufacturer string in some cases
+            let mut manufacturer_string: Option<String> = None;
+            let mut product_string: Option<String> = None;
+
+            let path_chunks = devices.chunk_by(|d| (d.path(), d.interface_number()));
 
             for (key, devices) in &path_chunks {
-                #[cfg(any(target_os = "macos", target_os = "linux"))]
                 let (path, interface_number) = key;
-                #[cfg(target_os = "windows")]
-                let (path, interface_number, usage_page, usage) = key;
 
+                #[cfg(any(target_os = "macos", target_os = "windows"))]
                 let mut children: Vec<ItemNode> = vec![];
 
                 for d in devices {
+                    if manufacturer_string.is_none() {
+                        manufacturer_string = d.manufacturer_string().map(str::to_string);
+                    }
+                    if product_string.is_none() {
+                        product_string = d.product_string().map(str::to_string);
+                    }
                     #[cfg(target_os = "macos")]
                     children.push(ItemNode {
                         usage_page: d.usage_page(),
@@ -362,6 +378,7 @@ impl DeviceSelector {
                     }
                 }
 
+                #[cfg(any(target_os = "macos", target_os = "linux"))]
                 let (descriptor, feature_report_ids) = self.get_descriptor_with_features(path);
                 let interface_node = InterfaceNode {
                     #[cfg(any(target_os = "macos", target_os = "linux"))]
@@ -375,10 +392,16 @@ impl DeviceSelector {
                     children,
                 };
 
-                node.children.push(interface_node);
+                interface_nodes.push(interface_node);
             }
 
-            device_tree_devices.push(node);
+            device_tree_devices.push(DeviceNode {
+                vendor_id: vid,
+                product_id: pid,
+                manufacturer_string: manufacturer_string.clone().unwrap_or("None".to_string()),
+                product_string: product_string.clone().unwrap_or("None".to_string()),
+                children: interface_nodes,
+            });
         }
         Ok(device_tree_devices)
     }
@@ -392,7 +415,7 @@ impl PlatformSpecificInfo for DeviceInfo {
     fn info(&self) -> String {
         #[cfg(not(target_os = "linux"))]
         return format!(
-            "Found ISP Device: {:#06x} {:#06x} {:?} {} {:#06x} {:#06x}",
+            "{:#06x} {:#06x} {:?} {} {:#06x} {:#06x}",
             self.vendor_id(),
             self.product_id(),
             self.path(),
@@ -402,7 +425,7 @@ impl PlatformSpecificInfo for DeviceInfo {
         );
         #[cfg(target_os = "linux")]
         format!(
-            "Found ISP Device: {:#06x} {:#06x} {:?}",
+            "{:#06x} {:#06x} {:?}",
             self.vendor_id(),
             self.product_id(),
             self.path()

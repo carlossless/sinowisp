@@ -14,6 +14,7 @@ clap = "4.1"
 clap-num = "1.0"
 hidparser = { git = "https://github.com/microsoft/mu_rust_hid.git", tag = "v1.0.3" } # needed until 1.0.3 is published on crates.io
 ihex = "3.0"
+indicatif = "0.17.11"
 itertools = "0.14.0"
 md5 = "0.7"
 thiserror = "2.0"
@@ -30,8 +31,15 @@ features = ["max_level_debug"]
 [dependencies.simple_logger]
 version = "5.0"
 default-features = false
-features = ["stderr", "colors"]
+features = ["stderr", "colors", "timestamps"]
 
 [dependencies.phf]
 version = "0.11"
 features = ["macros"]
+
+[dev-dependencies]
+assert_cmd = "2.0.17"
+chrono = "0.4.41"
+predicates = "3.1.3"
+serial_test = "3.2.0"
+stdext = "0.3.3"

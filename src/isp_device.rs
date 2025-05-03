@@ -1,6 +1,7 @@
 use std::{thread, time};
 
-use log::{debug, error, info};
+use indicatif::ProgressBar;
+use log::{debug, error};
 use thiserror::Error;
 
 use crate::{is_expected_error, part::*, util, VerificationError};
@@ -39,7 +40,7 @@ pub enum ISPError {
 }
 
 #[derive(Debug, Clone)]
-pub enum ReadFragment {
+pub enum ReadSection {
     Firmware,
     Bootloader,
     Full,
@@ -63,13 +64,13 @@ impl ISPDevice {
         }
     }
 
-    pub fn read_cycle(&self, read_fragment: ReadFragment) -> Result<Vec<u8>, ISPError> {
+    pub fn read_cycle(&self, read_fragment: ReadSection) -> Result<Vec<u8>, ISPError> {
         self.enable_firmware()?;
 
         let (start_addr, length) = match read_fragment {
-            ReadFragment::Firmware => (0, self.part.firmware_size),
-            ReadFragment::Bootloader => (self.part.firmware_size, self.part.bootloader_size),
-            ReadFragment::Full => (0, self.part.firmware_size + self.part.bootloader_size),
+            ReadSection::Firmware => (0, self.part.firmware_size),
+            ReadSection::Bootloader => (self.part.firmware_size, self.part.bootloader_size),
+            ReadSection::Full => (0, self.part.firmware_size + self.part.bootloader_size),
         };
 
         let firmware = self.read(start_addr, length)?;
@@ -93,7 +94,7 @@ impl ISPDevice {
 
         let read_back = self.read(0, self.part.firmware_size)?;
 
-        info!("Verifying...");
+        eprintln!("Verifying...");
         util::verify(firmware, &read_back).map_err(ISPError::from)?;
 
         self.enable_firmware()?;
@@ -113,13 +114,17 @@ impl ISPDevice {
     }
 
     fn read(&self, start_addr: usize, length: usize) -> Result<Vec<u8>, ISPError> {
-        info!("Reading...");
-        self.init_read(start_addr)?;
-
         let page_size = self.part.page_size;
         let num_page = length / page_size;
         let mut result: Vec<u8> = vec![];
+
+        eprintln!("Reading...");
+        let bar = ProgressBar::new(num_page as u64);
+
+        self.init_read(start_addr)?;
+
         for i in 0..num_page {
+            bar.inc(1);
             debug!(
                 "Reading page {} @ offset {:#06x}",
                 i,
@@ -127,18 +132,22 @@ impl ISPDevice {
             );
             self.read_page(&mut result)?;
         }
+        bar.finish();
         Ok(result)
     }
 
     fn write(&self, start_addr: usize, buffer: &[u8]) -> Result<(), ISPError> {
-        info!("Writing...");
+        eprintln!("Writing...");
+        let bar = ProgressBar::new(self.part.num_pages() as u64);
         self.init_write(start_addr)?;
 
         let page_size = self.part.page_size;
         for i in 0..self.part.num_pages() {
+            bar.inc(1);
             debug!("Writing page {} @ offset {:#06x}", i, i * page_size);
             self.write_page(&buffer[(i * page_size)..((i + 1) * page_size)])?;
         }
+        bar.finish();
         Ok(())
     }
 
@@ -211,7 +220,7 @@ impl ISPDevice {
     /// Side-effect: enables reading the firmware without erasing flash first.
     /// Credits to @gashtaan for finding this out.
     fn enable_firmware(&self) -> Result<(), ISPError> {
-        info!("Enabling firmware...");
+        eprintln!("Enabling firmware...");
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_ENABLE_FIRMWARE, 0, 0, 0, 0];
 
         self.cmd_device.send_feature_report(&cmd)?;
@@ -221,7 +230,7 @@ impl ISPDevice {
     /// Erases everything in flash, except the ISP bootloader section itself and initializes the
     /// reset vector to jump to ISP.
     fn erase(&self) -> Result<(), ISPError> {
-        info!("Erasing...");
+        eprintln!("Erasing...");
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_ERASE, 0, 0, 0, 0];
         self.cmd_device
             .send_feature_report(&cmd)
@@ -232,7 +241,7 @@ impl ISPDevice {
 
     /// Causes the device to start running the main firmware
     fn reboot(&self) {
-        info!("Rebooting...");
+        eprintln!("Rebooting...");
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_REBOOT, 0, 0, 0, 0];
         if let Err(err) = self.cmd_device.send_feature_report(&cmd) {
             debug!("Error: {:}", err);

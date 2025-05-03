@@ -19,7 +19,7 @@ pub enum ConversionError {
     Serializing(#[from] WriterError),
 }
 
-pub fn to_ihex(byte_array: Vec<u8>) -> Result<String, ConversionError> {
+pub fn to_ihex(byte_array: &[u8]) -> Result<String, ConversionError> {
     let mut result: Vec<Record> = vec![];
     for (i, chunk) in byte_array.chunks(16).enumerate() {
         result.push(Record::Data {
