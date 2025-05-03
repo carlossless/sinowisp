@@ -302,7 +302,7 @@ dependencies = [
 
 [[package]]
 name = "sinowealth-kb-tool"
-version = "0.1.1"
+version = "1.0.0"
 dependencies = [
  "clap",
  "clap-num",
