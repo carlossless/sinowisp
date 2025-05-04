@@ -76,7 +76,7 @@ fn main() -> ExitCode {
     match err_main() {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
-            error!("{:}", err);
+            eprintln!("{:}", err);
             ExitCode::FAILURE
         }
     }
@@ -84,47 +84,60 @@ fn main() -> ExitCode {
 
 fn cli() -> Command {
     Command::new("sinowealth-kb-tool")
-        .about("A programming tool for Sinowealth Gaming KB devices")
+        .about("A tool to read and write flash for SinoWealth ISP devices")
         .version(env!("CARGO_PKG_VERSION"))
         .subcommand_required(true)
         .arg_required_else_help(true)
         .author("Karolis Stasaitis")
         .subcommand(
             Command::new("list")
-                .short_flag('l')
-                .about("List all connected devices and their identifiers. This is useful to find the manufacturer and product id for your device.")
+                .about("List all connected usb hid devices and info about them.")
                 .arg(arg!(--vendor_id <VID>).value_parser(maybe_hex::<u16>))
-                .arg(arg!(--product_id <PID>).value_parser(maybe_hex::<u16>))
+                .arg(arg!(--product_id <PID>).value_parser(maybe_hex::<u16>)),
+        )
+        .subcommand(
+            Command::new("read")
+                .about("Read flash into a file.")
+                .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
+                .arg(arg!(--format <FORMAT>).value_parser(Format::available_formats()))
+                .arg(
+                    arg!(-s --section <SECTION> "firmware section to read")
+                        .value_parser(ReadSection::available_sections())
+                        .default_value(ReadSection::Firmware.to_str()),
+                )
+                .arg(
+                    arg!(-r --retry <NUM> "number of attempts trying to find device")
+                        .value_parser(value_parser!(usize))
+                        .default_value(DEFAULT_RETRY_COUNT),
+                )
+                .device_args(),
+        )
+        .subcommand(
+            Command::new("write")
+                .about("Write a file into flash.")
+                .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
+                .arg(arg!(-f --force "ignore firmware size check"))
+                .arg(arg!(--format <FORMAT>).value_parser(Format::available_formats()))
+                .arg(
+                    arg!(-r --retry <NUM> "number of attempts trying to find device")
+                        .value_parser(value_parser!(usize))
+                        .default_value(DEFAULT_RETRY_COUNT),
+                )
+                .device_args(),
         )
         .subcommand(
             Command::new("convert")
-                .short_flag('c')
-                .about("Convert payload from bootloader to JTAG and vice versa.")
-                .arg(arg!(--direction <DIRECTION> "direction of conversion").value_parser(["to_jtag", "to_isp"]).required(true))
+                .about("Convert payload from ISP to JTAG and vice versa.")
+                .arg(
+                    arg!(--direction <DIRECTION> "direction of conversion")
+                        .value_parser(["to_jtag", "to_isp"])
+                        .required(true),
+                )
                 .arg(arg!(--input_format <FORMAT>).value_parser(Format::available_formats()))
                 .arg(arg!(--output_format <FORMAT>).value_parser(Format::available_formats()))
                 .arg(arg!(input_file: <INPUT_FILE> "file to convert"))
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write results to"))
-                .device_args() // TODO: not all of these args are needed and should be removed
-        )
-        .subcommand(
-            Command::new("read")
-                .short_flag('r')
-                .about("Read flash contents.")
-                .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
-                .arg(arg!(-f --format <FORMAT>).value_parser(Format::available_formats()))
-                .arg(arg!(-s --section <SECTION> "firmware section to read").value_parser(ReadSection::available_sections()).default_value(ReadSection::Firmware.to_str()))
-                .arg(arg!(-r --retry <NUM> "number of attempts trying to find device").value_parser(value_parser!(usize)).default_value(DEFAULT_RETRY_COUNT))
-                .device_args()
-        )
-        .subcommand(
-            Command::new("write")
-                .short_flag('w')
-                .about("Write file into flash.")
-                .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
-                .arg(arg!(-f --format <FORMAT>).value_parser(Format::available_formats()))
-                .arg(arg!(-r --retry <NUM> "number of attempts trying to find device").value_parser(value_parser!(usize)).default_value(DEFAULT_RETRY_COUNT))
-                .device_args(),
+                .device_args(), // TODO: not all of these args are needed and should be removed
         )
 }
 
@@ -188,6 +201,8 @@ fn err_main() -> Result<(), CLIError> {
                 .map(|s| s.to_owned())
                 .unwrap();
 
+            let force = sub_matches.get_flag("force");
+
             let format = get_format_from_matches(sub_matches, input_file, "format");
 
             let device_spec = get_device_spec_from_matches(sub_matches);
@@ -200,14 +215,17 @@ fn err_main() -> Result<(), CLIError> {
                     firmware.len(),
                     device_spec.platform.firmware_size
                 );
-                let confirmation = Confirm::new()
-                    .with_prompt("Are you sure you want to continue?")
-                    .default(false)
-                    .interact()
-                    .unwrap();
+                if !force {
+                    eprintln!("Use --force skip confirmation");
+                    let confirmation = Confirm::new()
+                        .with_prompt("Are you sure you want to continue?")
+                        .default(false)
+                        .interact()
+                        .unwrap();
 
-                if !confirmation {
-                    return Ok(());
+                    if !confirmation {
+                        return Ok(());
+                    }
                 }
                 firmware.resize(device_spec.platform.firmware_size, 0);
             }

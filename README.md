@@ -2,11 +2,11 @@
 
 [![crate](https://img.shields.io/crates/v/sinowealth-kb-tool.svg)](https://crates.io/crates/sinowealth-kb-tool) [![ci](https://github.com/carlossless/sinowealth-kb-tool/actions/workflows/push.yml/badge.svg)](https://github.com/carlossless/sinowealth-kb-tool/actions/workflows/push.yml)
 
-A utility for reading and writing flash contents on Sinowealth 8051-based devices (keyboards and mice) since they all seem to have similar ISP bootloaders.
+A utility for reading and writing flash contents on Sinowealth 8051-based USB HID devices (keyboards and mice) through the commonly found ISP bootloader.
 
 ## Disclaimer
 
-This is an experimental tool, so use it at your own risk.
+I offer no guarantees that using this tool won't brick your device. Use this tool at your risk.
 
 ## Usage
 
@@ -18,25 +18,24 @@ This is an experimental tool, so use it at your own risk.
 
 ```sh
 # reads firmware excluding isp bootloader 
-sinowealth-kb-tool read -p nuphy-air60 foobar.hex
+sinowealth-kb-tool read -d nuphy-air60 foobar.hex
 
 # reads only isp bootloader section
-sinowealth-kb-tool read -p nuphy-air60 -b bootloader.hex
+sinowealth-kb-tool read -d nuphy-air60 -b bootloader.hex
 
 # full dump including firmware and bootloader
-sinowealth-kb-tool read -p nuphy-air60 --full full.hex
+sinowealth-kb-tool read -d nuphy-air60 --full full.hex
 
 # custom device
 sinowealth-kb-tool read \
+    --platform sh68f90 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
-    --firmware_size 61440 \
+    --firmware_size 61440 \ # optional
     --bootloader_size 4096 \ # optional
     --page_size 2048 \ # optional
     --isp_iface_num 1 \ # optional
-    --isp_usage_page 0xff00 \ # optional
-    --isp_usage 0x0001 \ # optional
-    --isp_index 0 \ # optional
+    --isp_report_id 5 \ # optional
     --reboot false \ # optional
     foobar.hex
 ```
@@ -51,15 +50,14 @@ sinowealth-kb-tool write -p nuphy-air60 foobar.hex
 
 # custom device
 sinowealth-kb-tool write \
+    --platform sh68f90 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
-    --firmware_size 61440 \
+    --firmware_size 61440 \ # optional
     --bootloader_size 4096 \ # optional
     --page_size 2048 \ # optional
     --isp_iface_num 1 \ # optional
-    --isp_usage_page 0xff00 \ # optional
-    --isp_usage 0x0001 \ # optional
-    --isp_index 0 \ # optional
+    --isp_report_id 5 \ # optional
     --reboot false \ # optional
     foobar.hex
 ```

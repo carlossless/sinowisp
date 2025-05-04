@@ -19,7 +19,6 @@ use crate::hid_tree::ItemNode;
 const REPORT_ID_ISP: u8 = 0x05;
 const CMD_ISP_MODE: u8 = 0x75;
 
-#[cfg(target_os = "windows")]
 const REPORT_ID_XFER: u8 = 0x06;
 
 const GAMING_KB_VENDOR_ID: u16 = 0x0603;
@@ -37,6 +36,8 @@ pub enum DeviceSelectorError {
     HidError(#[from] HidError),
     #[error("Failed to parse report descriptor {0:?}")]
     ReportDescriptorError(hidparser::report_descriptor_parser::ReportDescriptorError),
+    #[error("Unexpected device count")]
+    UnexpectedDeviceCount,
 }
 
 pub struct DeviceSelector {
@@ -77,6 +78,19 @@ impl DeviceSelector {
                 d.interface_number(),
                 d.path(),
             );
+        });
+        devices
+    }
+
+    fn unique_usb_device_list(&self) -> Vec<&DeviceInfo> {
+        let mut devices: Vec<_> = self.sorted_usb_device_list();
+        devices.dedup_by_key(|d| {
+            (
+                d.vendor_id(),
+                d.product_id(),
+                d.interface_number(),
+                d.path(),
+            )
         });
         devices
     }
@@ -156,24 +170,61 @@ impl DeviceSelector {
         (descriptor, feature_report_ids)
     }
 
-    fn get_device_for_report_id<'a, I: IntoIterator<Item = &'a DeviceInfo>>(
+    #[cfg(target_os = "windows")]
+    fn get_devices_for_report_ids<'a, I: IntoIterator<Item = &'a DeviceInfo>>(
         &self,
         devices: I,
-        report_id: u32,
-    ) -> Result<&'a DeviceInfo, DeviceSelectorError> {
+        report_ids: &[u32],
+    ) -> Result<Vec<&'a DeviceInfo>, DeviceSelectorError> {
+        let mut matched_devices: Vec<Option<&DeviceInfo>> = vec![None; report_ids.len()];
+
         for d in devices {
-            let ids = self.get_feature_report_ids_from_path(d.path())?;
-            for id in ids {
-                if id == report_id {
-                    return Ok(d);
+            let retrieved_ids = self.get_feature_report_ids_from_path(d.path())?;
+            for id in retrieved_ids {
+                for (i, expected_id) in report_ids.iter().enumerate() {
+                    if id == *expected_id {
+                        if matched_devices[i].is_some() {
+                            return Err(DeviceSelectorError::UnexpectedDeviceCount);
+                        }
+                        matched_devices[i] = Some(d);
+                    }
                 }
             }
         }
-        Err(DeviceSelectorError::NotFound)
+
+        if matched_devices.iter().all(|d| d.is_some()) {
+            let matched_devices: Vec<&DeviceInfo> =
+                matched_devices.into_iter().map(|d| d.unwrap()).collect();
+            Ok(matched_devices)
+        } else {
+            Err(DeviceSelectorError::NotFound)
+        }
+    }
+
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    fn get_device_for_report_ids<'a, I: IntoIterator<Item = &'a DeviceInfo>>(
+        &self,
+        devices: I,
+        report_ids: &[u32],
+    ) -> Result<&'a DeviceInfo, DeviceSelectorError> {
+        let mut matching_devices = vec![];
+
+        for d in devices {
+            let retrieved_ids = self.get_feature_report_ids_from_path(d.path())?;
+            if report_ids.iter().all(|id| retrieved_ids.contains(id)) {
+                matching_devices.push(d);
+            }
+        }
+
+        match matching_devices.len() {
+            1 => Ok(matching_devices[0]),
+            len if len > 1 => Err(DeviceSelectorError::UnexpectedDeviceCount),
+            _ => Err(DeviceSelectorError::NotFound),
+        }
     }
 
     fn find_isp_device(&self, device_spec: DeviceSpec) -> Result<ISPDevice, DeviceSelectorError> {
-        let sorted_devices = self.sorted_usb_device_list();
+        let sorted_devices = self.unique_usb_device_list();
         let isp_devices: Vec<_> = sorted_devices
             .clone()
             .into_iter()
@@ -192,32 +243,50 @@ impl DeviceSelector {
             return Err(DeviceSelectorError::NotFound);
         }
 
-        let s = isp_devices.clone();
-        // TODO: check for both feature report IDs in macOS and Linux and get that device
-        // TODO: check for each feature report IDs in Windows and get each of those devices
-        let cmd_device = self.get_device_for_report_id(s, REPORT_ID_ISP as u32)?;
-        debug!("CMD device: {}", cmd_device.info());
-        #[cfg(not(target_os = "windows"))]
-        return Ok(ISPDevice::new(
-            device_spec,
-            self.api.open_path(cmd_device.path()).unwrap(),
-        ));
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        return {
+            let device = self.get_device_for_report_ids(
+                isp_devices.clone(),
+                &[REPORT_ID_ISP as u32, REPORT_ID_XFER as u32],
+            )?;
+            debug!("ISP device: {}", device.info());
+
+            let handle = self
+                .api
+                .open_path(device.path())
+                .map_err(DeviceSelectorError::from)?;
+
+            Ok(ISPDevice::new(device_spec, handle))
+        };
 
         #[cfg(target_os = "windows")]
-        {
-            let xfer_device =
-                self.get_device_for_report_id(isp_devices.clone(), REPORT_ID_XFER as u32)?;
-            debug!("XFER device: {}", xfer_device.info());
-            return Ok(ISPDevice::new(
-                device_spec,
-                self.api.open_path(cmd_device.path()).unwrap(),
-                self.api.open_path(xfer_device.path()).unwrap(),
-            ));
-        }
+        return {
+            let devices = self.get_devices_for_report_ids(
+                isp_devices.clone(),
+                &[REPORT_ID_ISP as u32, REPORT_ID_XFER as u32],
+            )?;
+
+            let cmd_device = devices[0];
+            debug!("ISP CMD device: {}", cmd_device.info());
+
+            let xfer_device = devices[1];
+            debug!("ISP XFER device: {}", xfer_device.info());
+
+            let cmd_handle = self
+                .api
+                .open_path(cmd_device.path())
+                .map_err(DeviceSelectorError::from)?;
+            let xfer_handle = self
+                .api
+                .open_path(xfer_device.path())
+                .map_err(DeviceSelectorError::from)?;
+
+            Ok(ISPDevice::new(device_spec, cmd_handle, xfer_handle))
+        };
     }
 
     fn find_device(&self, device_spec: DeviceSpec) -> Result<HidDevice, DeviceSelectorError> {
-        let filtered_devices = self.sorted_usb_device_list().into_iter().filter(|d| {
+        let filtered_devices = self.unique_usb_device_list().into_iter().filter(|d| {
             d.vendor_id() == device_spec.vendor_id
                 && d.product_id() == device_spec.product_id
                 && d.interface_number() == device_spec.isp_iface_num
@@ -296,30 +365,48 @@ impl DeviceSelector {
         bar.enable_steady_tick(Duration::from_millis(100));
 
         for attempt in 1..retries + 1 {
-            self.api.refresh_devices()?;
             if attempt > 1 {
-                thread::sleep(time::Duration::from_millis(1000));
                 bar.set_message(format!("Retrying... Attempt {}/{}", attempt, retries));
                 info!("Retrying... Attempt {}/{}", attempt, retries);
+                self.api.refresh_devices()?;
+                thread::sleep(time::Duration::from_millis(1000));
             }
 
-            if let Ok(device) = self.find_device(device_spec) {
-                bar.set_message("Regular device found. Switching to ISP mode...");
-                if let Ok(isp_device) = self.switch_to_isp_device(device, device_spec) {
+            match self.find_device(device_spec) {
+                Ok(device) => {
+                    bar.set_message("Device found. Switching to ISP mode...");
+                    match self.switch_to_isp_device(device, device_spec) {
+                        Ok(isp_device) => {
+                            bar.finish_and_clear();
+                            eprintln!("Connected!");
+                            return Ok(isp_device);
+                        }
+                        Err(DeviceSelectorError::NotFound) => {}
+                        Err(err) => {
+                            return Err(err);
+                        }
+                    }
+                }
+                Err(DeviceSelectorError::NotFound) => {}
+                Err(err) => {
+                    return Err(err);
+                }
+            }
+
+            info!("Device not found. Trying ISP device...");
+            match self.find_isp_device(device_spec) {
+                Ok(isp_device) => {
                     bar.finish_and_clear();
                     eprintln!("Connected!");
                     return Ok(isp_device);
                 }
-            }
-            info!("Regular device not found. Trying ISP device...");
-            if let Ok(isp_device) = self.find_isp_device(device_spec) {
-                bar.finish_and_clear();
-                eprintln!("Connected!");
-                return Ok(isp_device);
+                Err(DeviceSelectorError::NotFound) => {}
+                Err(err) => {
+                    return Err(err);
+                }
             }
         }
         bar.finish_and_clear();
-        eprintln!("Device could not be found");
         Err(DeviceSelectorError::NotFound)
     }
 
