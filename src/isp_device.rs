@@ -1,10 +1,11 @@
-use std::{thread, time};
+use core::panic;
+use std::{str::FromStr, thread, time};
 
 use indicatif::ProgressBar;
 use log::{debug, error};
 use thiserror::Error;
 
-use crate::{is_expected_error, part::*, util, VerificationError};
+use crate::{device_spec::*, is_expected_error, util, VerificationError};
 
 extern crate hidapi;
 
@@ -28,7 +29,7 @@ pub struct ISPDevice {
     cmd_device: HidDevice,
     #[cfg(target_os = "windows")]
     xfer_device: HidDevice,
-    part: Part,
+    device_spec: DeviceSpec,
 }
 
 #[derive(Debug, Error)]
@@ -46,21 +47,51 @@ pub enum ReadSection {
     Full,
 }
 
+impl ReadSection {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            ReadSection::Firmware => "firmware",
+            ReadSection::Bootloader => "bootloader",
+            ReadSection::Full => "full",
+        }
+    }
+
+    pub fn available_sections() -> Vec<&'static str> {
+        vec![
+            ReadSection::Firmware.to_str(),
+            ReadSection::Bootloader.to_str(),
+            ReadSection::Full.to_str(),
+        ]
+    }
+}
+
+impl FromStr for ReadSection {
+    type Err = ();
+    fn from_str(section: &str) -> Result<Self, Self::Err> {
+        Ok(match section {
+            "bootloader" => ReadSection::Bootloader,
+            "full" => ReadSection::Full,
+            "firmware" => ReadSection::Firmware,
+            _ => panic!("Invalid read section: {}", section),
+        })
+    }
+}
+
 impl ISPDevice {
     #[cfg(not(target_os = "windows"))]
-    pub fn new(part: Part, device: HidDevice) -> Self {
+    pub fn new(device_spec: DeviceSpec, device: HidDevice) -> Self {
         Self {
             cmd_device: device,
-            part,
+            device_spec,
         }
     }
 
     #[cfg(target_os = "windows")]
-    pub fn new(part: Part, cmd_device: HidDevice, xfer_device: HidDevice) -> Self {
+    pub fn new(device_spec: DeviceSpec, cmd_device: HidDevice, xfer_device: HidDevice) -> Self {
         Self {
             cmd_device,
             xfer_device,
-            part,
+            device_spec,
         }
     }
 
@@ -68,14 +99,20 @@ impl ISPDevice {
         self.enable_firmware()?;
 
         let (start_addr, length) = match read_fragment {
-            ReadSection::Firmware => (0, self.part.firmware_size),
-            ReadSection::Bootloader => (self.part.firmware_size, self.part.bootloader_size),
-            ReadSection::Full => (0, self.part.firmware_size + self.part.bootloader_size),
+            ReadSection::Firmware => (0, self.device_spec.platform.firmware_size),
+            ReadSection::Bootloader => (
+                self.device_spec.platform.firmware_size,
+                self.device_spec.platform.bootloader_size,
+            ),
+            ReadSection::Full => (
+                0,
+                self.device_spec.platform.firmware_size + self.device_spec.platform.bootloader_size,
+            ),
         };
 
         let firmware = self.read(start_addr, length)?;
 
-        if self.part.reboot {
+        if self.device_spec.reboot {
             self.reboot();
         }
 
@@ -84,22 +121,24 @@ impl ISPDevice {
 
     pub fn write_cycle(&self, firmware: &mut [u8]) -> Result<(), ISPError> {
         // ensure that the address at <firmware_size-4> is the same as the reset vector
-        firmware.copy_within(1..3, self.part.firmware_size - 4);
+        firmware.copy_within(1..3, self.device_spec.platform.firmware_size - 4);
 
         self.erase()?;
         self.write(0, firmware)?;
 
         // cleanup the address at <firmware_size-4>
-        firmware[self.part.firmware_size - 4..self.part.firmware_size - 2].fill(0);
+        firmware[self.device_spec.platform.firmware_size - 4
+            ..self.device_spec.platform.firmware_size - 2]
+            .fill(0);
 
-        let read_back = self.read(0, self.part.firmware_size)?;
+        let read_back = self.read(0, self.device_spec.platform.firmware_size)?;
 
         eprintln!("Verifying...");
         util::verify(firmware, &read_back).map_err(ISPError::from)?;
 
         self.enable_firmware()?;
 
-        if self.part.reboot {
+        if self.device_spec.reboot {
             self.reboot();
         }
 
@@ -114,7 +153,7 @@ impl ISPDevice {
     }
 
     fn read(&self, start_addr: usize, length: usize) -> Result<Vec<u8>, ISPError> {
-        let page_size = self.part.page_size;
+        let page_size = self.device_spec.platform.page_size;
         let num_page = length / page_size;
         let mut result: Vec<u8> = vec![];
 
@@ -138,11 +177,11 @@ impl ISPDevice {
 
     fn write(&self, start_addr: usize, buffer: &[u8]) -> Result<(), ISPError> {
         eprintln!("Writing...");
-        let bar = ProgressBar::new(self.part.num_pages() as u64);
+        let bar = ProgressBar::new(self.device_spec.num_pages() as u64);
         self.init_write(start_addr)?;
 
-        let page_size = self.part.page_size;
-        for i in 0..self.part.num_pages() {
+        let page_size = self.device_spec.platform.page_size;
+        for i in 0..self.device_spec.num_pages() {
             bar.inc(1);
             debug!("Writing page {} @ offset {:#06x}", i, i * page_size);
             self.write_page(&buffer[(i * page_size)..((i + 1) * page_size)])?;
@@ -185,7 +224,7 @@ impl ISPDevice {
 
     /// Reads one page of flash contents
     fn read_page(&self, buf: &mut Vec<u8>) -> Result<(), ISPError> {
-        let page_size = self.part.page_size;
+        let page_size = self.device_spec.platform.page_size;
         let mut xfer_buf: Vec<u8> = vec![0; page_size + 2];
         xfer_buf[0] = REPORT_ID_XFER;
         xfer_buf[1] = XFER_READ_PAGE;

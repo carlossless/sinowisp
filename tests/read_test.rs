@@ -13,7 +13,7 @@ fn test_read() {
     let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--part", "nuphy-air60"])
+        .args(&["--device", "nuphy-air60"])
         .arg(&file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -34,7 +34,7 @@ fn test_read_bin() {
     let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--part", "nuphy-air60"])
+        .args(&["--device", "nuphy-air60"])
         .arg(&file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -55,7 +55,7 @@ fn test_read_bootloader() {
     let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--part", "nuphy-air60"])
+        .args(&["--device", "nuphy-air60"])
         .args(&["--section", "bootloader"])
         .arg(&file)
         .assert();
@@ -77,7 +77,7 @@ fn test_read_full() {
     let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--part", "nuphy-air60"])
+        .args(&["--device", "nuphy-air60"])
         .args(&["--section", "full"])
         .arg(&file)
         .assert();
@@ -99,6 +99,7 @@ fn test_read_custom_part() {
     let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
     let assert = cmd
         .arg("read")
+        .args(&["--platform", "sh68f90"])
         .args(&["--vendor_id", "0x05ac"])
         .args(&["--product_id", "0x024f"])
         .args(&["--isp_iface_num", "1"])
@@ -124,7 +125,7 @@ fn test_read_forced_format_bin() {
     let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--part", "nuphy-air60"])
+        .args(&["--device", "nuphy-air60"])
         .args(&["--format", "bin"])
         .arg(&file)
         .assert();

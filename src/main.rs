@@ -3,24 +3,30 @@ use std::{
     io::{self, Read},
     path::Path,
     process::ExitCode,
+    str::FromStr,
 };
 
 use clap::{arg, value_parser, ArgMatches, Command};
 use clap_num::maybe_hex;
 use device_selector::{DeviceSelector, DeviceSelectorError};
+use dialoguer::Confirm;
 use hid_tree::TreeDisplay;
 use log::error;
+use platform_spec::PlatformSpec;
 use simple_logger::SimpleLogger;
 use thiserror::Error;
 
 mod device_selector;
+mod device_spec;
 mod hid_tree;
 mod ihex;
 mod isp_device;
-mod part;
+mod platform_spec;
 mod util;
 
-pub use crate::{ihex::*, isp_device::*, part::*, util::*};
+pub use crate::{device_spec::*, ihex::*, isp_device::*, util::*};
+
+const DEFAULT_RETRY_COUNT: &str = "5";
 
 #[derive(Debug, Error)]
 pub enum CLIError {
@@ -40,6 +46,30 @@ pub enum CLIError {
 enum Format {
     IntelHex,
     Binary,
+}
+
+impl Format {
+    pub fn to_str(self) -> &'static str {
+        match self {
+            Format::IntelHex => "ihex",
+            Format::Binary => "bin",
+        }
+    }
+
+    pub fn available_formats() -> Vec<&'static str> {
+        vec![Format::IntelHex.to_str(), Format::Binary.to_str()]
+    }
+}
+
+impl FromStr for Format {
+    type Err = ();
+    fn from_str(format: &str) -> Result<Self, Self::Err> {
+        Ok(match format {
+            "ihex" => Format::IntelHex,
+            "bin" => Format::Binary,
+            _ => panic!("Invalid format: {}", format),
+        })
+    }
 }
 
 fn main() -> ExitCode {
@@ -70,31 +100,31 @@ fn cli() -> Command {
             Command::new("convert")
                 .short_flag('c')
                 .about("Convert payload from bootloader to JTAG and vice versa.")
-                .arg(arg!(-d --direction <DIRECTION> "direction of conversion").value_parser(["to_jtag", "to_isp"]).required(true))
-                .arg(arg!(--input_format <FORMAT>).value_parser(["ihex", "bin"]))
-                .arg(arg!(--output_format <FORMAT>).value_parser(["ihex", "bin"]))
+                .arg(arg!(--direction <DIRECTION> "direction of conversion").value_parser(["to_jtag", "to_isp"]).required(true))
+                .arg(arg!(--input_format <FORMAT>).value_parser(Format::available_formats()))
+                .arg(arg!(--output_format <FORMAT>).value_parser(Format::available_formats()))
                 .arg(arg!(input_file: <INPUT_FILE> "file to convert"))
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write results to"))
-                .part_args() // TODO: not all of these args are needed and should be removed
+                .device_args() // TODO: not all of these args are needed and should be removed
         )
         .subcommand(
             Command::new("read")
                 .short_flag('r')
-                .about("Read flash contents. (Intel HEX)")
+                .about("Read flash contents.")
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write flash contents to"))
-                .arg(arg!(-f --format <FORMAT>).value_parser(["ihex", "bin"]))
-                .arg(arg!(-s --section <SECTION> "firmware section to read").value_parser(["firmware", "bootloader", "full"]).default_value("firmware"))
-                .arg(arg!(-r --retry <NUM> "number of retries trying to find device").value_parser(value_parser!(usize)).default_value("5"))
-                .part_args()
+                .arg(arg!(-f --format <FORMAT>).value_parser(Format::available_formats()))
+                .arg(arg!(-s --section <SECTION> "firmware section to read").value_parser(ReadSection::available_sections()).default_value(ReadSection::Firmware.to_str()))
+                .arg(arg!(-r --retry <NUM> "number of attempts trying to find device").value_parser(value_parser!(usize)).default_value(DEFAULT_RETRY_COUNT))
+                .device_args()
         )
         .subcommand(
             Command::new("write")
                 .short_flag('w')
-                .about("Write file (Intel HEX) into flash.")
+                .about("Write file into flash.")
                 .arg(arg!(input_file: <INPUT_FILE> "payload to write into flash"))
-                .arg(arg!(-f --format <FORMAT>).value_parser(["ihex", "bin"]))
-                .arg(arg!(-r --retry <NUM> "number of retries trying to find device").value_parser(value_parser!(usize)).default_value("5"))
-                .part_args(),
+                .arg(arg!(-f --format <FORMAT>).value_parser(Format::available_formats()))
+                .arg(arg!(-r --retry <NUM> "number of attempts trying to find device").value_parser(value_parser!(usize)).default_value(DEFAULT_RETRY_COUNT))
+                .device_args(),
         )
 }
 
@@ -123,22 +153,16 @@ fn err_main() -> Result<(), CLIError> {
             let section = sub_matches
                 .get_one::<String>("section")
                 .map(|s| s.as_str())
+                .map(|s| ReadSection::from_str(s).unwrap())
                 .unwrap();
 
             let format = get_format_from_matches(sub_matches, output_file, "format");
 
-            let part = get_part_from_matches(sub_matches);
-
-            let section: ReadSection = match section {
-                "firmware" => ReadSection::Firmware,
-                "bootloader" => ReadSection::Bootloader,
-                "full" => ReadSection::Full,
-                _ => panic!("Invalid read fragment"),
-            };
+            let device_spec = get_device_spec_from_matches(sub_matches);
 
             let mut ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
             let device = ds
-                .try_fetch_isp_device(part, retry_count)
+                .try_fetch_isp_device(device_spec, retry_count)
                 .map_err(CLIError::from)?;
             let firmware = device.read_cycle(section).map_err(CLIError::from)?;
 
@@ -146,6 +170,12 @@ fn err_main() -> Result<(), CLIError> {
             eprintln!("MD5: {:x}", digest);
 
             write_with_format(output_file, &firmware, format).map_err(CLIError::from)?;
+
+            eprintln!(
+                "Successfully read {} bytes - {}",
+                firmware.len(),
+                output_file
+            );
         }
         Some(("write", sub_matches)) => {
             let input_file = sub_matches
@@ -160,19 +190,35 @@ fn err_main() -> Result<(), CLIError> {
 
             let format = get_format_from_matches(sub_matches, input_file, "format");
 
-            let part = get_part_from_matches(sub_matches);
+            let device_spec = get_device_spec_from_matches(sub_matches);
 
             let mut firmware = read_with_format(input_file, format).map_err(CLIError::from)?;
 
-            if firmware.len() < part.firmware_size {
-                firmware.resize(part.firmware_size, 0);
+            if firmware.len() < device_spec.platform.firmware_size {
+                eprintln!(
+                    "Warning: firmware size is less than expected ({}). It will be resized to {} and filled with 0",
+                    firmware.len(),
+                    device_spec.platform.firmware_size
+                );
+                let confirmation = Confirm::new()
+                    .with_prompt("Are you sure you want to continue?")
+                    .default(false)
+                    .interact()
+                    .unwrap();
+
+                if !confirmation {
+                    return Ok(());
+                }
+                firmware.resize(device_spec.platform.firmware_size, 0);
             }
 
             let mut ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
             let device = ds
-                .try_fetch_isp_device(part, retry_count)
+                .try_fetch_isp_device(device_spec, retry_count)
                 .map_err(CLIError::from)?;
             device.write_cycle(&mut firmware).map_err(CLIError::from)?;
+
+            eprintln!("Successfully wrote {} bytes", firmware.len());
         }
         Some(("list", sub_matches)) => {
             let vendor_id = sub_matches.get_one::<u16>("vendor_id");
@@ -220,38 +266,38 @@ fn err_main() -> Result<(), CLIError> {
             let input_format = get_format_from_matches(sub_matches, input_file, "input_format");
             let output_format = get_format_from_matches(sub_matches, output_file, "output_format");
 
-            let part = get_part_from_matches(sub_matches);
+            let device_spec = get_device_spec_from_matches(sub_matches);
 
             let mut firmware =
                 read_with_format(input_file, input_format).map_err(CLIError::from)?;
 
-            if firmware.len() < part.firmware_size {
+            if firmware.len() < device_spec.platform.firmware_size {
                 log::warn!(
                     "Firmware size is less than expected ({}). Increasing to {}",
                     firmware.len(),
-                    part.firmware_size
+                    device_spec.platform.firmware_size
                 );
-                firmware.resize(part.firmware_size, 0);
+                firmware.resize(device_spec.platform.firmware_size, 0);
             }
 
             match direction {
                 "to_jtag" => {
-                    convert_to_jtag_payload(&mut firmware, part).map_err(CLIError::from)?;
-                    if firmware.len() < part.total_flash_size() {
+                    convert_to_jtag_payload(&mut firmware, device_spec).map_err(CLIError::from)?;
+                    if firmware.len() < device_spec.total_flash_size() {
                         eprintln!(
                             "Firmware is smaller ({} bytes) than expected ({} bytes). This payload might not be suitable for JTAG flashing.",
                             firmware.len(),
-                            part.total_flash_size()
+                            device_spec.total_flash_size()
                         );
                     }
                 }
                 "to_isp" => {
-                    convert_to_isp_payload(&mut firmware, part).map_err(CLIError::from)?;
-                    if firmware.len() > part.firmware_size {
+                    convert_to_isp_payload(&mut firmware, device_spec).map_err(CLIError::from)?;
+                    if firmware.len() > device_spec.platform.firmware_size {
                         eprintln!(
                             "Firmware size is larger ({} bytes) than expected ({} bytes). This payload might not be suitable for ISP flashing.",
                             firmware.len(),
-                            part.firmware_size
+                            device_spec.platform.firmware_size
                         );
                     }
                 }
@@ -265,31 +311,36 @@ fn err_main() -> Result<(), CLIError> {
     Ok(())
 }
 
-trait PartCommand {
-    fn part_args(self) -> Command;
+trait DeviceCommand {
+    fn device_args(self) -> Command;
 }
 
-impl PartCommand for Command {
-    fn part_args(self) -> Command {
+impl DeviceCommand for Command {
+    fn device_args(self) -> Command {
         self.arg(
-            arg!(-p --part <PART>)
-                .value_parser(Part::available_parts())
-                .required_unless_present_all(["firmware_size", "vendor_id", "product_id"]),
+            arg!(-d --device <DEVICE>)
+                .required_unless_present_all(["platform", "vendor_id", "product_id"])
+                .value_parser(DeviceSpec::available_devices()),
         )
         .arg(
-            arg!(--firmware_size <SIZE>)
-                .required_unless_present("part")
-                .value_parser(maybe_hex::<usize>),
+            arg!(-p --platform <PLATFORM>)
+                .value_parser(PlatformSpec::available_platforms())
+                .required_unless_present("device"),
         )
         .arg(
             arg!(--vendor_id <VID>)
-                .required_unless_present("part")
+                .required_unless_present("device")
                 .value_parser(maybe_hex::<u16>),
         )
         .arg(
             arg!(--product_id <PID>)
-                .required_unless_present("part")
+                .required_unless_present("device")
                 .value_parser(maybe_hex::<u16>),
+        )
+        .arg(
+            arg!(--firmware_size <SIZE>)
+                .required_unless_present_any(["device", "platform"])
+                .value_parser(maybe_hex::<usize>),
         )
         .arg(arg!(--bootloader_size <SIZE>).value_parser(maybe_hex::<usize>))
         .arg(arg!(--page_size <SIZE>).value_parser(maybe_hex::<usize>))
@@ -319,11 +370,7 @@ fn get_format_from_matches(
     let format = sub_matches
         .get_one::<String>(format_option)
         .map(|s| s.as_str())
-        .map(|format| match format {
-            "ihex" => Format::IntelHex,
-            "bin" => Format::Binary,
-            _ => panic!("Invalid format"),
-        })
+        .map(|f| Format::from_str(f).unwrap())
         .unwrap_or(assumed_format);
 
     match (assumed_format, format) {
@@ -342,48 +389,66 @@ fn get_format_from_matches(
     format
 }
 
-fn get_part_from_matches(sub_matches: &ArgMatches) -> Part {
-    let part_name = sub_matches.get_one::<String>("part").map(|s| s.as_str());
+fn get_device_spec_from_matches(sub_matches: &ArgMatches) -> DeviceSpec {
+    let device_name = sub_matches.get_one::<String>("device").map(|s| s.as_str());
+    let platform_name = sub_matches
+        .get_one::<String>("platform")
+        .map(|s| s.as_str());
 
-    let mut part = match part_name {
-        Some(part_name) => *PARTS.get(part_name).unwrap(),
-        _ => PART_BASE_DEFAULT,
-    };
+    let vendor_id = sub_matches.get_one::<u16>("vendor_id");
+    let product_id = sub_matches.get_one::<u16>("product_id");
 
     let firmware_size = sub_matches.get_one::<usize>("firmware_size");
     let bootloader_size = sub_matches.get_one::<usize>("bootloader_size");
     let page_size = sub_matches.get_one::<usize>("page_size");
-    let vendor_id = sub_matches.get_one::<u16>("vendor_id");
-    let product_id = sub_matches.get_one::<u16>("product_id");
+
     let isp_iface_num = sub_matches.get_one::<i32>("isp_iface_num");
     let isp_report_id = sub_matches.get_one::<u32>("isp_report_id");
     let reboot = sub_matches.get_one::<bool>("reboot");
 
-    if let Some(firmware_size) = firmware_size {
-        part.firmware_size = *firmware_size;
+    let mut device_spec = None;
+    if let Some(device_name) = device_name {
+        device_spec = Some(*DEVICES.get(device_name).unwrap());
     }
+
+    if let Some(platform_name) = platform_name {
+        device_spec = match platform_name {
+            "sh68f90" => Some(DEVICE_BASE_SH68F90),
+            "sh68f91" => Some(DEVICE_BASE_SH68F881),
+            _ => panic!("Invalid platform"),
+        }
+    }
+
+    let mut device_spec = device_spec.unwrap();
+
     if let Some(vendor_id) = vendor_id {
-        part.vendor_id = *vendor_id;
+        device_spec.vendor_id = *vendor_id;
     }
     if let Some(product_id) = product_id {
-        part.product_id = *product_id;
+        device_spec.product_id = *product_id;
+    }
+
+    if let Some(firmware_size) = firmware_size {
+        device_spec.platform.firmware_size = *firmware_size;
     }
     if let Some(bootloader_size) = bootloader_size {
-        part.bootloader_size = *bootloader_size;
+        device_spec.platform.bootloader_size = *bootloader_size;
     }
     if let Some(page_size) = page_size {
-        part.page_size = *page_size;
+        device_spec.platform.page_size = *page_size;
     }
+
     if let Some(isp_iface_num) = isp_iface_num {
-        part.isp_iface_num = *isp_iface_num;
+        device_spec.isp_iface_num = *isp_iface_num;
     }
     if let Some(isp_report_id) = isp_report_id {
-        part.isp_report_id = *isp_report_id;
+        device_spec.isp_report_id = *isp_report_id;
     }
     if let Some(reboot) = reboot {
-        part.reboot = *reboot;
+        device_spec.reboot = *reboot;
     }
-    part
+
+    device_spec
 }
 
 fn read_with_format(file: &str, format: Format) -> Result<Vec<u8>, CLIError> {

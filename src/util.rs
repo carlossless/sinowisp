@@ -1,10 +1,10 @@
-use crate::part::Part;
+use crate::DeviceSpec;
 use hidapi::HidError;
 use log::error;
 use thiserror::Error;
 
 #[cfg(test)]
-use crate::part::PART_BASE_SH68F90;
+use crate::device_spec::DEVICE_BASE_SH68F90;
 
 #[derive(Debug, Clone, Error, PartialEq)]
 pub enum VerificationError {
@@ -47,7 +47,10 @@ pub enum PayloadConversionError {
     UnexpectedAddressError { source_addr: u16, target_addr: u16 },
 }
 
-pub fn convert_to_jtag_payload(input: &mut [u8], part: Part) -> Result<(), PayloadConversionError> {
+pub fn convert_to_jtag_payload(
+    input: &mut [u8],
+    device_spec: DeviceSpec,
+) -> Result<(), PayloadConversionError> {
     if input[0] != 0x02 {
         return Err(PayloadConversionError::LJMPNotFoundError { addr: 0x0000 });
     }
@@ -60,8 +63,8 @@ pub fn convert_to_jtag_payload(input: &mut [u8], part: Part) -> Result<(), Paylo
         });
     }
 
-    let bootloader_ljmp_addr = (part.firmware_size as u16).to_be_bytes();
-    let ljmp_addr = part.firmware_size - 5;
+    let bootloader_ljmp_addr = (device_spec.platform.firmware_size as u16).to_be_bytes();
+    let ljmp_addr = device_spec.platform.firmware_size - 5;
 
     input[1..3].copy_from_slice(&bootloader_ljmp_addr);
     input[ljmp_addr] = 0x02;
@@ -70,12 +73,15 @@ pub fn convert_to_jtag_payload(input: &mut [u8], part: Part) -> Result<(), Paylo
     Ok(())
 }
 
-pub fn convert_to_isp_payload(input: &mut [u8], part: Part) -> Result<(), PayloadConversionError> {
+pub fn convert_to_isp_payload(
+    input: &mut [u8],
+    device_spec: DeviceSpec,
+) -> Result<(), PayloadConversionError> {
     if input[0] != 0x02 {
         return Err(PayloadConversionError::LJMPNotFoundError { addr: 0 });
     }
 
-    let ljmp_addr = part.firmware_size - 5;
+    let ljmp_addr = device_spec.platform.firmware_size - 5;
     if input[ljmp_addr] != 0x02 {
         return Err(PayloadConversionError::LJMPNotFoundError { addr: 0x0000 });
     }
@@ -142,13 +148,13 @@ fn test_verify_error_byte_mismatch() {
 
 #[test]
 fn test_convert_to_jtag_payload() {
-    let part = PART_BASE_SH68F90;
+    let device_spec = DEVICE_BASE_SH68F90;
     let mut firmware: [u8; 65536] = [0; 65536];
     firmware[0] = 0x02;
     firmware[1] = 0x00;
     firmware[2] = 0x66;
 
-    convert_to_jtag_payload(&mut firmware, part).unwrap();
+    convert_to_jtag_payload(&mut firmware, device_spec).unwrap();
 
     assert_eq!(firmware[0..3], [0x02, 0xf0, 0x00]);
     assert_eq!(firmware[0xeffb..0xeffe], [0x02, 0x00, 0x66]);
@@ -156,7 +162,7 @@ fn test_convert_to_jtag_payload() {
 
 #[test]
 fn test_convert_to_isp_payload() {
-    let part = PART_BASE_SH68F90;
+    let device_spec = DEVICE_BASE_SH68F90;
     let mut firmware: [u8; 65536] = [0; 65536];
     firmware[0] = 0x02;
     firmware[1] = 0xf0;
@@ -165,7 +171,7 @@ fn test_convert_to_isp_payload() {
     firmware[0xeffc] = 0x00;
     firmware[0xeffd] = 0x66;
 
-    convert_to_isp_payload(&mut firmware, part).unwrap();
+    convert_to_isp_payload(&mut firmware, device_spec).unwrap();
 
     assert_eq!(firmware[0..3], [0x02, 0x00, 0x66]);
     assert_eq!(firmware[0xeffb..0xeffe], [0x00, 0x00, 0x00]);

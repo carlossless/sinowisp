@@ -10,7 +10,7 @@ use thiserror::Error;
 
 use crate::{
     hid_tree::{DeviceNode, InterfaceNode},
-    is_expected_error, ISPDevice, Part,
+    is_expected_error, DeviceSpec, ISPDevice,
 };
 
 #[cfg(any(target_os = "macos", target_os = "windows"))]
@@ -172,7 +172,7 @@ impl DeviceSelector {
         Err(DeviceSelectorError::NotFound)
     }
 
-    fn find_isp_device(&self, part: Part) -> Result<ISPDevice, DeviceSelectorError> {
+    fn find_isp_device(&self, device_spec: DeviceSpec) -> Result<ISPDevice, DeviceSelectorError> {
         let sorted_devices = self.sorted_usb_device_list();
         let isp_devices: Vec<_> = sorted_devices
             .clone()
@@ -199,7 +199,7 @@ impl DeviceSelector {
         debug!("CMD device: {}", cmd_device.info());
         #[cfg(not(target_os = "windows"))]
         return Ok(ISPDevice::new(
-            part,
+            device_spec,
             self.api.open_path(cmd_device.path()).unwrap(),
         ));
 
@@ -209,18 +209,18 @@ impl DeviceSelector {
                 self.get_device_for_report_id(isp_devices.clone(), REPORT_ID_XFER as u32)?;
             debug!("XFER device: {}", xfer_device.info());
             return Ok(ISPDevice::new(
-                part,
+                device_spec,
                 self.api.open_path(cmd_device.path()).unwrap(),
                 self.api.open_path(xfer_device.path()).unwrap(),
             ));
         }
     }
 
-    fn find_device(&self, part: Part) -> Result<HidDevice, DeviceSelectorError> {
+    fn find_device(&self, device_spec: DeviceSpec) -> Result<HidDevice, DeviceSelectorError> {
         let filtered_devices = self.sorted_usb_device_list().into_iter().filter(|d| {
-            d.vendor_id() == part.vendor_id
-                && d.product_id() == part.product_id
-                && d.interface_number() == part.isp_iface_num
+            d.vendor_id() == device_spec.vendor_id
+                && d.product_id() == device_spec.product_id
+                && d.interface_number() == device_spec.isp_iface_num
         });
 
         let mut cmd_device_info: Option<&DeviceInfo> = None;
@@ -229,7 +229,7 @@ impl DeviceSelector {
                 .get_feature_report_ids_from_path(d.path())
                 .map_err(|_| DeviceSelectorError::NotFound)?;
             for id in ids {
-                if id == part.isp_report_id {
+                if id == device_spec.isp_report_id {
                     cmd_device_info = Some(d);
                 }
             }
@@ -251,7 +251,7 @@ impl DeviceSelector {
     fn switch_to_isp_device(
         &mut self,
         device: HidDevice,
-        part: Part,
+        device_spec: DeviceSpec,
     ) -> Result<ISPDevice, DeviceSelectorError> {
         if let Err(err) = self.enter_isp_mode(&device) {
             debug!("Error: {:}", err);
@@ -271,7 +271,7 @@ impl DeviceSelector {
 
         self.api.refresh_devices()?;
 
-        let Ok(isp_device) = self.find_isp_device(part) else {
+        let Ok(isp_device) = self.find_isp_device(device_spec) else {
             info!("ISP device didn't come up...");
             return Err(DeviceSelectorError::NotFound);
         };
@@ -280,12 +280,15 @@ impl DeviceSelector {
 
     pub fn try_fetch_isp_device(
         &mut self,
-        part: Part,
+        device_spec: DeviceSpec,
         retries: usize,
     ) -> Result<ISPDevice, DeviceSelectorError> {
         eprintln!(
-            "Looking for {:04x}:{:04x} (interface_num={} report_id={})",
-            part.vendor_id, part.product_id, part.isp_iface_num, part.isp_report_id
+            "Looking for {:04x}:{:04x} (isp_iface_num={} isp_report_id={})",
+            device_spec.vendor_id,
+            device_spec.product_id,
+            device_spec.isp_iface_num,
+            device_spec.isp_report_id
         );
 
         let bar = ProgressBar::new_spinner()
@@ -300,23 +303,23 @@ impl DeviceSelector {
                 info!("Retrying... Attempt {}/{}", attempt, retries);
             }
 
-            if let Ok(device) = self.find_device(part) {
+            if let Ok(device) = self.find_device(device_spec) {
                 bar.set_message("Regular device found. Switching to ISP mode...");
-                if let Ok(isp_device) = self.switch_to_isp_device(device, part) {
+                if let Ok(isp_device) = self.switch_to_isp_device(device, device_spec) {
                     bar.finish_and_clear();
                     eprintln!("Connected!");
                     return Ok(isp_device);
                 }
             }
             info!("Regular device not found. Trying ISP device...");
-            if let Ok(isp_device) = self.find_isp_device(part) {
+            if let Ok(isp_device) = self.find_isp_device(device_spec) {
                 bar.finish_and_clear();
                 eprintln!("Connected!");
                 return Ok(isp_device);
             }
         }
-        bar.finish();
-        eprintln!("Device not found");
+        bar.finish_and_clear();
+        eprintln!("Device could not be found");
         Err(DeviceSelectorError::NotFound)
     }
 
