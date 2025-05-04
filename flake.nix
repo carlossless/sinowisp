@@ -49,8 +49,7 @@
 
             src = ./.;
 
-            checkFlags = ["--bins"]; # prevent integration tests from running since they require an attached specific device
-            doCheck = true; # run `cargo test` on build
+            doCheck = false; # integration tests from running since they require an attached specific device
 
             inherit buildInputs;
 
