@@ -11,6 +11,25 @@ defaults:
     shell: bash
 
 jobs:
+  nix-build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: cachix/install-nix-action@v31
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: cachix/cachix-action@v14
+      with:
+        name: sinowealth-kb-tool
+        authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+    - name: Build
+      run: nix build
+
   lint:
     runs-on: ubuntu-latest
     steps:
