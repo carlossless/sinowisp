@@ -397,7 +397,8 @@ dependencies = [
 [[package]]
 name = "hidparser"
 version = "1.0.2"
-source = "git+https://github.com/microsoft/mu_rust_hid.git?tag=v1.0.3#38e4bd85156e48f341f8d8110c257dfff6aee942"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1198de2f52b8ed4a9d32d1475fbfaba95a7d07b0807efb0f364717563099194c"
 
 [[package]]
 name = "iana-time-zone"

@@ -13,7 +13,7 @@ rust-version = "1.65"
 clap = "4.1"
 clap-num = "1.0"
 dialoguer = "0.11.0"
-hidparser = { git = "https://github.com/microsoft/mu_rust_hid.git", tag = "v1.0.3" } # needed until 1.0.3 is published on crates.io
+hidparser = "1.0.2"
 ihex = "3.0"
 indicatif = "0.17.11"
 itertools = "0.14.0"
