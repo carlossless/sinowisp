@@ -396,9 +396,9 @@ dependencies = [
 
 [[package]]
 name = "hidparser"
-version = "1.0.2"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1198de2f52b8ed4a9d32d1475fbfaba95a7d07b0807efb0f364717563099194c"
+checksum = "efb8ae90b8d0165be79ff98d845bebbbc9dfa0295ff2ce86beba525d93b9ba60"
 
 [[package]]
 name = "iana-time-zone"
