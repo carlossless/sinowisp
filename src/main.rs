@@ -182,7 +182,7 @@ fn err_main() -> Result<(), CLIError> {
             let digest = md5::compute(&firmware);
             eprintln!("MD5: {:x}", digest);
 
-            write_with_format(output_file, &firmware, format).map_err(CLIError::from)?;
+            write_with_format(output_file, &firmware, format)?;
 
             eprintln!(
                 "Successfully read {} bytes - {}",
@@ -207,7 +207,7 @@ fn err_main() -> Result<(), CLIError> {
 
             let device_spec = get_device_spec_from_matches(sub_matches);
 
-            let mut firmware = read_with_format(input_file, format).map_err(CLIError::from)?;
+            let mut firmware = read_with_format(input_file, format)?;
 
             if firmware.len() < device_spec.platform.firmware_size {
                 eprintln!(
@@ -286,8 +286,7 @@ fn err_main() -> Result<(), CLIError> {
 
             let device_spec = get_device_spec_from_matches(sub_matches);
 
-            let mut firmware =
-                read_with_format(input_file, input_format).map_err(CLIError::from)?;
+            let mut firmware = read_with_format(input_file, input_format)?;
 
             if firmware.len() < device_spec.platform.firmware_size {
                 log::warn!(
@@ -322,7 +321,7 @@ fn err_main() -> Result<(), CLIError> {
                 _ => unreachable!(),
             }
 
-            write_with_format(output_file, &firmware, output_format).map_err(CLIError::from)?;
+            write_with_format(output_file, &firmware, output_format)?;
         }
         _ => unreachable!(),
     }
