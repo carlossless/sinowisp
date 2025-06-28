@@ -38,6 +38,8 @@ pub enum ISPError {
     HidError(#[from] HidError),
     #[error(transparent)]
     VerificationError(#[from] VerificationError),
+    #[error("Read/Write operation mistmatch")]
+    ReadWriteMismatch,
 }
 
 #[derive(Debug, Clone)]
@@ -227,11 +229,13 @@ impl ISPDevice {
         let page_size = self.device_spec.platform.page_size;
         let mut xfer_buf: Vec<u8> = vec![0; page_size + 2];
         xfer_buf[0] = REPORT_ID_XFER;
-        xfer_buf[1] = XFER_READ_PAGE;
         self.xfer_device()
             .get_feature_report(&mut xfer_buf)
             .map_err(ISPError::from)?;
         buf.extend_from_slice(&xfer_buf[2..(page_size + 2)]);
+        if xfer_buf[1] != XFER_READ_PAGE {
+            return Err(ISPError::ReadWriteMismatch);
+        }
         Ok(())
     }
 
@@ -250,6 +254,9 @@ impl ISPDevice {
         self.xfer_device()
             .send_feature_report(&xfer_buf)
             .map_err(ISPError::from)?;
+        if xfer_buf[1] != XFER_WRITE_PAGE {
+            return Err(ISPError::ReadWriteMismatch);
+        }
         Ok(())
     }
 
