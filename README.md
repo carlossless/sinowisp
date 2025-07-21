@@ -21,7 +21,7 @@ I offer no guarantees that using this tool won't brick your device. Use this too
 sinowealth-kb-tool read -d nuphy-air60 foobar.hex
 
 # reads only isp bootloader section
-sinowealth-kb-tool read -d nuphy-air60 -b bootloader.hex
+sinowealth-kb-tool read -d nuphy-air60 -s bootloader bootloader.hex
 
 # full dump including firmware and bootloader
 sinowealth-kb-tool read -d nuphy-air60 --full full.hex

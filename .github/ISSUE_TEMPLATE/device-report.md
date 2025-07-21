@@ -41,7 +41,7 @@ reboot: false # necessary if not default, otherwise remove this line
 ## Checksums
 
 - Stock Firmware MD5: `deadbeefdeadbeefdeadbeefdeadbeef`
-- Bootloader MD5: `beefcafebeefcafebeefcafebeefcafe` _(shown when running `sinowealth-kb-tool read -b ...`)_
+- Bootloader MD5: `beefcafebeefcafebeefcafebeefcafe` _(shown when running `sinowealth-kb-tool read -s bootloader ...`)_
 
 ## Device Info (HID Reports)
 
