@@ -243,6 +243,12 @@ pub const DEVICE_EYOOSO_Z11: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_EYOOSO_Z82: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_PORTRONICS_HYDRA10: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0049,
@@ -267,6 +273,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "deltaco-wk95r" => DEVICE_DELTACO_WK95R,
     "digitalalliance-meca-warrior-x" => DEVICE_DIGITALALLIANCE_MECA_WARRIOR_X,
     "eyooso-z11" => DEVICE_EYOOSO_Z11,
+    "eyooso-z82" => DEVICE_EYOOSO_Z82,
     "genesis-thor-300-rgb" => DEVICE_GENESIS_THOR_300_RGB,
     "genesis-thor-300" => DEVICE_GENESIS_THOR_300,
     "glorious-model-o" => DEVICE_GLORIOUS_MODEL_O,

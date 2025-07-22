@@ -73,6 +73,7 @@ sinowealth-kb-tool write \
 | Deltaco Gaming WK95R | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | Digital Alliance Meca Warrior X | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | E-Yooso Z11 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK901 | ✅ | ✅ |
+| E-Yooso Z82 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Genesis Thor 300 RGB](https://genesis-zone.com/product/thor-300-rgb-brown) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | [Genesis Thor 300](https://genesis-zone.com/product/thor-300-outemu-blue) | e57490acebcaabfcff84a0ff013955d9 | SH68F881 | SH68F881W | ✅ | ✅ |
 | [Kzzi K68Pro](http://en.kzzi.com/product/37/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |
