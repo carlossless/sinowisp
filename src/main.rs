@@ -431,7 +431,7 @@ fn get_device_spec_from_matches(sub_matches: &ArgMatches) -> DeviceSpec {
     if let Some(platform_name) = platform_name {
         device_spec = match platform_name {
             "sh68f90" => Some(DEVICE_BASE_SH68F90),
-            "sh68f91" => Some(DEVICE_BASE_SH68F881),
+            "sh68f881" => Some(DEVICE_BASE_SH68F881),
             _ => panic!("Invalid platform"),
         }
     }
