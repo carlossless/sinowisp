@@ -115,7 +115,7 @@ sinowealth-kb-tool write \
 
 | Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
 | ----- | ------- | --- | --------- | ----------- | ------------ |
-| [Glorious Model O](https://web.archive.org/web/20220609205659mp_/https://www.gloriousgaming.com/products/glorious-model-o-black) | 46459c31e58194fa076b8ce8fb1f3eaa | ❓ | BY8948 | ✅ | ❓ |
+| [Glorious Model O](https://web.archive.org/web/20220609205659mp_/https://www.gloriousgaming.com/products/glorious-model-o-black) | 46459c31e58194fa076b8ce8fb1f3eaa | SH68F89 | BY8948 | ✅ | ❓ |
 | [Trust GXT 960](https://www.trust.com/en/product/23758-gxt-960-graphin-ultra-lightweight-gaming-mouse) | 620f0b67a91f7f74151bc5be745b7110 | ❓ | BY8801 | ✅ | ❓ |
 
 ## Bootloader Support
