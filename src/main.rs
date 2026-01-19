@@ -476,7 +476,7 @@ fn read_with_format(file: &str, format: Format) -> Result<Vec<u8>, CLIError> {
     match format {
         Format::IntelHex => {
             let file_str = String::from_utf8_lossy(&file_buf[..]);
-            from_ihex(&file_str, 0xFFFF).map_err(CLIError::from) // TODO reasonable length
+            from_ihex(&file_str, 0x10000).map_err(CLIError::from)
         }
         Format::Binary => Ok(file_buf),
     }

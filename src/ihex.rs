@@ -13,9 +13,9 @@ pub enum UnpackingError {
 
 #[derive(Debug, Error, PartialEq)]
 pub enum ConversionError {
-    #[error("Error while unpacking IHEX into array")]
+    #[error("Error while unpacking IHEX into array {0:?}")]
     Unpacking(#[from] UnpackingError),
-    #[error("Errow while writing IHEX to string")]
+    #[error("Errow while writing IHEX to string {0:?}")]
     Serializing(#[from] WriterError),
 }
 
