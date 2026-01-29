@@ -24,7 +24,7 @@ sinowealth-kb-tool read -d nuphy-air60 foobar.hex
 sinowealth-kb-tool read -d nuphy-air60 -s bootloader bootloader.hex
 
 # full dump including firmware and bootloader
-sinowealth-kb-tool read -d nuphy-air60 --full full.hex
+sinowealth-kb-tool read -d nuphy-air60 -s full full.hex
 
 # custom device
 sinowealth-kb-tool read \
