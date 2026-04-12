@@ -243,6 +243,13 @@ pub const DEVICE_REDRAGON_K630_NO_RGB: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_CIY_X77: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0016,
+    reboot: false,
+    ..DEVICE_BASE_SH68F881
+};
+
 pub const DEVICE_EWEADN_V20: DeviceSpec = DeviceSpec {
     vendor_id: 0x05ac,
     product_id: 0x024f,
@@ -282,6 +289,7 @@ pub const DEVICE_YINREN_R108: DeviceSpec = DeviceSpec {
 pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "aula-f75" => DEVICE_AULA_F75,
     "aula-f87" => DEVICE_AULA_F87,
+    "ciy-x77" => DEVICE_CIY_X77,
     "deltaco-wk95r" => DEVICE_DELTACO_WK95R,
     "digitalalliance-meca-warrior-x" => DEVICE_DIGITALALLIANCE_MECA_WARRIOR_X,
     "eweadn-v20" => DEVICE_EWEADN_V20,

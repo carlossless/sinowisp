@@ -70,6 +70,7 @@ sinowealth-kb-tool write \
 | ----- | ------- | --- | --------- | ----------- | ------------ |
 | [Aula F75](https://www.aulastar.com/gaming-keyboard/176.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
+| [CIY X77](https://a.co/d/fKEpeLU) | 46459c31e58194fa076b8ce8fb1f3eaa | SH68F88P (?) | BYK816 | ✅ | ❓ |
 | Deltaco Gaming WK95R | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | Digital Alliance Meca Warrior X | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | E-Yooso Z11 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK901 | ✅ | ✅ |
@@ -128,7 +129,7 @@ sinowealth-kb-tool write \
 | 13df4ce2933f9654ffef80d6a3c27199 | ?        | ?        | ok    |
 | 2d169670eae0d36eae8188562c1f66e8 | ok       | ?        | ok    |
 | 3e0ebd0c440af5236d7ff8872343f85d | ok       | ok       | ok    |
-| 46459c31e58194fa076b8ce8fb1f3eaa | ?        | ?        | ok    |
+| 46459c31e58194fa076b8ce8fb1f3eaa | ok       | ?        | ok    |
 | 620f0b67a91f7f74151bc5be745b7110 | ?        | fail[^1] | ok    |
 | cfc8661da8c9d7e351b36c0a763426aa | ok       | fail[^1] | ok    |
 | e57490acebcaabfcff84a0ff013955d9 | ok       | fail[^1] | ok    |
