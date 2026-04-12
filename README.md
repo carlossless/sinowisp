@@ -75,10 +75,10 @@ sinowealth-kb-tool write \
 | Digital Alliance Meca Warrior X | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | E-Yooso Z11 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK901 | ✅ | ✅ |
 | E-Yooso Z82 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
-| [Genesis Thor 300 RGB](https://genesis-zone.com/product/thor-300-rgb-brown) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | [Genesis Thor 300](https://genesis-zone.com/product/thor-300-outemu-blue) | e57490acebcaabfcff84a0ff013955d9 | SH68F881 | SH68F881W | ✅ | ✅ |
-| [Kzzi K68Pro](http://en.kzzi.com/product/37/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |
+| [Genesis Thor 300 RGB](https://genesis-zone.com/product/thor-300-rgb-brown) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | Hykker X Range 2017 (RE-K70-BYK800) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 | BYK801 | ✅ | ❓ |
+| [Kzzi K68Pro](http://en.kzzi.com/product/37/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |
 | [Leobog Hi75](https://leobogtech.com/products/leobog-hi75) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Machenike K500-B61](https://global.machenike.com/products/k500-b61) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90? | BYK916 | ✅ | ✅ |
 | [MageGee MK-STAR61](https://www.magegee.com/products2.html?pid=1644595&_t=1737191677) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
@@ -88,10 +88,10 @@ sinowealth-kb-tool write \
 | [NuPhy Halo65](https://nuphy.com/products/halo65) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Portronics Hydra 10](https://www.portronics.com/products/hydra-10) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | [Redragon K530 Draconic PRO](https://www.redragonzone.com/products/draconic-k530) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | BYK916 | ✅ | ✅ |
-| [Redragon K630 Single LED version](https://www.redragonzone.com/products/redragon-k630-gaming-mechanical-keyboard) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | SH68F90AU | ✅ | ✅ |
 | [Redragon K614 Anivia 60%](https://www.redragonzone.com/products/redragon-k614-anivia-60-ultra-thin-wired-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | [Redragon K617 FIZZ 60%](https://www.redragonzone.com/collections/keyboard/products/redragon-k617-fizz-60-wired-rgb-gaming-keyboard-61-keys-compact-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | [Redragon K618](https://www.redragonzone.com/products/redragon-k618-horus-wireless-rgb-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
+| [Redragon K630 Single LED version](https://www.redragonzone.com/products/redragon-k630-gaming-mechanical-keyboard) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | SH68F90AU | ✅ | ✅ |
 | [Redragon K633 RYZE](https://www.redragonzone.com/products/redragon-k633-ryze-rgb-led-backlit-mechanical-gaming-keyboard-with-68-professional-keys-linear-red-switches) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | [Redragon K641 SHACO PRO](https://www.redragonzone.com/products/redragon-k641-shaco-pro-65-aluminum-rgb-mechanical-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Redragon K652 PRO](https://www.redragonzone.com/products/redragon-k652-75-wireless-rgb-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |

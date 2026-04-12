@@ -39,18 +39,6 @@ pub const DEVICE_BASE_SH68F881: DeviceSpec = DeviceSpec {
     reboot: DEFAULT_REBOOT,
 };
 
-pub const DEVICE_NUPHY_AIR60: DeviceSpec = DeviceSpec {
-    vendor_id: 0x05ac,
-    product_id: 0x024f,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_LEOBOG_HI75: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x010c,
-    ..DEVICE_BASE_SH68F90
-};
-
 pub const DEVICE_AULA_F75: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x010c,
@@ -63,112 +51,11 @@ pub const DEVICE_AULA_F87: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
-pub const DEVICE_XINMENG_K916: DeviceSpec = DeviceSpec {
+pub const DEVICE_CIY_X77: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
-    product_id: 0x00a1,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_XINMENG_XM_RF68: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x002a,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_XINMENG_M71: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x010c,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_RE_K70_BYK800: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x001a,
+    product_id: 0x0016,
+    reboot: false,
     ..DEVICE_BASE_SH68F881
-};
-
-pub const DEVICE_TERPORT_TR95: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_REDRAGON_FIZZ_K617: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_REDRAGON_K618: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_REDRAGON_ANIVIA_K614: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_REDRAGON_K641_SHACO_PRO: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_GENESIS_THOR_300: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x001f,
-    ..DEVICE_BASE_SH68F881
-};
-
-pub const DEVICE_GENESIS_THOR_300_RGB: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0090,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_ROYALKLUDGE_RK61: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x00c7,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_ROYALKLUDGE_RK68_ISO_RETURN: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x00a9,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_ROYALKLUDGE_RK68_BT_DUAL: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x008b,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_ROYALKLUDGE_RKG68: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_ROYALKLUDGE_RK71: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x00ea,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_ROYALKLUDGE_RK84_ISO_RETURN: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x00f4,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_ROYALKLUDGE_RK100: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0056,
-    ..DEVICE_BASE_SH68F90
 };
 
 pub const DEVICE_DELTACO_WK95R: DeviceSpec = DeviceSpec {
@@ -181,73 +68,6 @@ pub const DEVICE_DIGITALALLIANCE_MECA_WARRIOR_X: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0090,
     ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_KZZI_K68PRO: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0186,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_WEIKAV_SUGAR65: DeviceSpec = DeviceSpec {
-    vendor_id: 0x05ac,
-    product_id: 0x024f,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_TRUST_GXT_960: DeviceSpec = DeviceSpec {
-    vendor_id: 0x145f,
-    product_id: 0x02b6,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_GLORIOUS_MODEL_O: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0036,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_MACHENIKE_K500_B61: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_MAGEGEE_MKSTAR61: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x010c,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_REDRAGON_K658_PRO_SE: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_REDRAGON_K652_PRO: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_REDRAGON_K530_DRACONIC_PRO: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0049,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_REDRAGON_K630_NO_RGB: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x002a,
-    ..DEVICE_BASE_SH68F90
-};
-
-pub const DEVICE_CIY_X77: DeviceSpec = DeviceSpec {
-    vendor_id: 0x258a,
-    product_id: 0x0016,
-    reboot: false,
-    ..DEVICE_BASE_SH68F881
 };
 
 pub const DEVICE_EWEADN_V20: DeviceSpec = DeviceSpec {
@@ -268,15 +88,195 @@ pub const DEVICE_EYOOSO_Z82: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_GENESIS_THOR_300: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x001f,
+    ..DEVICE_BASE_SH68F881
+};
+
+pub const DEVICE_GENESIS_THOR_300_RGB: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0090,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_GLORIOUS_MODEL_O: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0036,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_KZZI_K68PRO: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0186,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_LEOBOG_HI75: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_MACHENIKE_K500_B61: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_MAGEGEE_MKSTAR61: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_NUPHY_AIR60: DeviceSpec = DeviceSpec {
+    vendor_id: 0x05ac,
+    product_id: 0x024f,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_PORTRONICS_HYDRA10: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0049,
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_RE_K70_BYK800: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x001a,
+    ..DEVICE_BASE_SH68F881
+};
+
+pub const DEVICE_REDRAGON_ANIVIA_K614: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_REDRAGON_FIZZ_K617: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_REDRAGON_K530_DRACONIC_PRO: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_REDRAGON_K618: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_REDRAGON_K630_NO_RGB: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x002a,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_REDRAGON_K633_RYZE: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_REDRAGON_K641_SHACO_PRO: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_REDRAGON_K652_PRO: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_REDRAGON_K658_PRO_SE: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_ROYALKLUDGE_RK100: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0056,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_ROYALKLUDGE_RK61: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x00c7,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_ROYALKLUDGE_RK68_BT_DUAL: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x008b,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_ROYALKLUDGE_RK68_ISO_RETURN: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x00a9,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_ROYALKLUDGE_RK71: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x00ea,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_ROYALKLUDGE_RK84_ISO_RETURN: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x00f4,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_ROYALKLUDGE_RKG68: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_TERPORT_TR95: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_TRUST_GXT_960: DeviceSpec = DeviceSpec {
+    vendor_id: 0x145f,
+    product_id: 0x02b6,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_WEIKAV_SUGAR65: DeviceSpec = DeviceSpec {
+    vendor_id: 0x05ac,
+    product_id: 0x024f,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_XINMENG_K916: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x00a1,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_XINMENG_M71: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    ..DEVICE_BASE_SH68F90
+};
+
+pub const DEVICE_XINMENG_XM_RF68: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x002a,
     ..DEVICE_BASE_SH68F90
 };
 
@@ -295,8 +295,8 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "eweadn-v20" => DEVICE_EWEADN_V20,
     "eyooso-z11" => DEVICE_EYOOSO_Z11,
     "eyooso-z82" => DEVICE_EYOOSO_Z82,
-    "genesis-thor-300-rgb" => DEVICE_GENESIS_THOR_300_RGB,
     "genesis-thor-300" => DEVICE_GENESIS_THOR_300,
+    "genesis-thor-300-rgb" => DEVICE_GENESIS_THOR_300_RGB,
     "glorious-model-o" => DEVICE_GLORIOUS_MODEL_O,
     "kzzi-k68pro" => DEVICE_KZZI_K68PRO,
     "leobog-hi75" => DEVICE_LEOBOG_HI75,
@@ -309,10 +309,10 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "portronics-hydra10" => DEVICE_PORTRONICS_HYDRA10,
     "re-k70-byk800" => DEVICE_RE_K70_BYK800,
     "redragon-k530-draconic-pro" => DEVICE_REDRAGON_K530_DRACONIC_PRO,
-    "redragon-k630-norgb" => DEVICE_REDRAGON_K630_NO_RGB,
     "redragon-k614-anivia" => DEVICE_REDRAGON_ANIVIA_K614,
     "redragon-k617-fizz" => DEVICE_REDRAGON_FIZZ_K617,
     "redragon-k618" => DEVICE_REDRAGON_K618,
+    "redragon-k630-norgb" => DEVICE_REDRAGON_K630_NO_RGB,
     "redragon-k633-ryze" => DEVICE_REDRAGON_K633_RYZE,
     "redragon-k641-shaco-pro" => DEVICE_REDRAGON_K641_SHACO_PRO,
     "redragon-k652-pro" => DEVICE_REDRAGON_K652_PRO,
