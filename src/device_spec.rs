@@ -244,6 +244,12 @@ pub const DEVICE_ROYALKLUDGE_RKG68: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_SUPERFRAME_PHANTOM: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x019d,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_TERPORT_TR95: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0049,
@@ -324,6 +330,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "royalkludge-rk71" => DEVICE_ROYALKLUDGE_RK71,
     "royalkludge-rk84-iso-return" => DEVICE_ROYALKLUDGE_RK84_ISO_RETURN,
     "royalkludge-rkg68" => DEVICE_ROYALKLUDGE_RKG68,
+    "superframe-phantom" => DEVICE_SUPERFRAME_PHANTOM,
     "terport-tr95" => DEVICE_TERPORT_TR95,
     "trust-gxt-960" => DEVICE_TRUST_GXT_960,
     "weikav-sugar65" => DEVICE_WEIKAV_SUGAR65,
