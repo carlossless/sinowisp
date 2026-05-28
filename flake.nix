@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     utils.url = "github:numtide/flake-utils";
-    naersk.url = "github:nix-community/naersk";
+    naersk.url = "github:link2xt/naersk/link2xt/static-crates-io";
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
