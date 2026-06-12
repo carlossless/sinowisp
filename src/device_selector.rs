@@ -1,7 +1,7 @@
 use core::time;
-use std::{ffi::CStr, thread, time::Duration};
+use std::{thread, time::Duration};
 
-use hidapi::{BusType, DeviceInfo, HidDevice, HidError, MAX_REPORT_DESCRIPTOR_SIZE};
+use crate::hid::{BusType, DeviceInfo, HidApi, HidDevice, HidError, MAX_REPORT_DESCRIPTOR_SIZE};
 use hidparser::parse_report_descriptor;
 use indicatif::ProgressBar;
 use itertools::Itertools;
@@ -41,12 +41,12 @@ pub enum DeviceSelectorError {
 }
 
 pub struct DeviceSelector {
-    api: hidapi::HidApi,
+    api: HidApi,
 }
 
 impl DeviceSelector {
     pub fn new() -> Result<Self, DeviceSelectorError> {
-        let api = hidapi::HidApi::new().map_err(DeviceSelectorError::from)?;
+        let api = HidApi::new().map_err(DeviceSelectorError::from)?;
 
         #[cfg(target_os = "macos")]
         api.set_open_exclusive(false); // macOS will throw a privilege violation error otherwise
@@ -58,7 +58,7 @@ impl DeviceSelector {
         let mut devices: Vec<_> = self
             .api
             .device_list()
-            .filter(|d| d.bus_type() as u32 == BusType::Usb as u32)
+            .filter(|d| d.bus_type() == BusType::Usb)
             .collect();
         // TODO: move out the platform specific sorting
         devices.sort_by_key(|d| {
@@ -97,7 +97,7 @@ impl DeviceSelector {
 
     fn get_feature_report_ids_from_path(
         &self,
-        path: &CStr,
+        path: &str,
     ) -> Result<Vec<u32>, DeviceSelectorError> {
         let dev = self
             .api
@@ -143,7 +143,7 @@ impl DeviceSelector {
 
     fn get_descriptor_with_features(
         &self,
-        path: &CStr,
+        path: &str,
     ) -> (
         Result<Vec<u8>, DeviceSelectorError>,
         Result<Vec<u32>, DeviceSelectorError>,
@@ -459,7 +459,7 @@ impl DeviceSelector {
                         let (descriptor, feature_report_ids) =
                             self.get_descriptor_with_features(path);
                         children.push(ItemNode {
-                            path: path.to_str().unwrap().to_string(),
+                            path: path.to_string(),
                             usage_page: d.usage_page(),
                             usage: d.usage(),
                             descriptor,
@@ -472,7 +472,7 @@ impl DeviceSelector {
                 let (descriptor, feature_report_ids) = self.get_descriptor_with_features(path);
                 let interface_node = InterfaceNode {
                     #[cfg(any(target_os = "macos", target_os = "linux"))]
-                    path: path.to_str().unwrap().to_string(),
+                    path: path.to_string(),
                     interface_number,
                     #[cfg(any(target_os = "macos", target_os = "linux"))]
                     descriptor,

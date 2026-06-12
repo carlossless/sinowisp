@@ -9,6 +9,11 @@ edition = "2021"
 license = "MIT"
 rust-version = "1.88"
 
+[features]
+default = []
+# Use hidra's nusb-based USB backend on Linux instead of hidraw.
+nusb = ["hidra/nusb"]
+
 [dependencies]
 clap = "4.1"
 clap-num = "1.0"
@@ -20,10 +25,11 @@ itertools = "0.14.0"
 md5 = "0.7"
 thiserror = "2.0"
 
-[dependencies.hidapi]
-version = "2.6"
-default-features = false
-features = ["linux-static-libusb"]
+# Pure-Rust HID. On Linux the default is the hidraw backend; the `usb`
+# feature switches to the nusb-based backend (the hidapi `linux-static-libusb`
+# equivalent).
+[dependencies.hidra]
+git = "https://github.com/carlossless/hidra"
 
 [dependencies.log]
 version = "0.4"

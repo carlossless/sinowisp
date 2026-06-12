@@ -5,11 +5,8 @@ use indicatif::ProgressBar;
 use log::{debug, error};
 use thiserror::Error;
 
+use crate::hid::{HidDevice, HidError};
 use crate::{device_spec::*, is_expected_error, util, VerificationError};
-
-extern crate hidapi;
-
-use hidapi::{HidDevice, HidError};
 
 const COMMAND_LENGTH: usize = 6;
 

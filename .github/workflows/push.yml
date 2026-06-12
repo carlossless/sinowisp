@@ -55,29 +55,41 @@ jobs:
             ~/.cargo/registry
             ./target
           key: test-cargo-registry
-      - name: Install and configure dependencies
-        run: |
-          sudo apt-get install -qq libusb-1.0.0-dev
-      - name: Run tests
+      - name: Run tests (hidraw backend)
         run: cargo test --bins --verbose
+      - name: Run tests (nusb backend)
+        run: cargo test --bins --features nusb --verbose
 
   build:
     strategy:
       fail-fast: false
       matrix:
         include:
+          # Two Linux variants: the default hidraw backend and the nusb backend.
           - TARGET: x86_64-unknown-linux-gnu
             OS: ubuntu-latest
+            FEATURES: ""
+            LABEL: hidraw
+          - TARGET: x86_64-unknown-linux-gnu
+            OS: ubuntu-latest
+            FEATURES: "nusb"
+            LABEL: nusb
           - TARGET: x86_64-apple-darwin
             OS: macos-latest
+            FEATURES: ""
+            LABEL: ""
           - TARGET: x86_64-pc-windows-msvc
             OS: windows-latest
+            FEATURES: ""
+            LABEL: ""
     needs: test
     runs-on: ${{ matrix.OS }}
     env:
       NAME: sinowealth-kb-tool
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
+      FEATURES: ${{ matrix.FEATURES }}
+      LABEL: ${{ matrix.LABEL }}
     steps:
       - uses: actions/checkout@v4
       - name: Cargo cache
@@ -86,18 +98,11 @@ jobs:
           path: |
             ~/.cargo/registry
             ./target
-          key: build-cargo-registry-${{matrix.TARGET}}
-      - name: Install and configure dependencies
-        run: |
-          # dependencies are only needed on ubuntu as that's the only place where
-          # we make cross-compilation
-          if [[ $OS =~ ^ubuntu.*$ ]]; then
-            sudo apt-get install -qq libusb-1.0-0-dev
-          fi
+          key: build-cargo-registry-${{matrix.TARGET}}-${{matrix.LABEL}}
       - name: Install rust target
         run: rustup target add $TARGET
       - name: Run build
-        run: cargo build --release --verbose --target $TARGET
+        run: cargo build --release --verbose --target $TARGET ${FEATURES:+--features "$FEATURES"}
       - name: Compress
         run: |
           mkdir -p ./artifacts
@@ -112,12 +117,14 @@ jobs:
           else
             TAG=$GITHUB_SHA
           fi
+          # include the backend label in the artifact name when set (Linux)
+          ARTIFACT=$NAME-$TARGET${LABEL:+-$LABEL}-$TAG
           mv ./target/$TARGET/release/$EXEC ./$EXEC
-          tar -czf ./artifacts/$NAME-$TARGET-$TAG.tar.gz $EXEC
+          tar -czf ./artifacts/$ARTIFACT.tar.gz $EXEC
       - name: Archive artifact
         uses: actions/upload-artifact@v4
         with:
-          name: result-${{ matrix.TARGET }}
+          name: result-${{ matrix.TARGET }}${{ matrix.LABEL && format('-{0}', matrix.LABEL) || '' }}
           path: |
             ./artifacts
 
