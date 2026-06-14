@@ -191,6 +191,54 @@ impl ISPDevice {
         Ok(())
     }
 
+    /// Reads `length` bytes starting at `start_addr` by looping over pages.
+    ///
+    /// `progress` is invoked after each page with `(pages_done, pages_total)`;
+    /// pass `&|_, _| {}` if you do not need it. This is mechanical protocol with
+    /// no delays, so it stays in the library; sequencing it into a full read
+    /// cycle (and the surrounding settle delays) is the caller's job.
+    pub async fn read(
+        &self,
+        start_addr: usize,
+        length: usize,
+        progress: &dyn Fn(usize, usize),
+    ) -> Result<Vec<u8>, ISPError> {
+        let page_size = self.device_spec.platform.page_size;
+        let num_page = length / page_size;
+
+        self.init_read(start_addr).await?;
+
+        let mut result: Vec<u8> = vec![];
+        for i in 0..num_page {
+            self.read_page(&mut result).await?;
+            progress(i + 1, num_page);
+        }
+        Ok(result)
+    }
+
+    /// Writes `num_pages` pages from `buffer`, starting at `start_addr`.
+    ///
+    /// `progress` is invoked after each page with `(pages_done, pages_total)`;
+    /// pass `&|_, _| {}` if you do not need it.
+    pub async fn write(
+        &self,
+        start_addr: usize,
+        buffer: &[u8],
+        progress: &dyn Fn(usize, usize),
+    ) -> Result<(), ISPError> {
+        let page_size = self.device_spec.platform.page_size;
+        let num_page = self.device_spec.num_pages();
+
+        self.init_write(start_addr).await?;
+
+        for i in 0..num_page {
+            self.write_page(&buffer[(i * page_size)..((i + 1) * page_size)])
+                .await?;
+            progress(i + 1, num_page);
+        }
+        Ok(())
+    }
+
     /// Erases everything in flash, except the ISP bootloader section itself and initializes the
     /// reset vector to jump to ISP.
     ///

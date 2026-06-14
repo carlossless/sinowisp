@@ -67,42 +67,42 @@ pub fn write_cycle(device: &ISPDevice, firmware: &mut [u8]) -> Result<(), ISPErr
 fn read(device: &ISPDevice, start_addr: usize, length: usize) -> Result<Vec<u8>, ISPError> {
     let page_size = device.device_spec().platform.page_size;
     let num_page = length / page_size;
-    let mut result: Vec<u8> = vec![];
 
     eprintln!("Reading...");
     let bar = ProgressBar::new(num_page as u64);
 
-    device.init_read(start_addr).wait()?;
+    let result = device
+        .read(start_addr, length, &|done, _total| {
+            debug!(
+                "Reading page {} @ offset {:#06x}",
+                done - 1,
+                start_addr + (done - 1) * page_size
+            );
+            bar.set_position(done as u64);
+        })
+        .wait()?;
 
-    for i in 0..num_page {
-        bar.inc(1);
-        debug!(
-            "Reading page {} @ offset {:#06x}",
-            i,
-            start_addr + i * page_size
-        );
-        device.read_page(&mut result).wait()?;
-    }
     bar.finish();
     Ok(result)
 }
 
 fn write(device: &ISPDevice, start_addr: usize, buffer: &[u8]) -> Result<(), ISPError> {
-    let spec = *device.device_spec();
-    let page_size = spec.platform.page_size;
+    let page_size = device.device_spec().platform.page_size;
 
     eprintln!("Writing...");
-    let bar = ProgressBar::new(spec.num_pages() as u64);
+    let bar = ProgressBar::new(device.device_spec().num_pages() as u64);
 
-    device.init_write(start_addr).wait()?;
+    device
+        .write(start_addr, buffer, &|done, _total| {
+            debug!(
+                "Writing page {} @ offset {:#06x}",
+                done - 1,
+                (done - 1) * page_size
+            );
+            bar.set_position(done as u64);
+        })
+        .wait()?;
 
-    for i in 0..spec.num_pages() {
-        bar.inc(1);
-        debug!("Writing page {} @ offset {:#06x}", i, i * page_size);
-        device
-            .write_page(&buffer[(i * page_size)..((i + 1) * page_size)])
-            .wait()?;
-    }
     bar.finish();
     Ok(())
 }
