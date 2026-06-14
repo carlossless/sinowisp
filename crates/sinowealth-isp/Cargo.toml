@@ -1,7 +1,7 @@
 [package]
 name = "sinowealth-isp"
 description = """
-Reusable async implementation of the Sinowealth 8051 HID ISP bootloader protocol, built on hidra and usable on native targets and the web (WebHID via wasm).
+Reusable async primitives for the Sinowealth 8051 HID ISP bootloader protocol, built on hidra and usable on native targets and the web (WebHID via wasm).
 """
 version.workspace = true
 edition.workspace = true
@@ -18,13 +18,4 @@ nusb = ["hidra/nusb"]
 hidra.workspace = true
 ihex.workspace = true
 thiserror.workspace = true
-log.workspace = true
 phf.workspace = true
-
-# The async page delays use a browser timer on the web; on native targets the
-# delay is driven by a plain thread-backed timer with no extra dependencies.
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-js-sys = "0.3"
-wasm-bindgen = "0.2"
-wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3", features = ["Window"] }

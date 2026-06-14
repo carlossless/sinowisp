@@ -976,13 +976,8 @@ version = "1.0.1"
 dependencies = [
  "hidra",
  "ihex",
- "js-sys",
- "log",
  "phf",
  "thiserror 2.0.18",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
 ]
 
 [[package]]
