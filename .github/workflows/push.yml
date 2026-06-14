@@ -17,13 +17,13 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 0
     - uses: cachix/install-nix-action@v31
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
-    - uses: cachix/cachix-action@v14
+    - uses: cachix/cachix-action@v17
       with:
         name: sinowealth-kb-tool
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -33,9 +33,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Cargo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -47,9 +47,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Cargo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -91,9 +91,9 @@ jobs:
       FEATURES: ${{ matrix.FEATURES }}
       LABEL: ${{ matrix.LABEL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Cargo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -122,7 +122,7 @@ jobs:
           mv ./target/$TARGET/release/$EXEC ./$EXEC
           tar -czf ./artifacts/$ARTIFACT.tar.gz $EXEC
       - name: Archive artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: result-${{ matrix.TARGET }}${{ matrix.LABEL && format('-{0}', matrix.LABEL) || '' }}
           path: |
@@ -136,13 +136,13 @@ jobs:
       contents: write
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: result-*
           merge-multiple: true
           path: ./artifacts
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: true
           generate_release_notes: true
