@@ -1,15 +1,11 @@
 //! HID backend selection.
 //!
-//! On Linux the backend is chosen at build time: the default `hidraw` backend,
-//! or the nusb-based USB backend when built with the `nusb` feature (the
-//! equivalent of the old hidapi `linux-static-libusb` setup). macOS and
-//! Windows always use the platform's native HID stack. Every backend exposes
-//! the same method surface.
+//! hidra exposes one `HidApi`/`HidDevice` regardless of backend. The default
+//! is the per-OS native backend (hidraw on Linux); the `nusb` feature switches
+//! hidra to its nusb-based USB transport (the equivalent of the old hidapi
+//! `linux-static-libusb` setup). Every hidra I/O method returns a future;
+//! this tool drives them synchronously with `MaybeFuture::wait`.
 
-#[cfg(all(target_os = "linux", feature = "nusb"))]
-pub use hidra::usb::{UsbHidApi as HidApi, UsbHidDevice as HidDevice};
-
-#[cfg(not(all(target_os = "linux", feature = "nusb")))]
-pub use hidra::{HidApi, HidDevice};
-
-pub use hidra::{BusType, DeviceInfo, HidError, MAX_REPORT_DESCRIPTOR_SIZE};
+pub use hidra::{
+    BusType, DeviceInfo, HidApi, HidDevice, HidError, MaybeFuture, MAX_REPORT_DESCRIPTOR_SIZE,
+};

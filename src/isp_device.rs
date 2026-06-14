@@ -5,7 +5,7 @@ use indicatif::ProgressBar;
 use log::{debug, error};
 use thiserror::Error;
 
-use crate::hid::{HidDevice, HidError};
+use crate::hid::{HidDevice, HidError, MaybeFuture};
 use crate::{device_spec::*, is_expected_error, util, VerificationError};
 
 const COMMAND_LENGTH: usize = 6;
@@ -201,6 +201,7 @@ impl ISPDevice {
         ];
         self.cmd_device
             .send_feature_report(&cmd)
+            .wait()
             .map_err(ISPError::from)?;
         Ok(())
     }
@@ -217,6 +218,7 @@ impl ISPDevice {
         ];
         self.cmd_device
             .send_feature_report(&cmd)
+            .wait()
             .map_err(ISPError::from)?;
         Ok(())
     }
@@ -228,6 +230,7 @@ impl ISPDevice {
         xfer_buf[0] = REPORT_ID_XFER;
         self.xfer_device()
             .get_feature_report(&mut xfer_buf)
+            .wait()
             .map_err(ISPError::from)?;
         buf.extend_from_slice(&xfer_buf[2..(page_size + 2)]);
         if xfer_buf[1] != XFER_READ_PAGE {
@@ -250,6 +253,7 @@ impl ISPDevice {
         xfer_buf[2..length].clone_from_slice(buf);
         self.xfer_device()
             .send_feature_report(&xfer_buf)
+            .wait()
             .map_err(ISPError::from)?;
         if xfer_buf[1] != XFER_WRITE_PAGE {
             return Err(ISPError::ReadWriteMismatch);
@@ -266,7 +270,7 @@ impl ISPDevice {
         eprintln!("Enabling firmware...");
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_ENABLE_FIRMWARE, 0, 0, 0, 0];
 
-        self.cmd_device.send_feature_report(&cmd)?;
+        self.cmd_device.send_feature_report(&cmd).wait()?;
         Ok(())
     }
 
@@ -277,6 +281,7 @@ impl ISPDevice {
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_ERASE, 0, 0, 0, 0];
         self.cmd_device
             .send_feature_report(&cmd)
+            .wait()
             .map_err(ISPError::from)?;
         thread::sleep(time::Duration::from_millis(2000));
         Ok(())
@@ -286,7 +291,7 @@ impl ISPDevice {
     fn reboot(&self) {
         eprintln!("Rebooting...");
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_REBOOT, 0, 0, 0, 0];
-        if let Err(err) = self.cmd_device.send_feature_report(&cmd) {
+        if let Err(err) = self.cmd_device.send_feature_report(&cmd).wait() {
             debug!("Error: {:}", err);
             if !is_expected_error(&err) {
                 error!("Unexpected error: {:}", err);

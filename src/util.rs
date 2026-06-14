@@ -106,10 +106,6 @@ pub fn to_hex_string(bytes: &[u8]) -> String {
     strs.join(" ")
 }
 
-/// Entering ISP mode makes the device drop off the bus while the SetReport
-/// request is still in flight, so any transport-level failure of that
-/// command is expected. With hidapi this meant matching backend-specific
-/// message strings; hidra reports these as typed transport errors.
 pub fn is_expected_error(err: &HidError) -> bool {
     matches!(
         err,

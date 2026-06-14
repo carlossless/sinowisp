@@ -1,7 +1,9 @@
 use core::time;
 use std::{thread, time::Duration};
 
-use crate::hid::{BusType, DeviceInfo, HidApi, HidDevice, HidError, MAX_REPORT_DESCRIPTOR_SIZE};
+use crate::hid::{
+    BusType, DeviceInfo, HidApi, HidDevice, HidError, MaybeFuture, MAX_REPORT_DESCRIPTOR_SIZE,
+};
 use hidparser::parse_report_descriptor;
 use indicatif::ProgressBar;
 use itertools::Itertools;
@@ -48,7 +50,8 @@ impl DeviceSelector {
     pub fn new() -> Result<Self, DeviceSelectorError> {
         let api = HidApi::new().map_err(DeviceSelectorError::from)?;
 
-        #[cfg(target_os = "macos")]
+        // hidra only exposes this on the native macOS backend (not nusb).
+        #[cfg(all(target_os = "macos", not(feature = "nusb")))]
         api.set_open_exclusive(false); // macOS will throw a privilege violation error otherwise
 
         Ok(Self { api })
@@ -102,6 +105,7 @@ impl DeviceSelector {
         let dev = self
             .api
             .open_path(path)
+            .wait()
             .map_err(DeviceSelectorError::from)?;
         self.get_feature_report_ids_from_device(&dev)
     }
@@ -113,6 +117,7 @@ impl DeviceSelector {
         let mut buf: [u8; MAX_REPORT_DESCRIPTOR_SIZE] = [0; MAX_REPORT_DESCRIPTOR_SIZE];
         let size: usize = dev
             .get_report_descriptor(&mut buf)
+            .wait()
             .map_err(DeviceSelectorError::from)?;
         let descriptor = buf[..size].to_vec();
         self.get_feature_report_ids_from_descriptor(&descriptor)
@@ -137,6 +142,7 @@ impl DeviceSelector {
         let mut buf: [u8; MAX_REPORT_DESCRIPTOR_SIZE] = [0; MAX_REPORT_DESCRIPTOR_SIZE];
         let size: usize = dev
             .get_report_descriptor(&mut buf)
+            .wait()
             .map_err(DeviceSelectorError::from)?;
         Ok(buf[..size].to_vec())
     }
@@ -150,7 +156,7 @@ impl DeviceSelector {
     ) {
         let descriptor: Result<Vec<u8>, DeviceSelectorError>;
         let feature_report_ids: Result<Vec<u32>, DeviceSelectorError>;
-        match self.api.open_path(path) {
+        match self.api.open_path(path).wait() {
             Ok(ref dev) => {
                 descriptor = self.get_report_descriptor(dev);
                 match descriptor {
@@ -254,6 +260,7 @@ impl DeviceSelector {
             let handle = self
                 .api
                 .open_path(device.path())
+                .wait()
                 .map_err(DeviceSelectorError::from)?;
 
             Ok(ISPDevice::new(device_spec, handle))
@@ -275,10 +282,12 @@ impl DeviceSelector {
             let cmd_handle = self
                 .api
                 .open_path(cmd_device.path())
+                .wait()
                 .map_err(DeviceSelectorError::from)?;
             let xfer_handle = self
                 .api
                 .open_path(xfer_device.path())
+                .wait()
                 .map_err(DeviceSelectorError::from)?;
 
             Ok(ISPDevice::new(device_spec, cmd_handle, xfer_handle))
@@ -313,6 +322,7 @@ impl DeviceSelector {
         let device = self
             .api
             .open_path(cmd_device_info.path())
+            .wait()
             .map_err(DeviceSelectorError::from)?;
         Ok(device)
     }
@@ -412,7 +422,7 @@ impl DeviceSelector {
 
     fn enter_isp_mode(&self, handle: &HidDevice) -> Result<(), DeviceSelectorError> {
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_ISP, CMD_ISP_MODE, 0x00, 0x00, 0x00, 0x00];
-        handle.send_feature_report(&cmd)?;
+        handle.send_feature_report(&cmd).wait()?;
         Ok(())
     }
 
