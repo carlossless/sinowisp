@@ -1,52 +1,25 @@
-[package]
-name = "sinowealth-kb-tool"
-description = """
-A utility for reading and writing flash contents on Sinowealth 8051-based HID devices through the commonly found ISP bootloader
-"""
-repository = "https://github.com/carlossless/sinowealth-kb-tool"
+[workspace]
+resolver = "2"
+members = [
+    "crates/sinowealth-isp",
+    "crates/sinowealth-kb-tool",
+]
+
+[workspace.package]
 version = "1.0.1"
 edition = "2021"
 license = "MIT"
 rust-version = "1.88"
+repository = "https://github.com/carlossless/sinowealth-kb-tool"
 
-[features]
-default = []
-# Use hidra's nusb-based USB backend on Linux instead of hidraw.
-nusb = ["hidra/nusb"]
-
-[dependencies]
-clap = "4.1"
-clap-num = "1.0"
-dialoguer = "0.11.0"
-hidparser = "1.0.3"
+[workspace.dependencies]
 ihex = "3.0"
-indicatif = "0.17.11"
-itertools = "0.14.0"
-md5 = "0.7"
 thiserror = "2.0"
+log = { version = "0.4", features = ["max_level_debug"] }
+phf = { version = "0.11", features = ["macros"] }
 
-# Pure-Rust HID. On Linux the default is the hidraw backend; the `usb`
+# Pure-Rust HID. On Linux the default is the hidraw backend; the `nusb`
 # feature switches to the nusb-based backend (the hidapi `linux-static-libusb`
 # equivalent).
-[dependencies.hidra]
+[workspace.dependencies.hidra]
 git = "https://github.com/carlossless/hidra"
-
-[dependencies.log]
-version = "0.4"
-features = ["max_level_debug"]
-
-[dependencies.simple_logger]
-version = "5.1"
-default-features = false
-features = ["stderr", "colors", "timestamps"]
-
-[dependencies.phf]
-version = "0.11"
-features = ["macros"]
-
-[dev-dependencies]
-assert_cmd = "2.0.17"
-chrono = "0.4.41"
-predicates = "3.1.3"
-serial_test = "3.2.0"
-stdext = "0.3.3"

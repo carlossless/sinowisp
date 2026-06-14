@@ -1,19 +1,17 @@
 use core::time;
 use std::{thread, time::Duration};
 
-use crate::hid::{
+use hidparser::parse_report_descriptor;
+use hidra::{
     BusType, DeviceInfo, HidApi, HidDevice, HidError, MaybeFuture, MAX_REPORT_DESCRIPTOR_SIZE,
 };
-use hidparser::parse_report_descriptor;
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use log::{debug, error, info};
+use sinowealth_isp::{is_expected_error, DeviceSpec, ISPDevice};
 use thiserror::Error;
 
-use crate::{
-    hid_tree::{DeviceNode, InterfaceNode},
-    is_expected_error, DeviceSpec, ISPDevice,
-};
+use crate::hid_tree::{DeviceNode, InterfaceNode};
 
 #[cfg(any(target_os = "macos", target_os = "windows"))]
 use crate::hid_tree::ItemNode;
@@ -263,7 +261,7 @@ impl DeviceSelector {
                 .wait()
                 .map_err(DeviceSelectorError::from)?;
 
-            Ok(ISPDevice::new(device_spec, handle))
+            Ok(ISPDevice::new(device_spec, handle, None))
         };
 
         #[cfg(target_os = "windows")]
@@ -290,7 +288,7 @@ impl DeviceSelector {
                 .wait()
                 .map_err(DeviceSelectorError::from)?;
 
-            Ok(ISPDevice::new(device_spec, cmd_handle, xfer_handle))
+            Ok(ISPDevice::new(device_spec, cmd_handle, Some(xfer_handle)))
         };
     }
 

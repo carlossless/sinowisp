@@ -8,24 +8,23 @@ use std::{
 
 use clap::{arg, value_parser, ArgMatches, Command};
 use clap_num::maybe_hex;
-use device_selector::{DeviceSelector, DeviceSelectorError};
 use dialoguer::Confirm;
-use hid_tree::TreeDisplay;
-use log::error;
-use platform_spec::PlatformSpec;
+use hidra::MaybeFuture;
 use simple_logger::SimpleLogger;
 use thiserror::Error;
 
-mod device_selector;
-mod device_spec;
-mod hid;
-mod hid_tree;
-mod ihex;
-mod isp_device;
-mod platform_spec;
-mod util;
+use device_selector::{DeviceSelector, DeviceSelectorError};
+use hid_tree::TreeDisplay;
+use progress::ProgressReporter;
+use sinowealth_isp::{
+    convert_to_isp_payload, convert_to_jtag_payload, from_ihex, to_ihex, ConversionError,
+    DeviceSpec, ISPError, PayloadConversionError, PlatformSpec, ReadSection, DEVICES,
+    DEVICE_BASE_SH68F881, DEVICE_BASE_SH68F90,
+};
 
-pub use crate::{device_spec::*, ihex::*, isp_device::*, util::*};
+mod device_selector;
+mod hid_tree;
+mod progress;
 
 const DEFAULT_RETRY_COUNT: &str = "5";
 
@@ -178,7 +177,11 @@ fn err_main() -> Result<(), CLIError> {
             let device = ds
                 .try_fetch_isp_device(device_spec, retry_count)
                 .map_err(CLIError::from)?;
-            let firmware = device.read_cycle(section).map_err(CLIError::from)?;
+            let reporter = ProgressReporter::new();
+            let firmware = device
+                .read_cycle(section, &|event| reporter.report(event))
+                .wait()
+                .map_err(CLIError::from)?;
 
             let digest = md5::compute(&firmware);
             eprintln!("MD5: {:x}", digest);
@@ -235,7 +238,11 @@ fn err_main() -> Result<(), CLIError> {
             let device = ds
                 .try_fetch_isp_device(device_spec, retry_count)
                 .map_err(CLIError::from)?;
-            device.write_cycle(&mut firmware).map_err(CLIError::from)?;
+            let reporter = ProgressReporter::new();
+            device
+                .write_cycle(&mut firmware, &|event| reporter.report(event))
+                .wait()
+                .map_err(CLIError::from)?;
 
             eprintln!("Successfully wrote {} bytes", firmware.len());
         }

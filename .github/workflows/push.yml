@@ -56,9 +56,27 @@ jobs:
             ./target
           key: test-cargo-registry
       - name: Run tests (hidraw backend)
-        run: cargo test --bins --verbose
+        run: cargo test --workspace --lib --bins --verbose
       - name: Run tests (nusb backend)
-        run: cargo test --bins --features nusb --verbose
+        run: cargo test --workspace --lib --bins --features nusb --verbose
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Cargo cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ./target
+          key: wasm-cargo-registry
+      - name: Install wasm target
+        run: rustup target add wasm32-unknown-unknown
+      - name: Build sinowealth-isp for the web (WebHID)
+        run: cargo build -p sinowealth-isp --target wasm32-unknown-unknown
+        env:
+          RUSTFLAGS: "--cfg=web_sys_unstable_apis"
 
   build:
     strategy:

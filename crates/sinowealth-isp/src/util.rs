@@ -1,6 +1,5 @@
-use crate::hid::HidError;
 use crate::DeviceSpec;
-use log::error;
+use hidra::HidError;
 use thiserror::Error;
 
 #[cfg(test)]
@@ -107,10 +106,14 @@ pub fn to_hex_string(bytes: &[u8]) -> String {
 }
 
 pub fn is_expected_error(err: &HidError) -> bool {
-    matches!(
-        err,
-        HidError::Disconnected | HidError::Backend { .. } | HidError::Io { .. }
-    )
+    match err {
+        HidError::Disconnected | HidError::Backend { .. } => true,
+        // `Io` only exists on native targets; the WebHID backend reports the
+        // equivalent failures as `Disconnected` / `Backend`.
+        #[cfg(not(target_arch = "wasm32"))]
+        HidError::Io { .. } => true,
+        _ => false,
+    }
 }
 
 #[test]

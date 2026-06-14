@@ -971,6 +971,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "sinowealth-isp"
+version = "1.0.1"
+dependencies = [
+ "hidra",
+ "ihex",
+ "js-sys",
+ "log",
+ "phf",
+ "thiserror 2.0.18",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "sinowealth-kb-tool"
 version = "1.0.1"
 dependencies = [
@@ -990,6 +1005,7 @@ dependencies = [
  "predicates",
  "serial_test",
  "simple_logger",
+ "sinowealth-isp",
  "stdext",
  "thiserror 2.0.18",
 ]

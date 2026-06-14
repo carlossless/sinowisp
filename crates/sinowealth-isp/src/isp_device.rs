@@ -1,11 +1,12 @@
 use core::panic;
-use std::{str::FromStr, thread, time};
+use core::time::Duration;
+use std::str::FromStr;
 
-use indicatif::ProgressBar;
+use hidra::{HidDevice, HidError};
 use log::{debug, error};
 use thiserror::Error;
 
-use crate::hid::{HidDevice, HidError, MaybeFuture};
+use crate::sleep::sleep;
 use crate::{device_spec::*, is_expected_error, util, VerificationError};
 
 const COMMAND_LENGTH: usize = 6;
@@ -22,10 +23,30 @@ const CMD_REBOOT: u8 = 0x5a;
 const XFER_READ_PAGE: u8 = 0x72;
 const XFER_WRITE_PAGE: u8 = 0x77;
 
+const SETTLE_DELAY: Duration = Duration::from_millis(2000);
+
+/// Progress events emitted while reading or writing.
+///
+/// The protocol carries no UI of its own; a caller passes a `&dyn Fn(Progress)`
+/// and turns these into whatever it needs (a CLI progress bar, log lines, web
+/// UI updates, or nothing at all).
+#[derive(Debug, Clone)]
+pub enum Progress {
+    /// A one-off status message for the step that is about to run.
+    Status(&'static str),
+    /// A counted task is starting (e.g. reading `total` pages).
+    TaskStart { label: &'static str, total: usize },
+    /// One unit of the current counted task finished.
+    TaskAdvance,
+    /// The current counted task finished.
+    TaskFinish,
+}
+
 pub struct ISPDevice {
     cmd_device: HidDevice,
-    #[cfg(target_os = "windows")]
-    xfer_device: HidDevice,
+    /// Some platforms (Windows) expose the transfer report on a separate HID
+    /// handle; everywhere else it is the same handle as `cmd_device`.
+    xfer_device: Option<HidDevice>,
     device_spec: DeviceSpec,
 }
 
@@ -77,16 +98,16 @@ impl FromStr for ReadSection {
 }
 
 impl ISPDevice {
-    #[cfg(not(target_os = "windows"))]
-    pub fn new(device_spec: DeviceSpec, device: HidDevice) -> Self {
-        Self {
-            cmd_device: device,
-            device_spec,
-        }
-    }
-
-    #[cfg(target_os = "windows")]
-    pub fn new(device_spec: DeviceSpec, cmd_device: HidDevice, xfer_device: HidDevice) -> Self {
+    /// Builds an ISP device from one or two open HID handles.
+    ///
+    /// Pass `xfer_device = None` when the command and transfer reports live on
+    /// the same handle (Linux, macOS, WebHID). Pass a separate handle for
+    /// platforms that split them across HID collections (Windows).
+    pub fn new(
+        device_spec: DeviceSpec,
+        cmd_device: HidDevice,
+        xfer_device: Option<HidDevice>,
+    ) -> Self {
         Self {
             cmd_device,
             xfer_device,
@@ -94,8 +115,12 @@ impl ISPDevice {
         }
     }
 
-    pub fn read_cycle(&self, read_fragment: ReadSection) -> Result<Vec<u8>, ISPError> {
-        self.enable_firmware()?;
+    pub async fn read_cycle(
+        &self,
+        read_fragment: ReadSection,
+        progress: &dyn Fn(Progress),
+    ) -> Result<Vec<u8>, ISPError> {
+        self.enable_firmware(progress).await?;
 
         let (start_addr, length) = match read_fragment {
             ReadSection::Firmware => (0, self.device_spec.platform.firmware_size),
@@ -109,88 +134,106 @@ impl ISPDevice {
             ),
         };
 
-        let firmware = self.read(start_addr, length)?;
+        let firmware = self.read(start_addr, length, progress).await?;
 
         if self.device_spec.reboot {
-            self.reboot();
+            self.reboot(progress).await;
         }
 
         Ok(firmware)
     }
 
-    pub fn write_cycle(&self, firmware: &mut [u8]) -> Result<(), ISPError> {
+    pub async fn write_cycle(
+        &self,
+        firmware: &mut [u8],
+        progress: &dyn Fn(Progress),
+    ) -> Result<(), ISPError> {
         // ensure that the address at <firmware_size-4> is the same as the reset vector
         firmware.copy_within(1..3, self.device_spec.platform.firmware_size - 4);
 
-        self.erase()?;
-        self.write(0, firmware)?;
+        self.erase(progress).await?;
+        self.write(0, firmware, progress).await?;
 
         // cleanup the address at <firmware_size-4>
         firmware[self.device_spec.platform.firmware_size - 4
             ..self.device_spec.platform.firmware_size - 2]
             .fill(0);
 
-        let read_back = self.read(0, self.device_spec.platform.firmware_size)?;
+        let read_back = self
+            .read(0, self.device_spec.platform.firmware_size, progress)
+            .await?;
 
-        eprintln!("Verifying...");
+        progress(Progress::Status("Verifying..."));
         util::verify(firmware, &read_back).map_err(ISPError::from)?;
 
-        self.enable_firmware()?;
+        self.enable_firmware(progress).await?;
 
         if self.device_spec.reboot {
-            self.reboot();
+            self.reboot(progress).await;
         }
 
         Ok(())
     }
 
     fn xfer_device(&self) -> &HidDevice {
-        #[cfg(target_os = "windows")]
-        return &self.xfer_device;
-        #[cfg(not(target_os = "windows"))]
-        &self.cmd_device
+        self.xfer_device.as_ref().unwrap_or(&self.cmd_device)
     }
 
-    fn read(&self, start_addr: usize, length: usize) -> Result<Vec<u8>, ISPError> {
+    async fn read(
+        &self,
+        start_addr: usize,
+        length: usize,
+        progress: &dyn Fn(Progress),
+    ) -> Result<Vec<u8>, ISPError> {
         let page_size = self.device_spec.platform.page_size;
         let num_page = length / page_size;
         let mut result: Vec<u8> = vec![];
 
-        eprintln!("Reading...");
-        let bar = ProgressBar::new(num_page as u64);
+        progress(Progress::TaskStart {
+            label: "Reading...",
+            total: num_page,
+        });
 
-        self.init_read(start_addr)?;
+        self.init_read(start_addr).await?;
 
         for i in 0..num_page {
-            bar.inc(1);
+            progress(Progress::TaskAdvance);
             debug!(
                 "Reading page {} @ offset {:#06x}",
                 i,
                 start_addr + i * page_size
             );
-            self.read_page(&mut result)?;
+            self.read_page(&mut result).await?;
         }
-        bar.finish();
+        progress(Progress::TaskFinish);
         Ok(result)
     }
 
-    fn write(&self, start_addr: usize, buffer: &[u8]) -> Result<(), ISPError> {
-        eprintln!("Writing...");
-        let bar = ProgressBar::new(self.device_spec.num_pages() as u64);
-        self.init_write(start_addr)?;
+    async fn write(
+        &self,
+        start_addr: usize,
+        buffer: &[u8],
+        progress: &dyn Fn(Progress),
+    ) -> Result<(), ISPError> {
+        progress(Progress::TaskStart {
+            label: "Writing...",
+            total: self.device_spec.num_pages(),
+        });
+        self.init_write(start_addr).await?;
 
         let page_size = self.device_spec.platform.page_size;
         for i in 0..self.device_spec.num_pages() {
-            bar.inc(1);
+            progress(Progress::TaskAdvance);
             debug!("Writing page {} @ offset {:#06x}", i, i * page_size);
-            self.write_page(&buffer[(i * page_size)..((i + 1) * page_size)])?;
+            self.write_page(&buffer[(i * page_size)..((i + 1) * page_size)])
+                .await?;
         }
-        bar.finish();
+        progress(Progress::TaskFinish);
         Ok(())
     }
 
     /// Initializes the read operation / sets the initial read address
-    fn init_read(&self, start_addr: usize) -> Result<(), ISPError> {
+    async fn init_read(&self, start_addr: usize) -> Result<(), ISPError> {
         let cmd: [u8; COMMAND_LENGTH] = [
             REPORT_ID_CMD,
             CMD_INIT_READ,
@@ -201,13 +244,13 @@ impl ISPDevice {
         ];
         self.cmd_device
             .send_feature_report(&cmd)
-            .wait()
+            .await
             .map_err(ISPError::from)?;
         Ok(())
     }
 
     /// Initializes the write operation / sets the initial write address
-    fn init_write(&self, start_addr: usize) -> Result<(), ISPError> {
+    async fn init_write(&self, start_addr: usize) -> Result<(), ISPError> {
         let cmd: [u8; COMMAND_LENGTH] = [
             REPORT_ID_CMD,
             CMD_INIT_WRITE,
@@ -218,19 +261,19 @@ impl ISPDevice {
         ];
         self.cmd_device
             .send_feature_report(&cmd)
-            .wait()
+            .await
             .map_err(ISPError::from)?;
         Ok(())
     }
 
     /// Reads one page of flash contents
-    fn read_page(&self, buf: &mut Vec<u8>) -> Result<(), ISPError> {
+    async fn read_page(&self, buf: &mut Vec<u8>) -> Result<(), ISPError> {
         let page_size = self.device_spec.platform.page_size;
         let mut xfer_buf: Vec<u8> = vec![0; page_size + 2];
         xfer_buf[0] = REPORT_ID_XFER;
         self.xfer_device()
             .get_feature_report(&mut xfer_buf)
-            .wait()
+            .await
             .map_err(ISPError::from)?;
         buf.extend_from_slice(&xfer_buf[2..(page_size + 2)]);
         if xfer_buf[1] != XFER_READ_PAGE {
@@ -245,7 +288,7 @@ impl ISPDevice {
     /// third bytes (firmware's reset vector LJMP destination address) are written to address
     /// <firmware_size-4> and will later be part of the LJMP instruction after the firmware is
     /// enabled (`enable_firmware`). This only works once after an erase operation.
-    fn write_page(&self, buf: &[u8]) -> Result<(), ISPError> {
+    async fn write_page(&self, buf: &[u8]) -> Result<(), ISPError> {
         let length = buf.len() + 2;
         let mut xfer_buf: Vec<u8> = vec![0; length];
         xfer_buf[0] = REPORT_ID_XFER;
@@ -253,7 +296,7 @@ impl ISPDevice {
         xfer_buf[2..length].clone_from_slice(buf);
         self.xfer_device()
             .send_feature_report(&xfer_buf)
-            .wait()
+            .await
             .map_err(ISPError::from)?;
         if xfer_buf[1] != XFER_WRITE_PAGE {
             return Err(ISPError::ReadWriteMismatch);
@@ -266,37 +309,37 @@ impl ISPDevice {
     ///
     /// Side-effect: enables reading the firmware without erasing flash first.
     /// Credits to @gashtaan for finding this out.
-    fn enable_firmware(&self) -> Result<(), ISPError> {
-        eprintln!("Enabling firmware...");
+    async fn enable_firmware(&self, progress: &dyn Fn(Progress)) -> Result<(), ISPError> {
+        progress(Progress::Status("Enabling firmware..."));
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_ENABLE_FIRMWARE, 0, 0, 0, 0];
 
-        self.cmd_device.send_feature_report(&cmd).wait()?;
+        self.cmd_device.send_feature_report(&cmd).await?;
         Ok(())
     }
 
     /// Erases everything in flash, except the ISP bootloader section itself and initializes the
     /// reset vector to jump to ISP.
-    fn erase(&self) -> Result<(), ISPError> {
-        eprintln!("Erasing...");
+    async fn erase(&self, progress: &dyn Fn(Progress)) -> Result<(), ISPError> {
+        progress(Progress::Status("Erasing..."));
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_ERASE, 0, 0, 0, 0];
         self.cmd_device
             .send_feature_report(&cmd)
-            .wait()
+            .await
             .map_err(ISPError::from)?;
-        thread::sleep(time::Duration::from_millis(2000));
+        sleep(SETTLE_DELAY).await;
         Ok(())
     }
 
     /// Causes the device to start running the main firmware
-    fn reboot(&self) {
-        eprintln!("Rebooting...");
+    async fn reboot(&self, progress: &dyn Fn(Progress)) {
+        progress(Progress::Status("Rebooting..."));
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_REBOOT, 0, 0, 0, 0];
-        if let Err(err) = self.cmd_device.send_feature_report(&cmd).wait() {
+        if let Err(err) = self.cmd_device.send_feature_report(&cmd).await {
             debug!("Error: {:}", err);
             if !is_expected_error(&err) {
                 error!("Unexpected error: {:}", err);
             }
         }
-        thread::sleep(time::Duration::from_millis(2000));
+        sleep(SETTLE_DELAY).await;
     }
 }
