@@ -3,7 +3,7 @@ use std::{thread, time::Duration};
 
 use hidparser::parse_report_descriptor;
 use hidra::{
-    BusType, DeviceInfo, HidApi, HidDevice, HidError, MaybeFuture, MAX_REPORT_DESCRIPTOR_SIZE,
+    BusType, DeviceInfo, HidDevice, HidError, Hidra, MaybeFuture, MAX_REPORT_DESCRIPTOR_SIZE,
 };
 use indicatif::ProgressBar;
 use itertools::Itertools;
@@ -41,12 +41,12 @@ pub enum DeviceSelectorError {
 }
 
 pub struct DeviceSelector {
-    api: HidApi,
+    api: Hidra,
 }
 
 impl DeviceSelector {
     pub fn new() -> Result<Self, DeviceSelectorError> {
-        let api = HidApi::new().map_err(DeviceSelectorError::from)?;
+        let api = Hidra::new().map_err(DeviceSelectorError::from)?;
 
         // hidra only exposes this on the native macOS backend (not nusb).
         #[cfg(all(target_os = "macos", not(feature = "nusb")))]
