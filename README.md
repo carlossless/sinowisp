@@ -1,8 +1,8 @@
 # sinowisp
 
-_(formerly `sinowealth-kb-tool`)_
-
 [![crate](https://img.shields.io/crates/v/sinowisp.svg)](https://crates.io/crates/sinowisp) [![ci](https://github.com/carlossless/sinowisp/actions/workflows/push.yml/badge.svg)](https://github.com/carlossless/sinowisp/actions/workflows/push.yml)
+
+_(formerly `sinowealth-kb-tool`)_
 
 A utility for reading and writing flash contents on Sinowealth 8051-based USB HID devices (keyboards and mice) through the commonly found ISP bootloader.
 
