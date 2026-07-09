@@ -83,7 +83,7 @@ fn main() -> ExitCode {
 }
 
 fn cli() -> Command {
-    Command::new("sinowealth-kb-tool")
+    Command::new("sinowisp")
         .about("A tool to read and write flash for SinoWealth ISP devices")
         .version(env!("CARGO_PKG_VERSION"))
         .subcommand_required(true)

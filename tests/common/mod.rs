@@ -3,7 +3,7 @@ macro_rules! test_filename {
         let date = chrono::Utc::now().to_rfc3339().replace(":", "-");
         let mut path = std::env::temp_dir();
         path.push(format!(
-            "sinowealth-kb-tool-{}-{}.{}",
+            "sinowisp-{}-{}.{}",
             date,
             stdext::function_name!()
                 .replace(":", "_")

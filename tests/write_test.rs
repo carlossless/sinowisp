@@ -12,7 +12,7 @@ use common::get_fixture_path;
 #[serial]
 fn test_write() {
     let file = get_fixture_path("nuphy-air60_smk.hex");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("write")
         .args(&["--device", "nuphy-air60"])
@@ -25,7 +25,7 @@ fn test_write() {
 #[serial]
 fn test_write_and_readback() {
     let fixture_file = get_fixture_path("nuphy-air60_smk.hex");
-    let mut write_cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut write_cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = write_cmd
         .arg("write")
         .args(&["--device", "nuphy-air60"])
@@ -34,7 +34,7 @@ fn test_write_and_readback() {
     assert.success();
 
     let output_file = test_filename!("hex");
-    let mut read_cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut read_cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = read_cmd
         .arg("read")
         .args(&["--device", "nuphy-air60"])
@@ -55,7 +55,7 @@ fn test_write_and_readback() {
 #[serial]
 fn test_write_custom_and_readback() {
     let fixture_file = get_fixture_path("nuphy-air60_smk.hex");
-    let mut write_cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut write_cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = write_cmd
         .arg("write")
         .args(&["--platform", "sh68f90"])
@@ -69,7 +69,7 @@ fn test_write_custom_and_readback() {
     assert.success();
 
     let output_file = test_filename!("hex");
-    let mut read_cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut read_cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = read_cmd
         .arg("read")
         .args(&["--platform", "sh68f90"])
