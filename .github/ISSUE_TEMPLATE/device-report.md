@@ -41,17 +41,17 @@ reboot: false # necessary if not default, otherwise remove this line
 ## Checksums
 
 - Stock Firmware MD5: `deadbeefdeadbeefdeadbeefdeadbeef`
-- Bootloader MD5: `beefcafebeefcafebeefcafebeefcafe` _(shown when running `sinowealth-kb-tool read -s bootloader ...`)_
+- Bootloader MD5: `beefcafebeefcafebeefcafebeefcafe` _(shown when running `sinowisp read -s bootloader ...`)_
 
 ## Device Info (HID Reports)
 
-Output when running `sinowealth-kb-tool list --vendor_id=<PID> --product_id=<PID>`
+Output when running `sinowisp list --vendor_id=<PID> --product_id=<PID>`
 
 <details>
 <summary>Output</summary>
 
 ```
-sinowealth-kb-tool list --vendor_id=0x05ac --product_id=0x024f
+sinowisp list --vendor_id=0x05ac --product_id=0x024f
 ID 05ac:024f manufacturer="contact@carlossless.io" product="SMK Keyboard"
     path="DevSrvsID:4294974930" interface_number=0
     report_descriptor=[05 01 09 06 A1 01 05 07 19 E0 29 E7 15 00 25 01 75 01 95 08 81 02 75 08 95 01 81 01 05 07 19 00 29 FF 15 00 26 FF 00 75 08 95 06 81 00 05 08 19 01 29 05 15 00 25 01 75 01 95 05 91 02 75 03 95 01 91 01 C0]

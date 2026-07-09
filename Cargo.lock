@@ -927,7 +927,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sinowealth-kb-tool"
+name = "sinowisp"
 version = "1.0.1"
 dependencies = [
  "assert_cmd",

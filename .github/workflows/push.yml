@@ -25,7 +25,7 @@ jobs:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - uses: cachix/cachix-action@v14
       with:
-        name: sinowealth-kb-tool
+        name: sinowisp
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - name: Build
       run: nix build
@@ -75,7 +75,7 @@ jobs:
     needs: test
     runs-on: ${{ matrix.OS }}
     env:
-      NAME: sinowealth-kb-tool
+      NAME: sinowisp
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
     steps:

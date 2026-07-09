@@ -56,7 +56,7 @@ ID 05ac:024f manufacturer=\"contact@carlossless.io\" product=\"SMK Keyboard\"
 #[test]
 #[serial]
 fn test_list_devices() {
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd.arg("list").assert();
     assert
         .success()
@@ -66,7 +66,7 @@ fn test_list_devices() {
 #[test]
 #[serial]
 fn test_list_with_vid_filter() {
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd.arg("list").args(&["--vendor_id", "0x05ac"]).assert();
     assert
         .success()
@@ -76,7 +76,7 @@ fn test_list_with_vid_filter() {
 #[test]
 #[serial]
 fn test_list_with_pid_filter() {
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd.arg("list").args(&["--product_id", "0x024f"]).assert();
     assert
         .success()
@@ -86,7 +86,7 @@ fn test_list_with_pid_filter() {
 #[test]
 #[serial]
 fn test_list_with_vid_and_pid_filter() {
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("list")
         .args(&["--vendor_id", "0x05ac"])

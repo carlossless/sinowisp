@@ -13,7 +13,7 @@ use common::get_fixture_path;
 fn test_convert_to_jtag() {
     let input_file = get_fixture_path("nuphy-air60_smk.hex");
     let output_file = test_filename!("hex");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("convert")
         .args(&["--device", "nuphy-air60"])
@@ -36,7 +36,7 @@ fn test_convert_to_jtag() {
 fn test_convert_to_isp() {
     let input_file = get_fixture_path("nuphy-air60_smk_jtag.hex");
     let output_file = test_filename!("hex");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("convert")
         .args(&["--device", "nuphy-air60"])
@@ -59,7 +59,7 @@ fn test_convert_to_isp() {
 fn test_convert_to_jtag_bin() {
     let input_file = get_fixture_path("nuphy-air60_smk.hex");
     let output_file = test_filename!("bin");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("convert")
         .args(&["--device", "nuphy-air60"])
