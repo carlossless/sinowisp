@@ -25,7 +25,8 @@ jobs:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - uses: cachix/cachix-action@v14
       with:
-        name: sinowisp
+        # TODO: rename to `sinowisp` once the Cachix cache is renamed/created
+        name: sinowealth-kb-tool
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - name: Build
       run: nix build
