@@ -25,6 +25,7 @@ jobs:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - uses: cachix/cachix-action@v17
       with:
+        # TODO: rename to `sinowisp` once the Cachix cache is renamed/created
         name: sinowealth-kb-tool
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
     - name: Build
@@ -73,8 +74,8 @@ jobs:
           key: wasm-cargo-registry
       - name: Install wasm target
         run: rustup target add wasm32-unknown-unknown
-      - name: Build sinowealth-isp for the web (WebHID)
-        run: cargo build -p sinowealth-isp --target wasm32-unknown-unknown
+      - name: Build the library for the web (WebHID)
+        run: cargo build --lib --no-default-features --target wasm32-unknown-unknown
         env:
           RUSTFLAGS: "--cfg=web_sys_unstable_apis"
 
@@ -103,7 +104,7 @@ jobs:
     needs: test
     runs-on: ${{ matrix.OS }}
     env:
-      NAME: sinowealth-kb-tool
+      NAME: sinowisp
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
       FEATURES: ${{ matrix.FEATURES }}

@@ -1,4 +1,4 @@
-//! Full read/write cycles, composed from the `sinowealth-isp` protocol
+//! Full read/write cycles, composed from the `sinowisp` protocol
 //! primitives. This is where the orchestration lives: page loops, the
 //! post-erase/reboot settle delays, terminal progress bars, and verification.
 
@@ -7,7 +7,7 @@ use std::{thread, time::Duration};
 use hidra::MaybeFuture;
 use indicatif::ProgressBar;
 use log::{debug, error};
-use sinowealth_isp::{is_expected_error, verify, ISPDevice, ISPError, ReadSection};
+use sinowisp::{is_expected_error, verify, ISPDevice, ISPError, ReadSection};
 
 /// Time the device needs to settle after an erase or reboot before it will
 /// accept (or has finished acting on) further commands.

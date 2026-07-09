@@ -1,5 +1,5 @@
 use crate::device_selector::DeviceSelectorError;
-use sinowealth_isp::to_hex_string;
+use sinowisp::to_hex_string;
 
 pub struct DeviceNode {
     pub product_id: u16,

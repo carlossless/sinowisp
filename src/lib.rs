@@ -9,7 +9,7 @@
 //! The crate carries no orchestration, timing, or UI: composing these
 //! primitives into full read/write cycles, inserting the post-erase/reboot
 //! settle delays, and reporting progress are the caller's responsibility (see
-//! the `sinowealth-kb-tool` CLI for a reference implementation).
+//! the `sinowisp` CLI for a reference implementation).
 
 mod device_spec;
 mod ihex;

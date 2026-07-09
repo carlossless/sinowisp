@@ -14,7 +14,7 @@ use thiserror::Error;
 
 use device_selector::{DeviceSelector, DeviceSelectorError};
 use hid_tree::TreeDisplay;
-use sinowealth_isp::{
+use sinowisp::{
     convert_to_isp_payload, convert_to_jtag_payload, from_ihex, to_ihex, ConversionError,
     DeviceSpec, ISPError, PayloadConversionError, PlatformSpec, ReadSection, DEVICES,
     DEVICE_BASE_SH68F881, DEVICE_BASE_SH68F90,
@@ -81,7 +81,7 @@ fn main() -> ExitCode {
 }
 
 fn cli() -> Command {
-    Command::new("sinowealth-kb-tool")
+    Command::new("sinowisp")
         .about("A tool to read and write flash for SinoWealth ISP devices")
         .version(env!("CARGO_PKG_VERSION"))
         .subcommand_required(true)

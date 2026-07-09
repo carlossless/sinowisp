@@ -1,25 +1,67 @@
-[workspace]
-resolver = "2"
-members = [
-    "crates/sinowealth-isp",
-    "crates/sinowealth-kb-tool",
-]
-
-[workspace.package]
+[package]
+name = "sinowisp"
+description = """
+A utility for reading and writing flash contents on Sinowealth 8051-based HID devices through the commonly found ISP bootloader
+"""
+repository = "https://github.com/carlossless/sinowisp"
 version = "1.0.1"
 edition = "2021"
 license = "MIT"
 rust-version = "1.88"
-repository = "https://github.com/carlossless/sinowealth-kb-tool"
 
-[workspace.dependencies]
-ihex = "3.0"
-thiserror = "2.0"
-log = { version = "0.4", features = ["max_level_debug"] }
-phf = { version = "0.11", features = ["macros"] }
+# The crate ships both a reusable library (`src/lib.rs`) and the `sinowisp`
+# CLI (`src/main.rs`). The CLI-only dependencies live behind the default `cli`
+# feature so the library can still be built on its own (e.g. for the web via
+# WebHID/wasm) with `--no-default-features`.
+[features]
+default = ["cli"]
+cli = [
+    "dep:clap",
+    "dep:clap-num",
+    "dep:dialoguer",
+    "dep:hidparser",
+    "dep:indicatif",
+    "dep:itertools",
+    "dep:md5",
+    "dep:simple_logger",
+    "dep:log",
+]
+# Switch hidra to its nusb-based USB backend instead of the per-OS native one.
+nusb = ["hidra/nusb"]
 
+[[bin]]
+name = "sinowisp"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[dependencies]
 # Pure-Rust HID. On Linux the default is the hidraw backend; the `nusb`
 # feature switches to the nusb-based backend (the hidapi `linux-static-libusb`
 # equivalent).
-[workspace.dependencies.hidra]
-git = "https://github.com/carlossless/hidra"
+hidra = { git = "https://github.com/carlossless/hidra" }
+ihex = "3.0"
+thiserror = "2.0"
+phf = { version = "0.11", features = ["macros"] }
+
+# CLI-only dependencies (enabled by the `cli` feature).
+clap = { version = "4.1", optional = true }
+clap-num = { version = "1.0", optional = true }
+dialoguer = { version = "0.11.0", optional = true }
+hidparser = { version = "1.0.3", optional = true }
+indicatif = { version = "0.17.11", optional = true }
+itertools = { version = "0.14.0", optional = true }
+md5 = { version = "0.7", optional = true }
+log = { version = "0.4", features = ["max_level_debug"], optional = true }
+
+[dependencies.simple_logger]
+version = "5.1"
+default-features = false
+features = ["stderr", "colors", "timestamps"]
+optional = true
+
+[dev-dependencies]
+assert_cmd = "2.0.17"
+chrono = "0.4.41"
+predicates = "3.1.3"
+serial_test = "3.2.0"
+stdext = "0.3.3"

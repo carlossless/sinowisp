@@ -10,7 +10,7 @@ pub mod common;
 #[serial]
 fn test_read() {
     let file = test_filename!("hex");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
         .args(&["--device", "nuphy-air60"])
@@ -31,7 +31,7 @@ fn test_read() {
 #[serial]
 fn test_read_bin() {
     let file = test_filename!("bin");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
         .args(&["--device", "nuphy-air60"])
@@ -52,7 +52,7 @@ fn test_read_bin() {
 #[serial]
 fn test_read_bootloader() {
     let file = test_filename!("hex");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
         .args(&["--device", "nuphy-air60"])
@@ -74,7 +74,7 @@ fn test_read_bootloader() {
 #[serial]
 fn test_read_full() {
     let file = test_filename!("hex");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
         .args(&["--device", "nuphy-air60"])
@@ -96,7 +96,7 @@ fn test_read_full() {
 #[serial]
 fn test_read_custom_part() {
     let file = test_filename!("hex");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
         .args(&["--platform", "sh68f90"])
@@ -122,7 +122,7 @@ fn test_read_custom_part() {
 #[serial]
 fn test_read_forced_format_bin() {
     let file = test_filename!("hex");
-    let mut cmd = Command::cargo_bin("sinowealth-kb-tool").unwrap();
+    let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
         .args(&["--device", "nuphy-air60"])

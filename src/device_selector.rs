@@ -8,7 +8,7 @@ use hidra::{
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use log::{debug, error, info};
-use sinowealth_isp::{is_expected_error, DeviceSpec, ISPDevice};
+use sinowisp::{is_expected_error, DeviceSpec, ISPDevice};
 use thiserror::Error;
 
 use crate::hid_tree::{DeviceNode, InterfaceNode};
