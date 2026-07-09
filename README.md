@@ -1,6 +1,6 @@
-# sinowealth-kb-tool
+# sinowisp
 
-[![crate](https://img.shields.io/crates/v/sinowealth-kb-tool.svg)](https://crates.io/crates/sinowealth-kb-tool) [![ci](https://github.com/carlossless/sinowealth-kb-tool/actions/workflows/push.yml/badge.svg)](https://github.com/carlossless/sinowealth-kb-tool/actions/workflows/push.yml)
+[![crate](https://img.shields.io/crates/v/sinowisp.svg)](https://crates.io/crates/sinowisp) [![ci](https://github.com/carlossless/sinowisp/actions/workflows/push.yml/badge.svg)](https://github.com/carlossless/sinowisp/actions/workflows/push.yml)
 
 A utility for reading and writing flash contents on Sinowealth 8051-based USB HID devices (keyboards and mice) through the commonly found ISP bootloader.
 
@@ -18,16 +18,16 @@ I offer no guarantees that using this tool won't brick your device. Use this too
 
 ```sh
 # reads firmware excluding isp bootloader 
-sinowealth-kb-tool read -d nuphy-air60 foobar.hex
+sinowisp read -d nuphy-air60 foobar.hex
 
 # reads only isp bootloader section
-sinowealth-kb-tool read -d nuphy-air60 -s bootloader bootloader.hex
+sinowisp read -d nuphy-air60 -s bootloader bootloader.hex
 
 # full dump including firmware and bootloader
-sinowealth-kb-tool read -d nuphy-air60 -s full full.hex
+sinowisp read -d nuphy-air60 -s full full.hex
 
 # custom device
-sinowealth-kb-tool read \
+sinowisp read \
     --platform sh68f90 \
     --vendor_id 0x05ac \
     --product_id 0x024f \
@@ -46,10 +46,10 @@ sinowealth-kb-tool read \
 
 ```sh
 # overwrites firmware (does not touch the bootloader section)
-sinowealth-kb-tool write -p nuphy-air60 foobar.hex
+sinowisp write -p nuphy-air60 foobar.hex
 
 # custom device
-sinowealth-kb-tool write \
+sinowisp write \
     --platform sh68f90 \
     --vendor_id 0x05ac \
     --product_id 0x024f \

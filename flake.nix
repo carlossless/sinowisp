@@ -43,7 +43,7 @@
         packages = {
           # For `nix build` `nix run`, & `nix profile install`:
           default = naersk'.buildPackage {
-            pname = "sinowealth-kb-tool";
+            pname = "sinowisp";
             version = "latest";
 
             src = ./.;
@@ -54,9 +54,9 @@
 
             meta = with pkgs.lib; {
               description = "A utility for reading and writing flash contents on Sinowealth 8051-based devices";
-              homepage = "https://github.com/carlossless/sinowealth-kb-tool";
+              homepage = "https://github.com/carlossless/sinowisp";
               license = licenses.mit;
-              mainProgram = "sinowealth-kb-tool";
+              mainProgram = "sinowisp";
               maintainers = with maintainers; [ carlossless ];
             };
           };
