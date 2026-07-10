@@ -56,10 +56,8 @@ jobs:
             ~/.cargo/registry
             ./target
           key: test-cargo-registry
-      - name: Run tests (hidraw backend)
+      - name: Run tests
         run: cargo test --workspace --lib --bins --verbose
-      - name: Run tests (nusb backend)
-        run: cargo test --workspace --lib --bins --features nusb --verbose
 
   wasm:
     runs-on: ubuntu-latest
@@ -84,31 +82,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Two Linux variants: the default hidraw backend and the nusb backend.
+          # Linux always uses hidra's nusb backend (auto-selected in Cargo.toml).
           - TARGET: x86_64-unknown-linux-gnu
             OS: ubuntu-latest
-            FEATURES: ""
-            LABEL: hidraw
-          - TARGET: x86_64-unknown-linux-gnu
-            OS: ubuntu-latest
-            FEATURES: "nusb"
-            LABEL: nusb
           - TARGET: x86_64-apple-darwin
             OS: macos-latest
-            FEATURES: ""
-            LABEL: ""
           - TARGET: x86_64-pc-windows-msvc
             OS: windows-latest
-            FEATURES: ""
-            LABEL: ""
     needs: test
     runs-on: ${{ matrix.OS }}
     env:
       NAME: sinowisp
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
-      FEATURES: ${{ matrix.FEATURES }}
-      LABEL: ${{ matrix.LABEL }}
     steps:
       - uses: actions/checkout@v6
       - name: Cargo cache
@@ -117,11 +103,11 @@ jobs:
           path: |
             ~/.cargo/registry
             ./target
-          key: build-cargo-registry-${{matrix.TARGET}}-${{matrix.LABEL}}
+          key: build-cargo-registry-${{matrix.TARGET}}
       - name: Install rust target
         run: rustup target add $TARGET
       - name: Run build
-        run: cargo build --release --verbose --target $TARGET ${FEATURES:+--features "$FEATURES"}
+        run: cargo build --release --verbose --target $TARGET
       - name: Compress
         run: |
           mkdir -p ./artifacts
@@ -136,14 +122,13 @@ jobs:
           else
             TAG=$GITHUB_SHA
           fi
-          # include the backend label in the artifact name when set (Linux)
-          ARTIFACT=$NAME-$TARGET${LABEL:+-$LABEL}-$TAG
+          ARTIFACT=$NAME-$TARGET-$TAG
           mv ./target/$TARGET/release/$EXEC ./$EXEC
           tar -czf ./artifacts/$ARTIFACT.tar.gz $EXEC
       - name: Archive artifact
         uses: actions/upload-artifact@v7
         with:
-          name: result-${{ matrix.TARGET }}${{ matrix.LABEL && format('-{0}', matrix.LABEL) || '' }}
+          name: result-${{ matrix.TARGET }}
           path: |
             ./artifacts
 
