@@ -27,6 +27,8 @@ cli = [
     "dep:log",
 ]
 # Switch hidra to its nusb-based USB backend instead of the per-OS native one.
+# Linux always uses nusb (auto-selected via the target-specific dependency
+# below); this feature exists to opt into nusb on macOS/Windows as well.
 nusb = ["hidra/nusb"]
 
 [[bin]]
@@ -35,9 +37,9 @@ path = "src/main.rs"
 required-features = ["cli"]
 
 [dependencies]
-# Pure-Rust HID. On Linux the default is the hidraw backend; the `nusb`
-# feature switches to the nusb-based backend (the hidapi `linux-static-libusb`
-# equivalent).
+# Pure-Rust HID. On macOS/Windows this uses hidra's native per-OS backend; on
+# Linux the nusb backend is auto-selected via the target-specific dependency
+# below (the hidapi `linux-static-libusb` equivalent). wasm uses WebHID.
 hidra = "0.0.1"
 ihex = "3.0"
 thiserror = "2.0"
@@ -58,6 +60,11 @@ version = "5.1"
 default-features = false
 features = ["stderr", "colors", "timestamps"]
 optional = true
+
+# On Linux there is no native hidraw path we want; always use hidra's nusb
+# backend. Cargo features are additive, so this is unconditional on Linux.
+[target.'cfg(target_os = "linux")'.dependencies]
+hidra = { version = "0.0.1", features = ["nusb"] }
 
 [dev-dependencies]
 assert_cmd = "2.0.17"
