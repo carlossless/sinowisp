@@ -72,3 +72,10 @@ chrono = "0.4.41"
 predicates = "3.1.3"
 serial_test = "3.2.0"
 stdext = "0.3.3"
+
+# TEMPORARY: pull hidra from git master until the macOS run-loop fix (the
+# false `HidError::Disconnected` on ISP re-enumeration) ships to crates.io.
+# Both `hidra` requirements above resolve through this source (master is
+# still 0.0.1). Revert to the published crate before releasing.
+[patch.crates-io]
+hidra = { git = "https://github.com/carlossless/hidra.git", branch = "master" }
