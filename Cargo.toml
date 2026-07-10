@@ -40,7 +40,7 @@ required-features = ["cli"]
 # Pure-Rust HID. On macOS/Windows this uses hidra's native per-OS backend; on
 # Linux the nusb backend is auto-selected via the target-specific dependency
 # below (the hidapi `linux-static-libusb` equivalent). wasm uses WebHID.
-hidra = "0.0.1"
+hidra = "0.0.2"
 ihex = "3.0"
 thiserror = "2.0"
 phf = { version = "0.11", features = ["macros"] }
@@ -64,7 +64,7 @@ optional = true
 # On Linux there is no native hidraw path we want; always use hidra's nusb
 # backend. Cargo features are additive, so this is unconditional on Linux.
 [target.'cfg(target_os = "linux")'.dependencies]
-hidra = { version = "0.0.1", features = ["nusb"] }
+hidra = { version = "0.0.2", features = ["nusb"] }
 
 [dev-dependencies]
 assert_cmd = "2.0.17"
@@ -72,10 +72,3 @@ chrono = "0.4.41"
 predicates = "3.1.3"
 serial_test = "3.2.0"
 stdext = "0.3.3"
-
-# TEMPORARY: pull hidra from git master until the macOS run-loop fix (the
-# false `HidError::Disconnected` on ISP re-enumeration) ships to crates.io.
-# Both `hidra` requirements above resolve through this source (master is
-# still 0.0.1). Revert to the published crate before releasing.
-[patch.crates-io]
-hidra = { git = "https://github.com/carlossless/hidra.git", branch = "master" }
