@@ -1,4 +1,5 @@
-use crate::{device_selector::DeviceSelectorError, to_hex_string};
+use crate::device_selector::DeviceSelectorError;
+use sinowisp::to_hex_string;
 
 pub struct DeviceNode {
     pub product_id: u16,

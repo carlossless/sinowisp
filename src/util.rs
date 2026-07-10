@@ -1,6 +1,5 @@
 use crate::DeviceSpec;
-use hidapi::HidError;
-use log::error;
+use hidra::HidError;
 use thiserror::Error;
 
 #[cfg(test)]
@@ -108,12 +107,11 @@ pub fn to_hex_string(bytes: &[u8]) -> String {
 
 pub fn is_expected_error(err: &HidError) -> bool {
     match err {
-        #[cfg(target_os = "macos")]
-        HidError::HidApiError { ref message } if message == "IOHIDDeviceSetReport failed: (0xE0005000) unknown error code" => true,
-        #[cfg(target_os = "linux")]
-        HidError::HidApiError { ref message } if message == "hid_error is not implemented yet" => true,
-        #[cfg(target_os = "windows")]
-        HidError::HidApiError { ref message } if message == "HidD_SetFeature: (0x0000001F) A device attached to the system is not functioning." => true,
+        HidError::Disconnected | HidError::Backend { .. } => true,
+        // `Io` only exists on native targets; the WebHID backend reports the
+        // equivalent failures as `Disconnected` / `Backend`.
+        #[cfg(not(target_arch = "wasm32"))]
+        HidError::Io { .. } => true,
         _ => false,
     }
 }
