@@ -101,7 +101,7 @@ pub fn convert_to_isp_payload(
 }
 
 pub fn to_hex_string(bytes: &[u8]) -> String {
-    let strs: Vec<String> = bytes.iter().map(|b| format!("{:02X}", b)).collect();
+    let strs: Vec<String> = bytes.iter().map(|b| format!("{b:02X}")).collect();
     strs.join(" ")
 }
 
@@ -118,13 +118,13 @@ pub fn is_expected_error(err: &HidError) -> bool {
 
 #[test]
 fn test_verify_success() {
-    assert!(verify(&vec![1, 2, 3, 4], &vec![1, 2, 3, 4]).is_ok());
+    assert!(verify(&[1, 2, 3, 4], &[1, 2, 3, 4]).is_ok());
 }
 
 #[test]
 fn test_verify_error_length_mismatch() {
     assert_eq!(
-        verify(&vec![1, 2, 3, 4], &vec![1, 2, 3]),
+        verify(&[1, 2, 3, 4], &[1, 2, 3]),
         Err(VerificationError::LengthMismatch {
             expected: 4,
             actual: 3
@@ -135,7 +135,7 @@ fn test_verify_error_length_mismatch() {
 #[test]
 fn test_verify_error_byte_mismatch() {
     assert_eq!(
-        verify(&vec![1, 2, 3, 4], &vec![1, 2, 4, 3]),
+        verify(&[1, 2, 3, 4], &[1, 2, 4, 3]),
         Err(VerificationError::ByteMismatch {
             addr: 2,
             expected: 3,

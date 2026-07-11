@@ -16,8 +16,8 @@ fn test_convert_to_jtag() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("convert")
-        .args(&["--device", "nuphy-air60"])
-        .args(&["--direction", "to_jtag"])
+        .args(["--device", "nuphy-air60"])
+        .args(["--direction", "to_jtag"])
         .arg(&input_file)
         .arg(&output_file)
         .assert();
@@ -26,7 +26,7 @@ fn test_convert_to_jtag() {
 
     let computed_md5 = md5::compute(fs::read(&output_file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "3bbd99f81678fc11fdf1ba9eaaac2bd1"
     );
 }
@@ -39,8 +39,8 @@ fn test_convert_to_isp() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("convert")
-        .args(&["--device", "nuphy-air60"])
-        .args(&["--direction", "to_isp"])
+        .args(["--device", "nuphy-air60"])
+        .args(["--direction", "to_isp"])
         .arg(&input_file)
         .arg(&output_file)
         .assert();
@@ -49,7 +49,7 @@ fn test_convert_to_isp() {
 
     let computed_md5 = md5::compute(fs::read(&output_file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "6594e5a1ab671deb40f36483a84ad61f"
     );
 }
@@ -62,8 +62,8 @@ fn test_convert_to_jtag_bin() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("convert")
-        .args(&["--device", "nuphy-air60"])
-        .args(&["--direction", "to_jtag"])
+        .args(["--device", "nuphy-air60"])
+        .args(["--direction", "to_jtag"])
         .arg(&input_file)
         .arg(&output_file)
         .assert();
@@ -72,7 +72,7 @@ fn test_convert_to_jtag_bin() {
 
     let computed_md5 = md5::compute(fs::read(&output_file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "df1ff7b247ae12dda37aa69730f090af"
     );
 }

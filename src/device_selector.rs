@@ -331,11 +331,11 @@ impl DeviceSelector {
         device_spec: DeviceSpec,
     ) -> Result<ISPDevice, DeviceSelectorError> {
         if let Err(err) = self.enter_isp_mode(&device) {
-            debug!("Error: {:}", err);
+            debug!("Error: {err:}");
             match err {
                 DeviceSelectorError::HidError(err) if is_expected_error(&err) => {}
                 _ => {
-                    error!("Unexpected: {:}", err);
+                    error!("Unexpected: {err:}");
                     info!("Waiting...");
                     thread::sleep(time::Duration::from_secs(2));
                     return Err(err);
@@ -374,8 +374,8 @@ impl DeviceSelector {
 
         for attempt in 1..retries + 1 {
             if attempt > 1 {
-                bar.set_message(format!("Retrying... Attempt {}/{}", attempt, retries));
-                info!("Retrying... Attempt {}/{}", attempt, retries);
+                bar.set_message(format!("Retrying... Attempt {attempt}/{retries}"));
+                info!("Retrying... Attempt {attempt}/{retries}");
                 self.api.refresh_devices()?;
                 thread::sleep(time::Duration::from_millis(1000));
             }

@@ -65,7 +65,7 @@ impl FromStr for Format {
         Ok(match format {
             "ihex" => Format::IntelHex,
             "bin" => Format::Binary,
-            _ => panic!("Invalid format: {}", format),
+            _ => panic!("Invalid format: {format}"),
         })
     }
 }
@@ -74,7 +74,7 @@ fn main() -> ExitCode {
     match err_main() {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
-            eprintln!("{:}", err);
+            eprintln!("{err:}");
             ExitCode::FAILURE
         }
     }
@@ -178,7 +178,7 @@ fn err_main() -> Result<(), CLIError> {
             let firmware = flasher::read_cycle(&device, section).map_err(CLIError::from)?;
 
             let digest = md5::compute(&firmware);
-            eprintln!("MD5: {:x}", digest);
+            eprintln!("MD5: {digest:x}");
 
             write_with_format(output_file, &firmware, format)?;
 
@@ -261,7 +261,7 @@ fn err_main() -> Result<(), CLIError> {
                 })
                 .to_tree_string(0);
 
-            println!("{}", tree);
+            println!("{tree}");
         }
         Some(("convert", sub_matches)) => {
             let input_file = sub_matches

@@ -117,10 +117,10 @@ fn erase(device: &ISPDevice) -> Result<(), ISPError> {
 fn reboot(device: &ISPDevice) {
     eprintln!("Rebooting...");
     if let Err(err) = device.reboot().wait() {
-        debug!("Error: {:}", err);
+        debug!("Error: {err:}");
         let expected = matches!(&err, ISPError::HidError(hid) if is_expected_error(hid));
         if !expected {
-            error!("Unexpected error: {:}", err);
+            error!("Unexpected error: {err:}");
         }
     }
     thread::sleep(SETTLE_DELAY);

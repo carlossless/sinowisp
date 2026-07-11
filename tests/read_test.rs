@@ -13,7 +13,7 @@ fn test_read() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--device", "nuphy-air60"])
+        .args(["--device", "nuphy-air60"])
         .arg(&file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -22,7 +22,7 @@ fn test_read() {
 
     let computed_md5 = md5::compute(fs::read(&file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "6594e5a1ab671deb40f36483a84ad61f"
     );
 }
@@ -34,7 +34,7 @@ fn test_read_bin() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--device", "nuphy-air60"])
+        .args(["--device", "nuphy-air60"])
         .arg(&file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -43,7 +43,7 @@ fn test_read_bin() {
 
     let computed_md5 = md5::compute(fs::read(&file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "662c8707c4be0e0712e30336b0e7cfd1"
     );
 }
@@ -55,8 +55,8 @@ fn test_read_bootloader() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--device", "nuphy-air60"])
-        .args(&["--section", "bootloader"])
+        .args(["--device", "nuphy-air60"])
+        .args(["--section", "bootloader"])
         .arg(&file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -65,7 +65,7 @@ fn test_read_bootloader() {
 
     let computed_md5 = md5::compute(fs::read(&file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "65956adbe2e77369d3581ebabb1592f7"
     );
 }
@@ -77,8 +77,8 @@ fn test_read_full() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--device", "nuphy-air60"])
-        .args(&["--section", "full"])
+        .args(["--device", "nuphy-air60"])
+        .args(["--section", "full"])
         .arg(&file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -87,7 +87,7 @@ fn test_read_full() {
 
     let computed_md5 = md5::compute(fs::read(&file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "e6f497f108dbe82f8d340562eb88fe44"
     );
 }
@@ -99,12 +99,12 @@ fn test_read_custom_part() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--platform", "sh68f90"])
-        .args(&["--vendor_id", "0x05ac"])
-        .args(&["--product_id", "0x024f"])
-        .args(&["--isp_iface_num", "1"])
-        .args(&["--isp_report_id", "5"])
-        .args(&["--firmware_size", "61440"])
+        .args(["--platform", "sh68f90"])
+        .args(["--vendor_id", "0x05ac"])
+        .args(["--product_id", "0x024f"])
+        .args(["--isp_iface_num", "1"])
+        .args(["--isp_report_id", "5"])
+        .args(["--firmware_size", "61440"])
         .arg(&file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -113,7 +113,7 @@ fn test_read_custom_part() {
 
     let computed_md5 = md5::compute(fs::read(&file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "6594e5a1ab671deb40f36483a84ad61f"
     );
 }
@@ -125,8 +125,8 @@ fn test_read_forced_format_bin() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("read")
-        .args(&["--device", "nuphy-air60"])
-        .args(&["--format", "bin"])
+        .args(["--device", "nuphy-air60"])
+        .args(["--format", "bin"])
         .arg(&file)
         .assert();
     assert
@@ -140,7 +140,7 @@ fn test_read_forced_format_bin() {
 
     let computed_md5 = md5::compute(fs::read(&file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "662c8707c4be0e0712e30336b0e7cfd1"
     );
 }

@@ -67,7 +67,7 @@ fn test_list_devices() {
 #[serial]
 fn test_list_with_vid_filter() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
-    let assert = cmd.arg("list").args(&["--vendor_id", "0x05ac"]).assert();
+    let assert = cmd.arg("list").args(["--vendor_id", "0x05ac"]).assert();
     assert
         .success()
         .stdout(predicates::str::is_match(NUPHY_AIR60_SMK_ENTRY).unwrap());
@@ -77,7 +77,7 @@ fn test_list_with_vid_filter() {
 #[serial]
 fn test_list_with_pid_filter() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
-    let assert = cmd.arg("list").args(&["--product_id", "0x024f"]).assert();
+    let assert = cmd.arg("list").args(["--product_id", "0x024f"]).assert();
     assert
         .success()
         .stdout(predicates::str::is_match(NUPHY_AIR60_SMK_ENTRY).unwrap());
@@ -89,8 +89,8 @@ fn test_list_with_vid_and_pid_filter() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("list")
-        .args(&["--vendor_id", "0x05ac"])
-        .args(&["--product_id", "0x024f"])
+        .args(["--vendor_id", "0x05ac"])
+        .args(["--product_id", "0x024f"])
         .assert();
     assert
         .success()

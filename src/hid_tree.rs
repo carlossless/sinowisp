@@ -96,7 +96,7 @@ impl TreeDisplay for InterfaceNode {
                     ));
                 }
                 Err(e) => {
-                    s.push(format!("{indent}report_descriptor=error: {}", e));
+                    s.push(format!("{indent}report_descriptor=error: {e}"));
                 }
             }
             let feature_report_ids = self.feature_report_ids.as_ref();
@@ -106,13 +106,13 @@ impl TreeDisplay for InterfaceNode {
                         "{indent}feature_report_ids=[{}]",
                         feature_report_ids
                             .iter()
-                            .map(|rid| format!("{}", rid))
+                            .map(|rid| format!("{rid}"))
                             .collect::<Vec<String>>()
                             .join(", ")
                     ));
                 }
                 Err(e) => {
-                    s.push(format!("{indent}feature_report_ids=error: {}", e));
+                    s.push(format!("{indent}feature_report_ids=error: {e}"));
                 }
             }
         }

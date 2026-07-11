@@ -94,8 +94,7 @@ fn test_from_ihex_address_start_at_0x0001() {
         ":100010000200660227BD010A32646402CB9053DA03\n:00000001FF",
         32,
     );
-    let mut expected: Vec<u8> = Vec::new();
-    expected.resize(16, 0);
+    let mut expected: Vec<u8> = vec![0; 16];
     expected.extend_from_slice(&[
         2, 0, 102, 2, 39, 189, 1, 10, 50, 100, 100, 2, 203, 144, 83, 218,
     ]);

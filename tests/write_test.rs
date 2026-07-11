@@ -15,7 +15,7 @@ fn test_write() {
     let mut cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = cmd
         .arg("write")
-        .args(&["--device", "nuphy-air60"])
+        .args(["--device", "nuphy-air60"])
         .arg(file)
         .assert();
     assert.success();
@@ -28,7 +28,7 @@ fn test_write_and_readback() {
     let mut write_cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = write_cmd
         .arg("write")
-        .args(&["--device", "nuphy-air60"])
+        .args(["--device", "nuphy-air60"])
         .arg(&fixture_file)
         .assert();
     assert.success();
@@ -37,7 +37,7 @@ fn test_write_and_readback() {
     let mut read_cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = read_cmd
         .arg("read")
-        .args(&["--device", "nuphy-air60"])
+        .args(["--device", "nuphy-air60"])
         .arg(&output_file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -46,7 +46,7 @@ fn test_write_and_readback() {
 
     let computed_md5 = md5::compute(fs::read(&output_file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "6594e5a1ab671deb40f36483a84ad61f"
     );
 }
@@ -58,12 +58,12 @@ fn test_write_custom_and_readback() {
     let mut write_cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = write_cmd
         .arg("write")
-        .args(&["--platform", "sh68f90"])
-        .args(&["--vendor_id", "0x05ac"])
-        .args(&["--product_id", "0x024f"])
-        .args(&["--firmware_size", "61440"])
-        .args(&["--isp_iface_num", "1"])
-        .args(&["--isp_report_id", "5"])
+        .args(["--platform", "sh68f90"])
+        .args(["--vendor_id", "0x05ac"])
+        .args(["--product_id", "0x024f"])
+        .args(["--firmware_size", "61440"])
+        .args(["--isp_iface_num", "1"])
+        .args(["--isp_report_id", "5"])
         .arg(&fixture_file)
         .assert();
     assert.success();
@@ -72,12 +72,12 @@ fn test_write_custom_and_readback() {
     let mut read_cmd = Command::cargo_bin("sinowisp").unwrap();
     let assert = read_cmd
         .arg("read")
-        .args(&["--platform", "sh68f90"])
-        .args(&["--vendor_id", "0x05ac"])
-        .args(&["--product_id", "0x024f"])
-        .args(&["--firmware_size", "61440"])
-        .args(&["--isp_iface_num", "1"])
-        .args(&["--isp_report_id", "5"])
+        .args(["--platform", "sh68f90"])
+        .args(["--vendor_id", "0x05ac"])
+        .args(["--product_id", "0x024f"])
+        .args(["--firmware_size", "61440"])
+        .args(["--isp_iface_num", "1"])
+        .args(["--isp_report_id", "5"])
         .arg(&output_file)
         .assert();
     assert.success().stderr(predicates::str::contains(
@@ -86,7 +86,7 @@ fn test_write_custom_and_readback() {
 
     let computed_md5 = md5::compute(fs::read(&output_file).unwrap());
     assert_eq!(
-        format!("{:x}", computed_md5),
+        format!("{computed_md5:x}"),
         "6594e5a1ab671deb40f36483a84ad61f"
     );
 }
