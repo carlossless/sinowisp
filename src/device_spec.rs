@@ -64,6 +64,12 @@ pub const DEVICE_DELTACO_WK95R: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_DIERYA_DK68SE: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x013b,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_DIGITALALLIANCE_MECA_WARRIOR_X: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0090,
@@ -297,6 +303,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "aula-f87" => DEVICE_AULA_F87,
     "ciy-x77" => DEVICE_CIY_X77,
     "deltaco-wk95r" => DEVICE_DELTACO_WK95R,
+    "dierya-dk68se" => DEVICE_DIERYA_DK68SE,
     "digitalalliance-meca-warrior-x" => DEVICE_DIGITALALLIANCE_MECA_WARRIOR_X,
     "eweadn-v20" => DEVICE_EWEADN_V20,
     "eyooso-z11" => DEVICE_EYOOSO_Z11,
