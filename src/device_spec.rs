@@ -124,6 +124,12 @@ pub const DEVICE_LEOBOG_HI75: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_LEOBOG_HI75C_PRO: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x010c,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_MACHENIKE_K500_B61: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0049,
@@ -313,6 +319,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "glorious-model-o" => DEVICE_GLORIOUS_MODEL_O,
     "kzzi-k68pro" => DEVICE_KZZI_K68PRO,
     "leobog-hi75" => DEVICE_LEOBOG_HI75,
+    "leobog-hi75c-pro" => DEVICE_LEOBOG_HI75C_PRO,
     "machenike-k500-b61" => DEVICE_MACHENIKE_K500_B61,
     "magegee-mkstar61" => DEVICE_MAGEGEE_MKSTAR61,
     "nuphy-air60" => DEVICE_NUPHY_AIR60,
