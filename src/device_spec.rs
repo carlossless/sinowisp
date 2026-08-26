@@ -304,6 +304,12 @@ pub const DEVICE_YINREN_R108: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_ZIFRIEND_ZA981: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x003a,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "aula-f75" => DEVICE_AULA_F75,
     "aula-f87" => DEVICE_AULA_F87,
@@ -355,6 +361,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "yinren-r108" => DEVICE_YINREN_R108,
     "yunzii-al66" => DEVICE_XINMENG_M71, // same as xinmeng-m71
     "yunzii-al71" => DEVICE_XINMENG_M71, // same as xinmeng-m71
+    "zifriend-za981" => DEVICE_ZIFRIEND_ZA981,
 };
 
 impl DeviceSpec {
