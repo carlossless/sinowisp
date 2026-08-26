@@ -271,7 +271,7 @@ pub const DEVICE_TERPORT_TR95: DeviceSpec = DeviceSpec {
 pub const DEVICE_TRUST_GXT_960: DeviceSpec = DeviceSpec {
     vendor_id: 0x145f,
     product_id: 0x02b6,
-    ..DEVICE_BASE_SH68F90
+    ..DEVICE_BASE_SH68F881
 };
 
 pub const DEVICE_WEIKAV_SUGAR65: DeviceSpec = DeviceSpec {
