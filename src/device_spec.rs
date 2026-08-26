@@ -39,6 +39,13 @@ pub const DEVICE_BASE_SH68F881: DeviceSpec = DeviceSpec {
     reboot: DEFAULT_REBOOT,
 };
 
+pub const DEVICE_AOKO_K101: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0155,
+    reboot: false,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_AULA_F75: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x010c,
@@ -311,6 +318,7 @@ pub const DEVICE_ZIFRIEND_ZA981: DeviceSpec = DeviceSpec {
 };
 
 pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
+    "aoko-k101" => DEVICE_AOKO_K101,
     "aula-f75" => DEVICE_AULA_F75,
     "aula-f87" => DEVICE_AULA_F87,
     "ciy-x77" => DEVICE_CIY_X77,

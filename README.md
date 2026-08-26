@@ -70,6 +70,7 @@ sinowisp write \
 
 | Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
 | ----- | ------- | --- | --------- | ----------- | ------------ |
+| [AOKO K101](https://aokowireless.com/product/k101-usb-c-wired-mechanical-keyboard/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | BYK901 | ✅ | ✅ |
 | [Aula F75](https://www.aulastar.com/gaming-keyboard/176.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [CIY X77](https://a.co/d/fKEpeLU) | 46459c31e58194fa076b8ce8fb1f3eaa | SH68F88P (?) | BYK816 | ✅ | ❓ |
