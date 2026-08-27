@@ -75,7 +75,7 @@ sinowisp write \
 | [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [CIY X77](https://a.co/d/fKEpeLU) | 46459c31e58194fa076b8ce8fb1f3eaa | SH68F88P (?) | BYK816 | ✅ | ❓ |
 | Deltaco Gaming WK95R | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
-| Dierya DK68SE | ❓ | SH68F90A? | BYK903 | ✅ | ✅ |
+| Dierya DK68SE | ❓ | SH68F90A (?) | BYK903 | ✅ | ✅ |
 | Digital Alliance Meca Warrior X | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | E-Yooso Z11 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK901 | ✅ | ✅ |
 | E-Yooso Z82 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
@@ -125,7 +125,7 @@ sinowisp write \
 | Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
 | ----- | ------- | --- | --------- | ----------- | ------------ |
 | [Glorious Model O](https://web.archive.org/web/20220609205659mp_/https://www.gloriousgaming.com/products/glorious-model-o-black) | 46459c31e58194fa076b8ce8fb1f3eaa | SH68F89 | BY8948 | ✅ | ❓ |
-| [Trust GXT 960](https://www.trust.com/en/product/23758-gxt-960-graphin-ultra-lightweight-gaming-mouse) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881? | BY8801 | ✅ | ❓ |
+| [Trust GXT 960](https://www.trust.com/en/product/23758-gxt-960-graphin-ultra-lightweight-gaming-mouse) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 (?) | BY8801 | ✅ | ❓ |
 
 ## Bootloader Support
 
