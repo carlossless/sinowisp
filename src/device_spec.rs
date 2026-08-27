@@ -1,6 +1,6 @@
 use phf::{phf_map, Map};
 
-use crate::platform_spec::{PlatformSpec, PLATFORM_SH68F881, PLATFORM_SH68F90};
+use crate::platform_spec::{PlatformSpec, PLATFORM_SH68F881, PLATFORM_SH68F90, PLATFORM_SH68F902};
 
 const DEFAULT_ISP_IFACE_NUM: i32 = 1;
 const DEFAULT_ISP_REPORT_ID: u32 = 5;
@@ -34,6 +34,15 @@ pub const DEVICE_BASE_SH68F881: DeviceSpec = DeviceSpec {
     vendor_id: 0x0000,
     product_id: 0x0000,
     platform: PLATFORM_SH68F881,
+    isp_iface_num: DEFAULT_ISP_IFACE_NUM,
+    isp_report_id: DEFAULT_ISP_REPORT_ID,
+    reboot: DEFAULT_REBOOT,
+};
+
+pub const DEVICE_BASE_SH68F902: DeviceSpec = DeviceSpec {
+    vendor_id: 0x0000,
+    product_id: 0x0000,
+    platform: PLATFORM_SH68F902,
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
@@ -314,7 +323,7 @@ pub const DEVICE_YINREN_R108: DeviceSpec = DeviceSpec {
 pub const DEVICE_ZIFRIEND_ZA981: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x003a,
-    ..DEVICE_BASE_SH68F90
+    ..DEVICE_BASE_SH68F902
 };
 
 pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
