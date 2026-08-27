@@ -32,8 +32,8 @@ pub const PLATFORM_SH68F902: PlatformSpec = PlatformSpec {
 };
 
 pub static PLATFORMS: Map<&'static str, PlatformSpec> = phf_map! {
-    "sh68f90" => PLATFORM_SH68F90,
     "sh68f881" => PLATFORM_SH68F881,
+    "sh68f90" => PLATFORM_SH68F90,
     "sh68f902" => PLATFORM_SH68F902,
 };
 
