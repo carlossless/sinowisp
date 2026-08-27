@@ -118,7 +118,7 @@ sinowisp write \
 | Yinren R108 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | Yunzii AL66 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | SH68F90AS | ✅ | ✅ |
 | Yunzii AL71 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | SH68F90AS | ✅ | ✅ |
-| [Zifriend ZA981](https://www.zifriend.net/products/za981-85-keyboard-98-keys-hot-swappable-green-red-switch-custom-keycap-computer-gaming-usb-wired-rgb-light-led-mechanical-keyboard) | 620f0b67a91f7f74151bc5be745b7110 | SH68F90A | BYK901 | ✅ | ✅ |
+| [Zifriend ZA981](https://www.zifriend.net/products/za981-85-keyboard-98-keys-hot-swappable-green-red-switch-custom-keycap-computer-gaming-usb-wired-rgb-light-led-mechanical-keyboard) | 620f0b67a91f7f74151bc5be745b7110 | SH68F902A | BYK90? | ✅ | ✅ |
 
 ### Mice
 
