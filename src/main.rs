@@ -177,6 +177,10 @@ fn err_main() -> Result<(), CLIError> {
                 .map_err(CLIError::from)?;
             let firmware = flasher::read_cycle(&device, section).map_err(CLIError::from)?;
 
+            if firmware.iter().all(|b| *b == 0) {
+                eprintln!("Warning: read {} bytes of zeros.", firmware.len());
+            }
+
             let digest = md5::compute(&firmware);
             eprintln!("MD5: {digest:x}");
 
