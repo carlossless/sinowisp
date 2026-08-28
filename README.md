@@ -81,7 +81,7 @@ sinowisp write \
 | E-Yooso Z82 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Genesis Thor 300](https://genesis-zone.com/product/thor-300-outemu-blue) | e57490acebcaabfcff84a0ff013955d9 | SH68F881 | SH68F881W | ✅ | ✅ |
 | [Genesis Thor 300 RGB](https://genesis-zone.com/product/thor-300-rgb-brown) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
-| Hykker X Range 2017 (RE-K70-BYK800) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 | BYK801 | ✅ | ❓ |
+| Hykker X Range 2017 (RE-K70-BYK800) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 | BYK801 | ✅ | ✅ |
 | [Kzzi K68Pro](http://en.kzzi.com/product/37/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |
 | [Leobog Hi75](https://leobogtech.com/products/leobog-hi75) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 (?) | ✅ | ✅ |
 | Leobog Hi75c Pro | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
