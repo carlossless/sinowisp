@@ -72,7 +72,7 @@ sinowisp write \
 | ----- | ------- | --- | --------- | ----------- | ------------ |
 | [AOKO K101](https://aokowireless.com/product/k101-usb-c-wired-mechanical-keyboard/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | BYK901 | ✅ | ✅ |
 | [Aula F75](https://www.aulastar.com/gaming-keyboard/176.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
-| [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
+| [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 (?) | ✅ | ✅ |
 | [CIY X77](https://a.co/d/fKEpeLU) | 46459c31e58194fa076b8ce8fb1f3eaa | SH68F88P (?) | BYK816 | ✅ | ❓ |
 | Deltaco Gaming WK95R | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | Dierya DK68SE | ❓ | ❓ | BYK903 | ✅ | ✅ |
@@ -83,40 +83,40 @@ sinowisp write \
 | [Genesis Thor 300 RGB](https://genesis-zone.com/product/thor-300-rgb-brown) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | Hykker X Range 2017 (RE-K70-BYK800) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 | BYK801 | ✅ | ❓ |
 | [Kzzi K68Pro](http://en.kzzi.com/product/37/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |
-| [Leobog Hi75](https://leobogtech.com/products/leobog-hi75) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
+| [Leobog Hi75](https://leobogtech.com/products/leobog-hi75) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 (?) | ✅ | ✅ |
 | Leobog Hi75c Pro | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
-| [Machenike K500-B61](https://global.machenike.com/products/k500-b61) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90? | BYK916 | ✅ | ✅ |
+| [Machenike K500-B61](https://global.machenike.com/products/k500-b61) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90? | BYK916 (?) | ✅ | ✅ |
 | [MageGee MK-STAR61](https://www.magegee.com/products2.html?pid=1644595&_t=1737191677) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [NuPhy Air60](https://nuphy.com/products/air60) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [NuPhy Air75](https://nuphy.com/products/air75) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [NuPhy Air96](https://nuphy.com/products/air96-wireless-mechanical-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [NuPhy Halo65](https://nuphy.com/products/halo65) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Portronics Hydra 10](https://www.portronics.com/products/hydra-10) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
-| [Redragon K530 Draconic PRO](https://www.redragonzone.com/products/draconic-k530) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | BYK916 | ✅ | ✅ |
-| [Redragon K614 Anivia 60%](https://www.redragonzone.com/products/redragon-k614-anivia-60-ultra-thin-wired-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
-| [Redragon K617 FIZZ 60%](https://www.redragonzone.com/collections/keyboard/products/redragon-k617-fizz-60-wired-rgb-gaming-keyboard-61-keys-compact-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
+| [Redragon K530 Draconic PRO](https://www.redragonzone.com/products/draconic-k530) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | BYK916 (?) | ✅ | ✅ |
+| [Redragon K614 Anivia 60%](https://www.redragonzone.com/products/redragon-k614-anivia-60-ultra-thin-wired-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 (?) | ✅ | ✅ |
+| [Redragon K617 FIZZ 60%](https://www.redragonzone.com/collections/keyboard/products/redragon-k617-fizz-60-wired-rgb-gaming-keyboard-61-keys-compact-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 (?) | ✅ | ✅ |
 | [Redragon K618](https://www.redragonzone.com/products/redragon-k618-horus-wireless-rgb-mechanical-keyboard) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
-| [Redragon K630 Single LED version](https://www.redragonzone.com/products/redragon-k630-gaming-mechanical-keyboard) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | SH68F90AU | ✅ | ✅ |
+| [Redragon K630 Single LED version](https://www.redragonzone.com/products/redragon-k630-gaming-mechanical-keyboard) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | SH68F90AU (?) | ✅ | ✅ |
 | [Redragon K633 RYZE](https://www.redragonzone.com/products/redragon-k633-ryze-rgb-led-backlit-mechanical-gaming-keyboard-with-68-professional-keys-linear-red-switches) | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
-| [Redragon K641 SHACO PRO](https://www.redragonzone.com/products/redragon-k641-shaco-pro-65-aluminum-rgb-mechanical-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
+| [Redragon K641 SHACO PRO](https://www.redragonzone.com/products/redragon-k641-shaco-pro-65-aluminum-rgb-mechanical-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 (?) | ✅ | ✅ |
 | [Redragon K652 PRO](https://www.redragonzone.com/products/redragon-k652-75-wireless-rgb-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |
-| [Redragon K658 PRO SE](https://www.redragonzone.com/products/k658-pro-se-90-wireless-rgb-gaming-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
+| [Redragon K658 PRO SE](https://www.redragonzone.com/products/k658-pro-se-90-wireless-rgb-gaming-keyboard) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 (?) | ✅ | ✅ |
 | [Royal Kludge RK100](http://en.rkgaming.com/product/14/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK916 | ✅ | ✅ |
-| [Royal Kludge RK61](http://en.rkgaming.com/product/11/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK916 | ✅ | ✅ |
-| Royal Kludge RK68 BT Dual | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK901 | ✅ | ✅ |
-| Royal Kludge RK68 ISO Return | ❓ | SH68F90? | BYK916 | ✅ | ❓ |
+| [Royal Kludge RK61](http://en.rkgaming.com/product/11/) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90? | BYK916 (?) | ✅ | ✅ |
+| Royal Kludge RK68 BT Dual | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK901 (?) | ✅ | ✅ |
+| Royal Kludge RK68 ISO Return | ❓ | SH68F90? | BYK916 (?) | ✅ | ❓ |
 | [Royal Kludge RK71](http://en.rkgaming.com/product/12/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | ❓ | ✅ | ✅ |
 | [Royal Kludge RK84](http://en.rkgaming.com/product/16/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK916 | ✅ | ✅ |
 | Royal Kludge RKG68 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | SH68F90AS | ✅ | ✅ |
 | [SuperFrame Phantom](https://www.terabyteshop.com.br/produto/37211/teclado-mecanico-gamer-superframe-phantom-rgb-wirelessbluetooth-switch-ktt-winered-linear-abnt2-preto-sf-kb-gtktfsbrtab) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |
-| Terport TR95 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
+| Terport TR95 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 (?) | ✅ | ✅ |
 | Weikav Sugar65 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
 | Xinmeng K916 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90 | ❓ | ✅ | ✅ |
-| Xinmeng M66 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | SH68F90AS | ✅ | ✅ |
+| Xinmeng M66 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | SH68F90AS (?) | ✅ | ✅ |
 | Xinmeng M71 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | SH68F90AS | ✅ | ✅ |
 | Xinmeng XM-RF68 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90U | ✅ | ✅ |
 | Yinren R108 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
-| Yunzii AL66 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | SH68F90AS | ✅ | ✅ |
+| Yunzii AL66 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | SH68F90AS (?) | ✅ | ✅ |
 | Yunzii AL71 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | SH68F90AS | ✅ | ✅ |
 | [Zifriend ZA981](https://www.zifriend.net/products/za981-85-keyboard-98-keys-hot-swappable-green-red-switch-custom-keycap-computer-gaming-usb-wired-rgb-light-led-mechanical-keyboard) | dc3fa423d3281946e0ae781a42a39b82 | SH68F902A | BYK90? | ✅ | ✅ |
 
