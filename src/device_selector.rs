@@ -49,12 +49,9 @@ pub struct DeviceSelector {
 
 impl DeviceSelector {
     pub fn new() -> Result<Self, DeviceSelectorError> {
-        let backends: Vec<Backend> = [Backend::Native, Backend::Nusb]
-            .into_iter()
-            .filter(|b| b.is_available())
-            .collect();
+        let backends: Vec<Backend> = Backend::available().collect();
         let backend = 0;
-        let api = Self::open_api(backends[backend])?;
+        let api = Self::open_api(backends.first().copied().unwrap_or_default())?;
         Ok(Self {
             api,
             backends,

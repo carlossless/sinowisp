@@ -36,7 +36,7 @@ required-features = ["cli"]
 
 [dependencies]
 # Both backends built in; `DeviceSelector` falls back between them at run time.
-hidra = { version = "0.0.3", features = ["nusb"] }
+hidra = "0.0.3"
 ihex = "3.0"
 thiserror = "2.0"
 phf = { version = "0.11", features = ["macros"] }
