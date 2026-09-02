@@ -27,7 +27,9 @@ pub const PLATFORM_SH68F881: PlatformSpec = PlatformSpec {
 };
 
 pub const PLATFORM_SH68F902: PlatformSpec = PlatformSpec {
-    firmware_size: 16384 - PLATFORM_DEFAULT.bootloader_size, // 12288 until bootloader
+    firmware_size: 16384 - 3072, // 13312 until bootloader
+    bootloader_size: 3072,
+    page_size: 1024,
     ..PLATFORM_DEFAULT
 };
 
