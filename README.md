@@ -73,7 +73,7 @@ sinowisp write \
 | [AOKO K101](https://aokowireless.com/product/k101-usb-c-wired-mechanical-keyboard/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | BYK901 | ✅ | ✅ |
 | [Aula F75](https://www.aulastar.com/gaming-keyboard/176.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A (?) | BYK916 (?) | ✅ | ✅ |
-| [CIY X77](https://a.co/d/fKEpeLU) | 46459c31e58194fa076b8ce8fb1f3eaa | SH68F88P (?) | BYK816 | ✅ | ❓ |
+| [CIY X77](https://a.co/d/fKEpeLU) | 571ea8b315654c39046e4cc3b1e43777 | SH68F89 (?) | BYK816 | ✅ | ✅ |
 | Deltaco Gaming WK95R | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A | BYK916 | ✅ | ✅ |
 | Dierya DK68SE | ❓ | ❓ | BYK903 | ✅ | ✅ |
 | Digital Alliance Meca Warrior X | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
@@ -124,7 +124,7 @@ sinowisp write \
 
 | Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
 | ----- | ------- | --- | --------- | ----------- | ------------ |
-| [Glorious Model O](https://web.archive.org/web/20220609205659mp_/https://www.gloriousgaming.com/products/glorious-model-o-black) | 46459c31e58194fa076b8ce8fb1f3eaa | SH68F89 | BY8948 | ✅ | ❓ |
+| [Glorious Model O](https://web.archive.org/web/20220609205659mp_/https://www.gloriousgaming.com/products/glorious-model-o-black) | 571ea8b315654c39046e4cc3b1e43777 | SH68F89 | BY8948 | ✅ | ✅ |
 | [Trust GXT 960](https://www.trust.com/en/product/23758-gxt-960-graphin-ultra-lightweight-gaming-mouse) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 | BY8801 | ✅ | ✅ |
 
 ## Bootloader Support
@@ -136,7 +136,7 @@ sinowisp write \
 | 13df4ce2933f9654ffef80d6a3c27199 | ?        | fail[^1] | ok    |
 | 2d169670eae0d36eae8188562c1f66e8 | ok       | ?        | ok    |
 | 3e0ebd0c440af5236d7ff8872343f85d | ok       | ok       | ok    |
-| 46459c31e58194fa076b8ce8fb1f3eaa | ok       | ?        | ok    |
+| 571ea8b315654c39046e4cc3b1e43777 | ok       | ?        | ok    |
 | 6dac0d2288f2a3d83b5703d979c114ec | ok       | ?        | ?     |
 | cfc8661da8c9d7e351b36c0a763426aa | ok       | fail[^1] | ok    |
 | e57490acebcaabfcff84a0ff013955d9 | ok       | fail[^1] | ok    |
