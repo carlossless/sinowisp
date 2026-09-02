@@ -133,7 +133,7 @@ sinowisp write \
 
 | ISP MD5                          | Windows  | macOS    | Linux |
 | -------------------------------- | -------- | -------- | ----- |
-| 13df4ce2933f9654ffef80d6a3c27199 | ?        | ?        | ok    |
+| 13df4ce2933f9654ffef80d6a3c27199 | ?        | fail[^1] | ok    |
 | 2d169670eae0d36eae8188562c1f66e8 | ok       | ?        | ok    |
 | 3e0ebd0c440af5236d7ff8872343f85d | ok       | ok       | ok    |
 | 46459c31e58194fa076b8ce8fb1f3eaa | ok       | ?        | ok    |
