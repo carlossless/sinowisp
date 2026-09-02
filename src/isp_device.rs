@@ -162,7 +162,15 @@ impl ISPDevice {
             .get_feature_report(&mut xfer_buf)
             .await
             .map_err(ISPError::from)?;
-        buf.extend_from_slice(&xfer_buf[2..(page_size + 2)]);
+        let page = &xfer_buf[2..(page_size + 2)];
+        match self.device_spec.isp_transform {
+            Some(transform) => buf.extend(
+                page.iter()
+                    .enumerate()
+                    .map(|(i, b)| (transform.read)(i, *b)),
+            ),
+            None => buf.extend_from_slice(page),
+        }
         if xfer_buf[1] != XFER_READ_PAGE {
             return Err(ISPError::ReadWriteMismatch);
         }
@@ -180,7 +188,14 @@ impl ISPDevice {
         let mut xfer_buf: Vec<u8> = vec![0; length];
         xfer_buf[0] = REPORT_ID_XFER;
         xfer_buf[1] = XFER_WRITE_PAGE;
-        xfer_buf[2..length].clone_from_slice(buf);
+        match self.device_spec.isp_transform {
+            Some(transform) => {
+                for (i, (dst, src)) in xfer_buf[2..length].iter_mut().zip(buf).enumerate() {
+                    *dst = (transform.write)(i, *src);
+                }
+            }
+            None => xfer_buf[2..length].clone_from_slice(buf),
+        }
         self.xfer_device()
             .send_feature_report(&xfer_buf)
             .await

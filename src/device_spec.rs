@@ -1,10 +1,32 @@
 use phf::{phf_map, Map};
 
-use crate::platform_spec::{PlatformSpec, PLATFORM_SH68F881, PLATFORM_SH68F90, PLATFORM_SH68F902};
+use crate::platform_spec::{
+    PlatformSpec, PLATFORM_SH68F881, PLATFORM_SH68F89, PLATFORM_SH68F90, PLATFORM_SH68F902,
+};
 
 const DEFAULT_ISP_IFACE_NUM: i32 = 1;
 const DEFAULT_ISP_REPORT_ID: u32 = 5;
 const DEFAULT_REBOOT: bool = true;
+
+/// Undoes mangling some ISP bootloaders apply in transit; must invert each other.
+#[derive(Clone, Copy, PartialEq)]
+pub struct IspTransform {
+    pub read: fn(usize, u8) -> u8,
+    pub write: fn(usize, u8) -> u8,
+}
+
+/// Measured against an ICP read of the bootloader region; the two constants differ by 4.
+fn bootloader_571ea8b3_read(offset: usize, byte: u8) -> u8 {
+    if offset < 6 {
+        byte
+    } else {
+        byte.wrapping_sub(0x5e)
+    }
+}
+
+fn bootloader_571ea8b3_write(_offset: usize, byte: u8) -> u8 {
+    byte.wrapping_add(0x5a)
+}
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct DeviceSpec {
@@ -19,6 +41,8 @@ pub struct DeviceSpec {
     pub isp_report_id: u32,
 
     pub reboot: bool,
+
+    pub isp_transform: Option<IspTransform>,
 }
 
 pub const DEVICE_BASE_SH68F90: DeviceSpec = DeviceSpec {
@@ -28,6 +52,17 @@ pub const DEVICE_BASE_SH68F90: DeviceSpec = DeviceSpec {
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
+    isp_transform: None,
+};
+
+pub const DEVICE_BASE_SH68F89: DeviceSpec = DeviceSpec {
+    vendor_id: 0x0000,
+    product_id: 0x0000,
+    platform: PLATFORM_SH68F89,
+    isp_iface_num: DEFAULT_ISP_IFACE_NUM,
+    isp_report_id: DEFAULT_ISP_REPORT_ID,
+    reboot: DEFAULT_REBOOT,
+    isp_transform: None,
 };
 
 pub const DEVICE_BASE_SH68F881: DeviceSpec = DeviceSpec {
@@ -37,6 +72,7 @@ pub const DEVICE_BASE_SH68F881: DeviceSpec = DeviceSpec {
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
+    isp_transform: None,
 };
 
 pub const DEVICE_BASE_SH68F902: DeviceSpec = DeviceSpec {
@@ -46,6 +82,7 @@ pub const DEVICE_BASE_SH68F902: DeviceSpec = DeviceSpec {
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
+    isp_transform: None,
 };
 
 pub const DEVICE_AOKO_K101: DeviceSpec = DeviceSpec {
@@ -71,7 +108,11 @@ pub const DEVICE_CIY_X77: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0016,
     reboot: false,
-    ..DEVICE_BASE_SH68F881
+    isp_transform: Some(IspTransform {
+        read: bootloader_571ea8b3_read,
+        write: bootloader_571ea8b3_write,
+    }),
+    ..DEVICE_BASE_SH68F89
 };
 
 pub const DEVICE_DELTACO_WK95R: DeviceSpec = DeviceSpec {
@@ -125,7 +166,11 @@ pub const DEVICE_GENESIS_THOR_300_RGB: DeviceSpec = DeviceSpec {
 pub const DEVICE_GLORIOUS_MODEL_O: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0036,
-    ..DEVICE_BASE_SH68F90
+    isp_transform: Some(IspTransform {
+        read: bootloader_571ea8b3_read,
+        write: bootloader_571ea8b3_write,
+    }),
+    ..DEVICE_BASE_SH68F89
 };
 
 pub const DEVICE_KZZI_K68PRO: DeviceSpec = DeviceSpec {
