@@ -3,7 +3,8 @@ use std::{thread, time::Duration};
 
 use hidparser::parse_report_descriptor;
 use hidra::{
-    BusType, DeviceInfo, HidDevice, HidError, Hidra, MaybeFuture, MAX_REPORT_DESCRIPTOR_SIZE,
+    Backend, BusType, DeviceInfo, HidDevice, HidError, Hidra, MaybeFuture,
+    MAX_REPORT_DESCRIPTOR_SIZE,
 };
 use indicatif::ProgressBar;
 use itertools::Itertools;
@@ -42,17 +43,53 @@ pub enum DeviceSelectorError {
 
 pub struct DeviceSelector {
     api: Hidra,
+    backends: Vec<Backend>,
+    backend: usize,
 }
 
 impl DeviceSelector {
     pub fn new() -> Result<Self, DeviceSelectorError> {
-        let api = Hidra::new().map_err(DeviceSelectorError::from)?;
+        let backends: Vec<Backend> = [Backend::Native, Backend::Nusb]
+            .into_iter()
+            .filter(|b| b.is_available())
+            .collect();
+        let backend = 0;
+        let api = Self::open_api(backends[backend])?;
+        Ok(Self {
+            api,
+            backends,
+            backend,
+        })
+    }
 
-        // hidra only exposes this on the native macOS backend (not nusb).
-        #[cfg(all(target_os = "macos", not(feature = "nusb")))]
-        api.set_open_exclusive(false); // macOS will throw a privilege violation error otherwise
+    fn open_api(backend: Backend) -> Result<Hidra, DeviceSelectorError> {
+        let api = Hidra::builder()
+            .backend(backend)
+            .build()
+            .map_err(DeviceSelectorError::from)?;
 
-        Ok(Self { api })
+        // macOS refuses an exclusive open with a privilege violation.
+        #[cfg(target_os = "macos")]
+        if backend == Backend::Native {
+            api.set_open_exclusive(false)?;
+        }
+
+        Ok(api)
+    }
+
+    /// Next backend: each sees devices the other cannot, and ISP mode swaps which.
+    fn rotate_backend(&mut self) -> Result<(), DeviceSelectorError> {
+        if self.backends.len() < 2 {
+            return self
+                .api
+                .refresh_devices()
+                .map_err(DeviceSelectorError::from);
+        }
+        self.backend = (self.backend + 1) % self.backends.len();
+        let backend = self.backends[self.backend];
+        info!("Trying the {backend} backend...");
+        self.api = Self::open_api(backend)?;
+        Ok(())
     }
 
     fn sorted_usb_device_list(&self) -> Vec<&DeviceInfo> {
@@ -376,7 +413,7 @@ impl DeviceSelector {
             if attempt > 1 {
                 bar.set_message(format!("Retrying... Attempt {attempt}/{retries}"));
                 info!("Retrying... Attempt {attempt}/{retries}");
-                self.api.refresh_devices()?;
+                self.rotate_backend()?;
                 thread::sleep(time::Duration::from_millis(1000));
             }
 
