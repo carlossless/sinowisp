@@ -345,9 +345,9 @@ checksum = "efb8ae90b8d0165be79ff98d845bebbbc9dfa0295ff2ce86beba525d93b9ba60"
 
 [[package]]
 name = "hidra"
-version = "0.0.3"
+version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4861c589ab4c739001e0a62db96286e217561221e838095fcd8d31bf4f155e7b"
+checksum = "8ec1c50d216cb0f486f6a48f59f70b0abd18396c8e8178e6e9d210cc59d37bf8"
 dependencies = [
  "core-foundation-sys",
  "js-sys",
@@ -524,19 +524,23 @@ checksum = "830b246a0e5f20af87141b25c173cd1b609bd7779a4617d6ec582abaf90870f3"
 
 [[package]]
 name = "nusb"
-version = "0.2.4"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "215a49c10e8cff30a0da93b258b21846c4e9242f7683748cfa8474fdc2e4d22b"
+checksum = "18ef13beb3b3a8fc16fd7aea912ebd3d45dde00a9a5b968d0742297468065845"
 dependencies = [
  "core-foundation",
  "core-foundation-sys",
  "futures-core",
  "io-kit-sys",
+ "js-sys",
  "linux-raw-sys",
  "log",
  "once_cell",
  "rustix",
  "slab",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
  "windows-sys 0.61.2",
 ]
 
