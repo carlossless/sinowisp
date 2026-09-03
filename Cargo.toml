@@ -66,4 +66,4 @@ stdext = "0.3.3"
 
 # TODO: drop once hidra#8 lands and the backend-dispatch API is on crates.io.
 [patch.crates-io]
-hidra = { git = "https://github.com/carlossless/hidra", rev = "d0e0595e105a47f56f55f1c4ee932a042a1b88ec" }
+hidra = { git = "https://github.com/carlossless/hidra", rev = "a9bff3926598cb8b0c1f6d39a61846b8d954aa82" }
