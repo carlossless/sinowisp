@@ -8,7 +8,7 @@ use hidra::{
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use log::{debug, error, info};
-use sinowisp::{is_expected_error, DeviceSpec, ISPDevice, IspHandle};
+use sinowisp::{is_expected_error, DeviceSpec, ISPDevice, ISPHandle};
 use thiserror::Error;
 
 use crate::hid_tree::{DeviceNode, InterfaceNode};
@@ -79,10 +79,10 @@ impl Api {
         }
     }
 
-    fn open_path(&self, path: &str) -> Result<IspHandle, DeviceSelectorError> {
+    fn open_path(&self, path: &str) -> Result<ISPHandle, DeviceSelectorError> {
         Ok(match self {
-            Api::Native(api) => IspHandle::from(api.open_path(path).wait()?),
-            Api::Nusb(api) => IspHandle::from(api.open_path(path).wait()?),
+            Api::Native(api) => ISPHandle::from(api.open_path(path).wait()?),
+            Api::Nusb(api) => ISPHandle::from(api.open_path(path).wait()?),
         })
     }
 }
@@ -179,7 +179,7 @@ impl DeviceSelector {
 
     fn get_feature_report_ids_from_device(
         &self,
-        dev: &IspHandle,
+        dev: &ISPHandle,
     ) -> Result<Vec<u32>, DeviceSelectorError> {
         let mut buf: [u8; MAX_REPORT_DESCRIPTOR_SIZE] = [0; MAX_REPORT_DESCRIPTOR_SIZE];
         let size: usize = dev
@@ -205,7 +205,7 @@ impl DeviceSelector {
         Ok(res)
     }
 
-    fn get_report_descriptor(&self, dev: &IspHandle) -> Result<Vec<u8>, DeviceSelectorError> {
+    fn get_report_descriptor(&self, dev: &ISPHandle) -> Result<Vec<u8>, DeviceSelectorError> {
         let mut buf: [u8; MAX_REPORT_DESCRIPTOR_SIZE] = [0; MAX_REPORT_DESCRIPTOR_SIZE];
         let size: usize = dev
             .get_report_descriptor(&mut buf)
@@ -349,7 +349,7 @@ impl DeviceSelector {
         };
     }
 
-    fn find_device(&self, device_spec: DeviceSpec) -> Result<IspHandle, DeviceSelectorError> {
+    fn find_device(&self, device_spec: DeviceSpec) -> Result<ISPHandle, DeviceSelectorError> {
         let filtered_devices = self.unique_usb_device_list().into_iter().filter(|d| {
             d.vendor_id() == device_spec.vendor_id
                 && d.product_id() == device_spec.product_id
@@ -380,7 +380,7 @@ impl DeviceSelector {
 
     fn switch_to_isp_device(
         &mut self,
-        device: IspHandle,
+        device: ISPHandle,
         device_spec: DeviceSpec,
     ) -> Result<ISPDevice, DeviceSelectorError> {
         if let Err(err) = self.enter_isp_mode(&device) {
@@ -471,7 +471,7 @@ impl DeviceSelector {
         Err(DeviceSelectorError::NotFound)
     }
 
-    fn enter_isp_mode(&self, handle: &IspHandle) -> Result<(), DeviceSelectorError> {
+    fn enter_isp_mode(&self, handle: &ISPHandle) -> Result<(), DeviceSelectorError> {
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_ISP, CMD_ISP_MODE, 0x00, 0x00, 0x00, 0x00];
         handle.send_feature_report(&cmd).wait()?;
         Ok(())

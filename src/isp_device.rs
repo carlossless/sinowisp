@@ -28,7 +28,7 @@ const XFER_WRITE_PAGE: u8 = 0x77;
 /// protocol needs three methods and this forwards them. On wasm there is only
 /// WebHID, so it is a plain newtype.
 #[cfg(not(target_arch = "wasm32"))]
-pub enum IspHandle {
+pub enum ISPHandle {
     /// A handle on the per-OS backend.
     Native(HidDevice<NativeDevice>),
     /// A handle on the raw-USB backend.
@@ -37,26 +37,26 @@ pub enum IspHandle {
 
 /// A HID handle an [`ISPDevice`] talks through.
 #[cfg(target_arch = "wasm32")]
-pub struct IspHandle(HidDevice);
+pub struct ISPHandle(HidDevice);
 
 #[cfg(not(target_arch = "wasm32"))]
-impl From<HidDevice<NativeDevice>> for IspHandle {
+impl From<HidDevice<NativeDevice>> for ISPHandle {
     fn from(device: HidDevice<NativeDevice>) -> Self {
-        IspHandle::Native(device)
+        ISPHandle::Native(device)
     }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-impl From<HidDevice<NusbDevice>> for IspHandle {
+impl From<HidDevice<NusbDevice>> for ISPHandle {
     fn from(device: HidDevice<NusbDevice>) -> Self {
-        IspHandle::Nusb(device)
+        ISPHandle::Nusb(device)
     }
 }
 
 #[cfg(target_arch = "wasm32")]
-impl From<HidDevice> for IspHandle {
+impl From<HidDevice> for ISPHandle {
     fn from(device: HidDevice) -> Self {
-        IspHandle(device)
+        ISPHandle(device)
     }
 }
 
@@ -66,15 +66,15 @@ macro_rules! forward {
     ($self:ident, $call:ident($($arg:expr),*)) => {{
         #[cfg(not(target_arch = "wasm32"))]
         match $self {
-            IspHandle::Native(d) => d.$call($($arg),*).await,
-            IspHandle::Nusb(d) => d.$call($($arg),*).await,
+            ISPHandle::Native(d) => d.$call($($arg),*).await,
+            ISPHandle::Nusb(d) => d.$call($($arg),*).await,
         }
         #[cfg(target_arch = "wasm32")]
         $self.0.$call($($arg),*).await
     }};
 }
 
-impl IspHandle {
+impl ISPHandle {
     pub async fn send_feature_report(&self, data: &[u8]) -> Result<(), HidError> {
         forward!(self, send_feature_report(data))
     }
@@ -95,10 +95,10 @@ impl IspHandle {
 /// read/write cycles (and insert the settle delays after [`erase`](Self::erase)
 /// and [`reboot`](Self::reboot)).
 pub struct ISPDevice {
-    cmd_device: IspHandle,
+    cmd_device: ISPHandle,
     /// Some platforms (Windows) expose the transfer report on a separate HID
     /// handle; everywhere else it is the same handle as `cmd_device`.
-    xfer_device: Option<IspHandle>,
+    xfer_device: Option<ISPHandle>,
     device_spec: DeviceSpec,
 }
 
@@ -157,8 +157,8 @@ impl ISPDevice {
     /// platforms that split them across HID collections (Windows).
     pub fn new(
         device_spec: DeviceSpec,
-        cmd_device: impl Into<IspHandle>,
-        xfer_device: Option<IspHandle>,
+        cmd_device: impl Into<ISPHandle>,
+        xfer_device: Option<ISPHandle>,
     ) -> Self {
         Self {
             cmd_device: cmd_device.into(),
@@ -172,7 +172,7 @@ impl ISPDevice {
         &self.device_spec
     }
 
-    fn xfer_device(&self) -> &IspHandle {
+    fn xfer_device(&self) -> &ISPHandle {
         self.xfer_device.as_ref().unwrap_or(&self.cmd_device)
     }
 
