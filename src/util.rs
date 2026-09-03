@@ -38,6 +38,52 @@ pub fn verify(expected: &[u8], actual: &[u8]) -> Result<(), VerificationError> {
     Ok(())
 }
 
+/// `CLR EA; MOV SP,#0x70`, the first instructions of every known ISP bootloader.
+const BOOTLOADER_PROLOGUE: [u8; 5] = [0xc2, 0xaf, 0x75, 0x81, 0x70];
+
+/// ISP transfer HID collection; unlike the prologue it lies past the offset an [`crate::IspTransform`] starts mangling at.
+const BOOTLOADER_ISP_REPORT: [u8; 25] = [
+    0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x85, 0x06, 0x15, 0x00, 0x25, 0xff, 0x19, 0x01, 0x29,
+    0x02, 0x75, 0x08, 0x96, 0x01, 0x08, 0xb1, 0x02, 0xc0,
+];
+
+const BOOTLOADER_CHECK_CAUSES: &str = "the platform's firmware_size may be wrong (the read started at the wrong address), its bootloader_size may be wrong, or this device may need an isp_transform that its DeviceSpec does not declare";
+
+#[derive(Debug, Clone, PartialEq, Error)]
+pub enum BootloaderCheckError {
+    #[error(
+        "Bootloader starts with {} instead of {} - {}",
+        to_hex_string(.actual),
+        to_hex_string(&BOOTLOADER_PROLOGUE),
+        BOOTLOADER_CHECK_CAUSES
+    )]
+    MissingPrologue { actual: Vec<u8> },
+    #[error(
+        "Bootloader is missing the ISP transfer report descriptor - {}",
+        BOOTLOADER_CHECK_CAUSES
+    )]
+    MissingISPReport,
+}
+
+/// Sanity-checks a bootloader read against two fixed signatures; says nothing about the pages between them.
+pub fn check_bootloader(bootloader: &[u8]) -> Result<(), BootloaderCheckError> {
+    if !bootloader.starts_with(&BOOTLOADER_PROLOGUE) {
+        let end = BOOTLOADER_PROLOGUE.len().min(bootloader.len());
+        return Err(BootloaderCheckError::MissingPrologue {
+            actual: bootloader[..end].to_vec(),
+        });
+    }
+
+    if !bootloader
+        .windows(BOOTLOADER_ISP_REPORT.len())
+        .any(|w| w == BOOTLOADER_ISP_REPORT)
+    {
+        return Err(BootloaderCheckError::MissingISPReport);
+    }
+
+    Ok(())
+}
+
 #[derive(Debug, Error)]
 pub enum PayloadConversionError {
     #[error("Expected LJMP not found at {addr:#06x}")]
@@ -141,6 +187,64 @@ fn test_verify_error_byte_mismatch() {
             expected: 3,
             actual: 4
         })
+    );
+}
+
+#[cfg(test)]
+fn fake_bootloader() -> Vec<u8> {
+    let mut blob = vec![0u8; 4096];
+    blob[..BOOTLOADER_PROLOGUE.len()].copy_from_slice(&BOOTLOADER_PROLOGUE);
+    blob[0x600..0x600 + BOOTLOADER_ISP_REPORT.len()].copy_from_slice(&BOOTLOADER_ISP_REPORT);
+    blob
+}
+
+#[test]
+fn test_check_bootloader_success() {
+    assert!(check_bootloader(&fake_bootloader()).is_ok());
+}
+
+#[test]
+fn test_check_bootloader_blank_region() {
+    assert_eq!(
+        check_bootloader(&[0u8; 4096]),
+        Err(BootloaderCheckError::MissingPrologue {
+            actual: vec![0, 0, 0, 0, 0]
+        })
+    );
+}
+
+#[test]
+fn test_check_bootloader_shifted_read() {
+    let blob = fake_bootloader();
+    assert_eq!(
+        check_bootloader(&blob[1..]),
+        Err(BootloaderCheckError::MissingPrologue {
+            actual: vec![0xaf, 0x75, 0x81, 0x70, 0x00]
+        })
+    );
+}
+
+#[test]
+fn test_check_bootloader_short_region() {
+    assert_eq!(
+        check_bootloader(&[0xc2, 0xaf]),
+        Err(BootloaderCheckError::MissingPrologue {
+            actual: vec![0xc2, 0xaf]
+        })
+    );
+}
+
+/// An unapplied `isp_transform` leaves the first six bytes untouched, so only the report descriptor catches it.
+#[test]
+fn test_check_bootloader_untransformed() {
+    let blob: Vec<u8> = fake_bootloader()
+        .iter()
+        .enumerate()
+        .map(|(i, b)| if i < 6 { *b } else { b.wrapping_add(0x5e) })
+        .collect();
+    assert_eq!(
+        check_bootloader(&blob),
+        Err(BootloaderCheckError::MissingISPReport)
     );
 }
 
