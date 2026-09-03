@@ -26,7 +26,8 @@ cli = [
     "dep:simple_logger",
     "dep:log",
 ]
-# No-op: hidra's nusb backend is always built in and picked at run time.
+# No-op, kept so an existing `--features nusb` still resolves: hidra compiles
+# both backends in and this crate names the one it wants.
 nusb = []
 
 [[bin]]
@@ -36,7 +37,7 @@ required-features = ["cli"]
 
 [dependencies]
 # Both backends built in; `DeviceSelector` falls back between them at run time.
-hidra = "0.0.3"
+hidra = "0.0.4"
 ihex = "3.0"
 thiserror = "2.0"
 phf = { version = "0.11", features = ["macros"] }
@@ -63,7 +64,3 @@ chrono = "0.4.41"
 predicates = "3.1.3"
 serial_test = "3.2.0"
 stdext = "0.3.3"
-
-# TODO: drop once hidra#8 lands and the backend-dispatch API is on crates.io.
-[patch.crates-io]
-hidra = { git = "https://github.com/carlossless/hidra", rev = "a9bff3926598cb8b0c1f6d39a61846b8d954aa82" }

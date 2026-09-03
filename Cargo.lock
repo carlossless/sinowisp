@@ -345,8 +345,9 @@ checksum = "efb8ae90b8d0165be79ff98d845bebbbc9dfa0295ff2ce86beba525d93b9ba60"
 
 [[package]]
 name = "hidra"
-version = "0.0.3"
-source = "git+https://github.com/carlossless/hidra?rev=a9bff3926598cb8b0c1f6d39a61846b8d954aa82#a9bff3926598cb8b0c1f6d39a61846b8d954aa82"
+version = "0.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ec1c50d216cb0f486f6a48f59f70b0abd18396c8e8178e6e9d210cc59d37bf8"
 dependencies = [
  "core-foundation-sys",
  "js-sys",
