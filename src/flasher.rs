@@ -6,8 +6,8 @@ use std::{thread, time::Duration};
 
 use hidra::MaybeFuture;
 use indicatif::ProgressBar;
-use log::{debug, error};
-use sinowisp::{is_expected_error, verify, ISPDevice, ISPError, ReadSection};
+use log::{debug, error, warn};
+use sinowisp::{check_bootloader, is_expected_error, verify, ISPDevice, ISPError, ReadSection};
 
 /// Time the device needs to settle after an erase or reboot before it will
 /// accept (or has finished acting on) further commands.
@@ -29,6 +29,15 @@ pub fn read_cycle(device: &ISPDevice, section: ReadSection) -> Result<Vec<u8>, I
     };
 
     let firmware = read(device, start_addr, length)?;
+
+    let bootloader = match section {
+        ReadSection::Firmware => None,
+        ReadSection::Bootloader => Some(&firmware[..]),
+        ReadSection::Full => firmware.get(spec.platform.firmware_size..),
+    };
+    if let Some(Err(err)) = bootloader.map(check_bootloader) {
+        warn!("{err}");
+    }
 
     if spec.reboot {
         reboot(device);
