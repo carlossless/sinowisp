@@ -64,6 +64,6 @@ predicates = "3.1.3"
 serial_test = "3.2.0"
 stdext = "0.3.3"
 
-# TODO: drop once the backend-dispatch changes are released to crates.io.
+# TODO: drop once hidra#8 lands and the backend-dispatch API is on crates.io.
 [patch.crates-io]
-hidra = { path = "../hidra" }
+hidra = { git = "https://github.com/carlossless/hidra", rev = "e11ba204159dfc791c4505ef59a0ce759d500c5b" }

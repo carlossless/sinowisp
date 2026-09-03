@@ -346,6 +346,7 @@ checksum = "efb8ae90b8d0165be79ff98d845bebbbc9dfa0295ff2ce86beba525d93b9ba60"
 [[package]]
 name = "hidra"
 version = "0.0.3"
+source = "git+https://github.com/carlossless/hidra?rev=e11ba204159dfc791c4505ef59a0ce759d500c5b#e11ba204159dfc791c4505ef59a0ce759d500c5b"
 dependencies = [
  "core-foundation-sys",
  "js-sys",
