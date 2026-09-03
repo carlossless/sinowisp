@@ -9,7 +9,7 @@ use hidra::{
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use log::{debug, error, info};
-use sinowisp::{is_expected_error, DeviceSpec, ISPDevice};
+use sinowisp::{is_expected_error, DeviceSpec, ISPDevice, ISPHandle};
 use thiserror::Error;
 
 use crate::hid_tree::{DeviceNode, InterfaceNode};
@@ -322,7 +322,11 @@ impl DeviceSelector {
                 .wait()
                 .map_err(DeviceSelectorError::from)?;
 
-            Ok(ISPDevice::new(device_spec, cmd_handle, Some(xfer_handle)))
+            Ok(ISPDevice::new(
+                device_spec,
+                cmd_handle,
+                Some(ISPHandle::from(xfer_handle)),
+            ))
         };
     }
 

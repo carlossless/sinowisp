@@ -28,6 +28,8 @@ cli = [
 ]
 # No-op: hidra's nusb backend is always built in and picked at run time.
 nusb = []
+# On wasm, lets an ISPDevice be driven over WebUSB as well as WebHID.
+webusb = ["hidra/nusb"]
 
 [[bin]]
 name = "sinowisp"
@@ -66,4 +68,4 @@ stdext = "0.3.3"
 
 # TODO: drop once hidra#8 lands and the backend-dispatch API is on crates.io.
 [patch.crates-io]
-hidra = { git = "https://github.com/carlossless/hidra", rev = "e11ba204159dfc791c4505ef59a0ce759d500c5b" }
+hidra = { git = "https://github.com/carlossless/hidra", rev = "b1d19bc86809932f6ab9192b24ae11fb649646c4" }

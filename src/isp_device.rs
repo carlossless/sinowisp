@@ -20,6 +20,49 @@ const CMD_REBOOT: u8 = 0x5a;
 const XFER_READ_PAGE: u8 = 0x72;
 const XFER_WRITE_PAGE: u8 = 0x77;
 
+/// A HID handle an [`ISPDevice`] talks through.
+///
+/// On wasm a device whose interface declares a vendor-specific class is
+/// reachable over `WebUSB` but never appears in `WebHID`, so both are accepted.
+pub enum ISPHandle {
+    /// A `WebHID` handle natively, or a per-OS/nusb one.
+    Hid(HidDevice),
+    /// A `WebUSB` handle.
+    #[cfg(all(target_arch = "wasm32", feature = "webusb"))]
+    WebUsb(hidra::webusb::HidDevice),
+}
+
+impl From<HidDevice> for ISPHandle {
+    fn from(device: HidDevice) -> Self {
+        ISPHandle::Hid(device)
+    }
+}
+
+#[cfg(all(target_arch = "wasm32", feature = "webusb"))]
+impl From<hidra::webusb::HidDevice> for ISPHandle {
+    fn from(device: hidra::webusb::HidDevice) -> Self {
+        ISPHandle::WebUsb(device)
+    }
+}
+
+impl ISPHandle {
+    async fn send_feature_report(&self, data: &[u8]) -> Result<(), HidError> {
+        match self {
+            ISPHandle::Hid(device) => device.send_feature_report(data).await,
+            #[cfg(all(target_arch = "wasm32", feature = "webusb"))]
+            ISPHandle::WebUsb(device) => device.send_feature_report(data).await,
+        }
+    }
+
+    async fn get_feature_report(&self, buf: &mut [u8]) -> Result<usize, HidError> {
+        match self {
+            ISPHandle::Hid(device) => device.get_feature_report(buf).await,
+            #[cfg(all(target_arch = "wasm32", feature = "webusb"))]
+            ISPHandle::WebUsb(device) => device.get_feature_report(buf).await,
+        }
+    }
+}
+
 /// One open connection to a device in ISP bootloader mode.
 ///
 /// The methods are the individual protocol operations; they perform no
@@ -27,10 +70,10 @@ const XFER_WRITE_PAGE: u8 = 0x77;
 /// read/write cycles (and insert the settle delays after [`erase`](Self::erase)
 /// and [`reboot`](Self::reboot)).
 pub struct ISPDevice {
-    cmd_device: HidDevice,
+    cmd_device: ISPHandle,
     /// Some platforms (Windows) expose the transfer report on a separate HID
     /// handle; everywhere else it is the same handle as `cmd_device`.
-    xfer_device: Option<HidDevice>,
+    xfer_device: Option<ISPHandle>,
     device_spec: DeviceSpec,
 }
 
@@ -89,11 +132,11 @@ impl ISPDevice {
     /// platforms that split them across HID collections (Windows).
     pub fn new(
         device_spec: DeviceSpec,
-        cmd_device: HidDevice,
-        xfer_device: Option<HidDevice>,
+        cmd_device: impl Into<ISPHandle>,
+        xfer_device: Option<ISPHandle>,
     ) -> Self {
         Self {
-            cmd_device,
+            cmd_device: cmd_device.into(),
             xfer_device,
             device_spec,
         }
@@ -104,7 +147,7 @@ impl ISPDevice {
         &self.device_spec
     }
 
-    fn xfer_device(&self) -> &HidDevice {
+    fn xfer_device(&self) -> &ISPHandle {
         self.xfer_device.as_ref().unwrap_or(&self.cmd_device)
     }
 

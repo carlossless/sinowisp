@@ -1,10 +1,11 @@
 //! Async primitives for the Sinowealth 8051 HID ISP bootloader protocol.
 //!
 //! Each protocol operation ([`ISPDevice::enable_firmware`], [`ISPDevice::erase`],
-//! [`ISPDevice::read_page`], ...) is an `async` method over a [`hidra::HidDevice`],
+//! [`ISPDevice::read_page`], ...) is an `async` method over an [`ISPHandle`],
 //! so the exact same code drives a native CLI (by calling
 //! [`hidra::MaybeFuture::wait`] on the returned futures) and a web-based flasher
-//! (by `.await`-ing them on `wasm32` with the WebHID backend).
+//! (by `.await`-ing them on `wasm32`). On wasm the handle is a WebHID device,
+//! or a WebUSB one for devices the browser will not expose as HID.
 //!
 //! The crate carries no orchestration, timing, or UI: composing these
 //! primitives into full read/write cycles, inserting the post-erase/reboot
