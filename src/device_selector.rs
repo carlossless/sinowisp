@@ -3,13 +3,12 @@ use std::{thread, time::Duration};
 
 use hidparser::parse_report_descriptor;
 use hidra::{
-    Backend, BusType, DeviceInfo, HidDevice, HidError, Hidra, MaybeFuture,
-    MAX_REPORT_DESCRIPTOR_SIZE,
+    BusType, DeviceInfo, HidError, Hidra, MaybeFuture, Native, Nusb, MAX_REPORT_DESCRIPTOR_SIZE,
 };
 use indicatif::ProgressBar;
 use itertools::Itertools;
 use log::{debug, error, info};
-use sinowisp::{is_expected_error, DeviceSpec, ISPDevice};
+use sinowisp::{is_expected_error, DeviceSpec, ISPDevice, IspHandle};
 use thiserror::Error;
 
 use crate::hid_tree::{DeviceNode, InterfaceNode};
@@ -41,51 +40,90 @@ pub enum DeviceSelectorError {
     UnexpectedDeviceCount,
 }
 
+/// The two hidra backends, so one field can hold either.
+///
+/// Backends are types, so this is the caller's to declare. It forwards the
+/// three methods the selector uses; each sees devices the other cannot, and
+/// ISP mode swaps which.
+enum Api {
+    Native(Hidra<Native>),
+    Nusb(Hidra<Nusb>),
+}
+
+impl Api {
+    fn open(which: Backend) -> Result<Self, DeviceSelectorError> {
+        Ok(match which {
+            Backend::Native => {
+                let api = Hidra::<Native>::builder().build()?;
+                // macOS refuses an exclusive open with a privilege violation.
+                #[cfg(target_os = "macos")]
+                api.set_open_exclusive(false);
+                Api::Native(api)
+            }
+            Backend::Nusb => Api::Nusb(Hidra::<Nusb>::builder().build()?),
+        })
+    }
+
+    fn refresh_devices(&mut self) -> Result<(), DeviceSelectorError> {
+        match self {
+            Api::Native(api) => api.refresh_devices()?,
+            Api::Nusb(api) => api.refresh_devices()?,
+        }
+        Ok(())
+    }
+
+    fn device_list(&self) -> Vec<&DeviceInfo> {
+        match self {
+            Api::Native(api) => api.device_list().collect(),
+            Api::Nusb(api) => api.device_list().collect(),
+        }
+    }
+
+    fn open_path(&self, path: &str) -> Result<IspHandle, DeviceSelectorError> {
+        Ok(match self {
+            Api::Native(api) => IspHandle::from(api.open_path(path).wait()?),
+            Api::Nusb(api) => IspHandle::from(api.open_path(path).wait()?),
+        })
+    }
+}
+
+/// Which backend to open. `Api` is the value; this is the choice.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Backend {
+    Native,
+    Nusb,
+}
+
+impl core::fmt::Display for Backend {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(match self {
+            Backend::Native => "native",
+            Backend::Nusb => "nusb",
+        })
+    }
+}
+
+const BACKENDS: [Backend; 2] = [Backend::Native, Backend::Nusb];
+
 pub struct DeviceSelector {
-    api: Hidra,
-    backends: Vec<Backend>,
+    api: Api,
     backend: usize,
 }
 
 impl DeviceSelector {
     pub fn new() -> Result<Self, DeviceSelectorError> {
-        let backends: Vec<Backend> = Backend::available().collect();
-        let backend = 0;
-        let api = Self::open_api(backends.first().copied().unwrap_or_default())?;
         Ok(Self {
-            api,
-            backends,
-            backend,
+            api: Api::open(BACKENDS[0])?,
+            backend: 0,
         })
-    }
-
-    fn open_api(backend: Backend) -> Result<Hidra, DeviceSelectorError> {
-        let api = Hidra::builder()
-            .backend(backend)
-            .build()
-            .map_err(DeviceSelectorError::from)?;
-
-        // macOS refuses an exclusive open with a privilege violation.
-        #[cfg(target_os = "macos")]
-        if backend == Backend::Native {
-            api.set_open_exclusive(false)?;
-        }
-
-        Ok(api)
     }
 
     /// Next backend: each sees devices the other cannot, and ISP mode swaps which.
     fn rotate_backend(&mut self) -> Result<(), DeviceSelectorError> {
-        if self.backends.len() < 2 {
-            return self
-                .api
-                .refresh_devices()
-                .map_err(DeviceSelectorError::from);
-        }
-        self.backend = (self.backend + 1) % self.backends.len();
-        let backend = self.backends[self.backend];
+        self.backend = (self.backend + 1) % BACKENDS.len();
+        let backend = BACKENDS[self.backend];
         info!("Trying the {backend} backend...");
-        self.api = Self::open_api(backend)?;
+        self.api = Api::open(backend)?;
         Ok(())
     }
 
@@ -93,6 +131,7 @@ impl DeviceSelector {
         let mut devices: Vec<_> = self
             .api
             .device_list()
+            .into_iter()
             .filter(|d| d.bus_type() == BusType::Usb)
             .collect();
         // TODO: move out the platform specific sorting
@@ -134,17 +173,13 @@ impl DeviceSelector {
         &self,
         path: &str,
     ) -> Result<Vec<u32>, DeviceSelectorError> {
-        let dev = self
-            .api
-            .open_path(path)
-            .wait()
-            .map_err(DeviceSelectorError::from)?;
+        let dev = self.api.open_path(path)?;
         self.get_feature_report_ids_from_device(&dev)
     }
 
     fn get_feature_report_ids_from_device(
         &self,
-        dev: &HidDevice,
+        dev: &IspHandle,
     ) -> Result<Vec<u32>, DeviceSelectorError> {
         let mut buf: [u8; MAX_REPORT_DESCRIPTOR_SIZE] = [0; MAX_REPORT_DESCRIPTOR_SIZE];
         let size: usize = dev
@@ -170,7 +205,7 @@ impl DeviceSelector {
         Ok(res)
     }
 
-    fn get_report_descriptor(&self, dev: &HidDevice) -> Result<Vec<u8>, DeviceSelectorError> {
+    fn get_report_descriptor(&self, dev: &IspHandle) -> Result<Vec<u8>, DeviceSelectorError> {
         let mut buf: [u8; MAX_REPORT_DESCRIPTOR_SIZE] = [0; MAX_REPORT_DESCRIPTOR_SIZE];
         let size: usize = dev
             .get_report_descriptor(&mut buf)
@@ -188,7 +223,7 @@ impl DeviceSelector {
     ) {
         let descriptor: Result<Vec<u8>, DeviceSelectorError>;
         let feature_report_ids: Result<Vec<u32>, DeviceSelectorError>;
-        match self.api.open_path(path).wait() {
+        match self.api.open_path(path) {
             Ok(ref dev) => {
                 descriptor = self.get_report_descriptor(dev);
                 match descriptor {
@@ -201,7 +236,7 @@ impl DeviceSelector {
                 }
             }
             Err(err) => {
-                descriptor = Err(DeviceSelectorError::from(err));
+                descriptor = Err(err);
                 feature_report_ids = Err(DeviceSelectorError::NotFound);
             }
         }
@@ -289,11 +324,7 @@ impl DeviceSelector {
             )?;
             debug!("ISP device: {}", device.info());
 
-            let handle = self
-                .api
-                .open_path(device.path())
-                .wait()
-                .map_err(DeviceSelectorError::from)?;
+            let handle = self.api.open_path(device.path())?;
 
             Ok(ISPDevice::new(device_spec, handle, None))
         };
@@ -311,22 +342,14 @@ impl DeviceSelector {
             let xfer_device = devices[1];
             debug!("ISP XFER device: {}", xfer_device.info());
 
-            let cmd_handle = self
-                .api
-                .open_path(cmd_device.path())
-                .wait()
-                .map_err(DeviceSelectorError::from)?;
-            let xfer_handle = self
-                .api
-                .open_path(xfer_device.path())
-                .wait()
-                .map_err(DeviceSelectorError::from)?;
+            let cmd_handle = self.api.open_path(cmd_device.path())?;
+            let xfer_handle = self.api.open_path(xfer_device.path())?;
 
             Ok(ISPDevice::new(device_spec, cmd_handle, Some(xfer_handle)))
         };
     }
 
-    fn find_device(&self, device_spec: DeviceSpec) -> Result<HidDevice, DeviceSelectorError> {
+    fn find_device(&self, device_spec: DeviceSpec) -> Result<IspHandle, DeviceSelectorError> {
         let filtered_devices = self.unique_usb_device_list().into_iter().filter(|d| {
             d.vendor_id() == device_spec.vendor_id
                 && d.product_id() == device_spec.product_id
@@ -351,17 +374,13 @@ impl DeviceSelector {
         };
 
         debug!("Opening: {:?}", cmd_device_info.path());
-        let device = self
-            .api
-            .open_path(cmd_device_info.path())
-            .wait()
-            .map_err(DeviceSelectorError::from)?;
+        let device = self.api.open_path(cmd_device_info.path())?;
         Ok(device)
     }
 
     fn switch_to_isp_device(
         &mut self,
-        device: HidDevice,
+        device: IspHandle,
         device_spec: DeviceSpec,
     ) -> Result<ISPDevice, DeviceSelectorError> {
         if let Err(err) = self.enter_isp_mode(&device) {
@@ -452,7 +471,7 @@ impl DeviceSelector {
         Err(DeviceSelectorError::NotFound)
     }
 
-    fn enter_isp_mode(&self, handle: &HidDevice) -> Result<(), DeviceSelectorError> {
+    fn enter_isp_mode(&self, handle: &IspHandle) -> Result<(), DeviceSelectorError> {
         let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_ISP, CMD_ISP_MODE, 0x00, 0x00, 0x00, 0x00];
         handle.send_feature_report(&cmd).wait()?;
         Ok(())

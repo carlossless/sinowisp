@@ -2,6 +2,8 @@ use core::panic;
 use std::str::FromStr;
 
 use hidra::{HidDevice, HidError};
+#[cfg(not(target_arch = "wasm32"))]
+use hidra::{NativeDevice, NusbDevice};
 use thiserror::Error;
 
 use crate::{device_spec::*, VerificationError};
@@ -20,6 +22,72 @@ const CMD_REBOOT: u8 = 0x5a;
 const XFER_READ_PAGE: u8 = 0x72;
 const XFER_WRITE_PAGE: u8 = 0x77;
 
+/// A HID handle an [`ISPDevice`] talks through.
+///
+/// hidra backends are types, so holding either is the caller's job; the
+/// protocol needs three methods and this forwards them. On wasm there is only
+/// WebHID, so it is a plain newtype.
+#[cfg(not(target_arch = "wasm32"))]
+pub enum IspHandle {
+    /// A handle on the per-OS backend.
+    Native(HidDevice<NativeDevice>),
+    /// A handle on the raw-USB backend.
+    Nusb(HidDevice<NusbDevice>),
+}
+
+/// A HID handle an [`ISPDevice`] talks through.
+#[cfg(target_arch = "wasm32")]
+pub struct IspHandle(HidDevice);
+
+#[cfg(not(target_arch = "wasm32"))]
+impl From<HidDevice<NativeDevice>> for IspHandle {
+    fn from(device: HidDevice<NativeDevice>) -> Self {
+        IspHandle::Native(device)
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl From<HidDevice<NusbDevice>> for IspHandle {
+    fn from(device: HidDevice<NusbDevice>) -> Self {
+        IspHandle::Nusb(device)
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl From<HidDevice> for IspHandle {
+    fn from(device: HidDevice) -> Self {
+        IspHandle(device)
+    }
+}
+
+/// Forwards the three methods the protocol needs to whichever backend the
+/// handle came from.
+macro_rules! forward {
+    ($self:ident, $call:ident($($arg:expr),*)) => {{
+        #[cfg(not(target_arch = "wasm32"))]
+        match $self {
+            IspHandle::Native(d) => d.$call($($arg),*).await,
+            IspHandle::Nusb(d) => d.$call($($arg),*).await,
+        }
+        #[cfg(target_arch = "wasm32")]
+        $self.0.$call($($arg),*).await
+    }};
+}
+
+impl IspHandle {
+    pub async fn send_feature_report(&self, data: &[u8]) -> Result<(), HidError> {
+        forward!(self, send_feature_report(data))
+    }
+
+    pub async fn get_report_descriptor(&self, buf: &mut [u8]) -> Result<usize, HidError> {
+        forward!(self, get_report_descriptor(buf))
+    }
+
+    pub async fn get_feature_report(&self, buf: &mut [u8]) -> Result<usize, HidError> {
+        forward!(self, get_feature_report(buf))
+    }
+}
+
 /// One open connection to a device in ISP bootloader mode.
 ///
 /// The methods are the individual protocol operations; they perform no
@@ -27,10 +95,10 @@ const XFER_WRITE_PAGE: u8 = 0x77;
 /// read/write cycles (and insert the settle delays after [`erase`](Self::erase)
 /// and [`reboot`](Self::reboot)).
 pub struct ISPDevice {
-    cmd_device: HidDevice,
+    cmd_device: IspHandle,
     /// Some platforms (Windows) expose the transfer report on a separate HID
     /// handle; everywhere else it is the same handle as `cmd_device`.
-    xfer_device: Option<HidDevice>,
+    xfer_device: Option<IspHandle>,
     device_spec: DeviceSpec,
 }
 
@@ -89,11 +157,11 @@ impl ISPDevice {
     /// platforms that split them across HID collections (Windows).
     pub fn new(
         device_spec: DeviceSpec,
-        cmd_device: HidDevice,
-        xfer_device: Option<HidDevice>,
+        cmd_device: impl Into<IspHandle>,
+        xfer_device: Option<IspHandle>,
     ) -> Self {
         Self {
-            cmd_device,
+            cmd_device: cmd_device.into(),
             xfer_device,
             device_spec,
         }
@@ -104,7 +172,7 @@ impl ISPDevice {
         &self.device_spec
     }
 
-    fn xfer_device(&self) -> &HidDevice {
+    fn xfer_device(&self) -> &IspHandle {
         self.xfer_device.as_ref().unwrap_or(&self.cmd_device)
     }
 

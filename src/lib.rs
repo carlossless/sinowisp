@@ -1,7 +1,7 @@
 //! Async primitives for the Sinowealth 8051 HID ISP bootloader protocol.
 //!
 //! Each protocol operation ([`ISPDevice::enable_firmware`], [`ISPDevice::erase`],
-//! [`ISPDevice::read_page`], ...) is an `async` method over a [`hidra::HidDevice`],
+//! [`ISPDevice::read_page`], ...) is an `async` method over an [`IspHandle`],
 //! so the exact same code drives a native CLI (by calling
 //! [`hidra::MaybeFuture::wait`] on the returned futures) and a web-based flasher
 //! (by `.await`-ing them on `wasm32` with the WebHID backend).
