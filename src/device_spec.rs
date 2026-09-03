@@ -263,6 +263,12 @@ pub const DEVICE_REDRAGON_K641_SHACO_PRO: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_REDRAGON_K647WG_SORAKA: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_REDRAGON_K652_PRO: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0049,
@@ -403,6 +409,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "redragon-k630-norgb" => DEVICE_REDRAGON_K630_NO_RGB,
     "redragon-k633-ryze" => DEVICE_REDRAGON_K633_RYZE,
     "redragon-k641-shaco-pro" => DEVICE_REDRAGON_K641_SHACO_PRO,
+    "redragon-k647wg-soraka" => DEVICE_REDRAGON_K647WG_SORAKA,
     "redragon-k652-pro" => DEVICE_REDRAGON_K652_PRO,
     "redragon-k658-pro-se" => DEVICE_REDRAGON_K658_PRO_SE,
     "royalkludge-rk100" => DEVICE_ROYALKLUDGE_RK100,
