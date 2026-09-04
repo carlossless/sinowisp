@@ -69,7 +69,7 @@ sinowisp write \
 ### Keyboards
 
 | Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
-| ----- | ------- | --- | --------- | ----------- | ------------ |
+| -------------------------------- | ------------------ | ---- | -------- | -------- | ----- |
 | [AOKO K101](https://aokowireless.com/product/k101-usb-c-wired-mechanical-keyboard/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | BYK901 | ✅ | ✅ |
 | [Aula F75](https://www.aulastar.com/gaming-keyboard/176.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | BYK916 | ✅ | ✅ |
 | [Aula F87](https://www.aulastar.com/index.php/gaming-keyboard/157.html) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A (?) | BYK916 (?) | ✅ | ✅ |
@@ -124,7 +124,7 @@ sinowisp write \
 ### Mice
 
 | Model | ISP MD5 | MCU | MCU Label | Tested Read | Tested Write |
-| ----- | ------- | --- | --------- | ----------- | ------------ |
+| -------------------------------- | ------------------ | ---- | -------- | -------- | ----- |
 | [Glorious Model O](https://web.archive.org/web/20220609205659mp_/https://www.gloriousgaming.com/products/glorious-model-o-black) | 571ea8b315654c39046e4cc3b1e43777 | SH68F89 | BY8948 | ✅ | ✅ |
 | [Trust GXT 960](https://www.trust.com/en/product/23758-gxt-960-graphin-ultra-lightweight-gaming-mouse) | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881 | BY8801 | ✅ | ✅ |
 
@@ -132,15 +132,15 @@ sinowisp write \
 
 ### Platforms
 
-| ISP MD5                          | MCU                | Windows  | macOS    | Linux |
-| -------------------------------- | ------------------ | -------- | -------- | ----- |
-| 13df4ce2933f9654ffef80d6a3c27199 | SH68F881           | ok       | ok       | ok    |
-| 2d169670eae0d36eae8188562c1f66e8 | SH68F90 / SH68F90A | ok       | ok       | ok    |
-| 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A           | ok       | ok       | ok    |
-| 571ea8b315654c39046e4cc3b1e43777 | SH68F89            | ok       | ok       | ok    |
-| 6dac0d2288f2a3d83b5703d979c114ec | SH68F902A          | ok       | ?        | ?     |
-| cfc8661da8c9d7e351b36c0a763426aa | SH68F90 / SH68F90A | ok       | ok       | ok    |
-| e57490acebcaabfcff84a0ff013955d9 | SH68F881           | ok       | ok       | ok    |
+| ISP MD5                          | MCU                | Size | Windows  | macOS    | Linux |
+| -------------------------------- | ------------------ | ---- | -------- | -------- | ----- |
+| 13df4ce2933f9654ffef80d6a3c27199 | SH68F881           | 4096 | ok       | ok       | ok    |
+| 2d169670eae0d36eae8188562c1f66e8 | SH68F90 / SH68F90A | 4096 | ok       | ok       | ok    |
+| 3e0ebd0c440af5236d7ff8872343f85d | SH68F90 / SH68F90A | 4096 | ok       | ok       | ok    |
+| 571ea8b315654c39046e4cc3b1e43777 | SH68F89            | 4096 | ok       | ok       | ok    |
+| 6dac0d2288f2a3d83b5703d979c114ec | SH68F902A          | 3072 | ok       | ?        | ?     |
+| cfc8661da8c9d7e351b36c0a763426aa | SH68F90 / SH68F90A | 4096 | ok       | ok       | ok    |
+| e57490acebcaabfcff84a0ff013955d9 | SH68F881           | 4096 | ok       | ok       | ok    |
 
 ## Prerequisites
 
