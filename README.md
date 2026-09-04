@@ -135,12 +135,12 @@ sinowisp write \
 | ISP MD5                          | MCU                | Size | Windows  | macOS    | Linux |
 | -------------------------------- | ------------------ | ---- | -------- | -------- | ----- |
 | 13df4ce2933f9654ffef80d6a3c27199 | SH68F881           | 4096 | ok       | ok       | ok    |
+| e57490acebcaabfcff84a0ff013955d9 | SH68F881           | 4096 | ok       | ok       | ok    |
+| 571ea8b315654c39046e4cc3b1e43777 | SH68F89            | 4096 | ok       | ok       | ok    |
 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 / SH68F90A | 4096 | ok       | ok       | ok    |
 | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90 / SH68F90A | 4096 | ok       | ok       | ok    |
-| 571ea8b315654c39046e4cc3b1e43777 | SH68F89            | 4096 | ok       | ok       | ok    |
-| 6dac0d2288f2a3d83b5703d979c114ec | SH68F902A          | 3072 | ok       | ?        | ?     |
 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90 / SH68F90A | 4096 | ok       | ok       | ok    |
-| e57490acebcaabfcff84a0ff013955d9 | SH68F881           | 4096 | ok       | ok       | ok    |
+| 6dac0d2288f2a3d83b5703d979c114ec | SH68F902A          | 3072 | ok       | ?        | ?     |
 
 ## Prerequisites
 
