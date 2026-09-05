@@ -1,7 +1,8 @@
 use phf::{phf_map, Map};
 
 use crate::platform_spec::{
-    PlatformSpec, PLATFORM_SH68F881, PLATFORM_SH68F89, PLATFORM_SH68F90, PLATFORM_SH68F902,
+    PlatformSpec, PLATFORM_SH68F83, PLATFORM_SH68F881, PLATFORM_SH68F89, PLATFORM_SH68F90,
+    PLATFORM_SH68F902,
 };
 
 const DEFAULT_ISP_IFACE_NUM: i32 = 1;
@@ -85,6 +86,16 @@ pub const DEVICE_BASE_SH68F902: DeviceSpec = DeviceSpec {
     isp_transform: None,
 };
 
+pub const DEVICE_BASE_SH68F83: DeviceSpec = DeviceSpec {
+    vendor_id: 0x0000,
+    product_id: 0x0000,
+    platform: PLATFORM_SH68F83,
+    isp_iface_num: DEFAULT_ISP_IFACE_NUM,
+    isp_report_id: DEFAULT_ISP_REPORT_ID,
+    reboot: DEFAULT_REBOOT,
+    isp_transform: None,
+};
+
 pub const DEVICE_AOKO_K101: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x0155,
@@ -113,6 +124,12 @@ pub const DEVICE_CIY_X77: DeviceSpec = DeviceSpec {
         write: bootloader_571ea8b3_write,
     }),
     ..DEVICE_BASE_SH68F89
+};
+
+pub const DEVICE_CROWVIEW_NOTE: DeviceSpec = DeviceSpec {
+    vendor_id: 0x6080,
+    product_id: 0x8060,
+    ..DEVICE_BASE_SH68F83
 };
 
 pub const DEVICE_DELTACO_WK95R: DeviceSpec = DeviceSpec {
@@ -382,6 +399,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "aula-f75" => DEVICE_AULA_F75,
     "aula-f87" => DEVICE_AULA_F87,
     "ciy-x77" => DEVICE_CIY_X77,
+    "crowview-note" => DEVICE_CROWVIEW_NOTE,
     "deltaco-wk95r" => DEVICE_DELTACO_WK95R,
     "dierya-dk68se" => DEVICE_DIERYA_DK68SE,
     "digitalalliance-meca-warrior-x" => DEVICE_DIGITALALLIANCE_MECA_WARRIOR_X,
