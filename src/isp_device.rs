@@ -6,7 +6,7 @@ use hidra::{HidDevice, HidError};
 use hidra::{NativeDevice, NusbDevice};
 use thiserror::Error;
 
-use crate::{device_spec::*, VerificationError};
+use crate::{device_spec::*, platform_spec::InitOperand, VerificationError};
 
 const COMMAND_LENGTH: usize = 6;
 
@@ -187,16 +187,31 @@ impl ISPDevice {
         Ok(())
     }
 
-    /// Initializes the read operation / sets the initial read address
-    pub async fn init_read(&self, start_addr: usize) -> Result<(), ISPError> {
-        let cmd: [u8; COMMAND_LENGTH] = [
-            REPORT_ID_CMD,
-            CMD_INIT_READ,
-            (start_addr & 0xff) as u8,
-            (start_addr >> 8) as u8,
-            0,
-            0,
-        ];
+    fn init_command(&self, command: u8, start_addr: usize, length: usize) -> [u8; COMMAND_LENGTH] {
+        match self.device_spec.platform.init_operand {
+            InitOperand::Address => [
+                REPORT_ID_CMD,
+                command,
+                (start_addr & 0xff) as u8,
+                (start_addr >> 8) as u8,
+                0,
+                0,
+            ],
+            InitOperand::Length => [
+                REPORT_ID_CMD,
+                command,
+                0,
+                0,
+                (length & 0xff) as u8,
+                (length >> 8) as u8,
+            ],
+        }
+    }
+
+    /// Initializes the read operation / sets the initial read address or the
+    /// total read length, depending on the platform's [`InitOperand`].
+    pub async fn init_read(&self, start_addr: usize, length: usize) -> Result<(), ISPError> {
+        let cmd = self.init_command(CMD_INIT_READ, start_addr, length);
         self.cmd_device
             .send_feature_report(&cmd)
             .await
@@ -204,16 +219,10 @@ impl ISPDevice {
         Ok(())
     }
 
-    /// Initializes the write operation / sets the initial write address
-    pub async fn init_write(&self, start_addr: usize) -> Result<(), ISPError> {
-        let cmd: [u8; COMMAND_LENGTH] = [
-            REPORT_ID_CMD,
-            CMD_INIT_WRITE,
-            (start_addr & 0xff) as u8,
-            (start_addr >> 8) as u8,
-            0,
-            0,
-        ];
+    /// Initializes the write operation / sets the initial write address or the
+    /// total write length, depending on the platform's [`InitOperand`].
+    pub async fn init_write(&self, start_addr: usize, length: usize) -> Result<(), ISPError> {
+        let cmd = self.init_command(CMD_INIT_WRITE, start_addr, length);
         self.cmd_device
             .send_feature_report(&cmd)
             .await
@@ -289,7 +298,7 @@ impl ISPDevice {
         let page_size = self.device_spec.platform.page_size;
         let num_page = length / page_size;
 
-        self.init_read(start_addr).await?;
+        self.init_read(start_addr, length).await?;
 
         let mut result: Vec<u8> = vec![];
         for i in 0..num_page {
@@ -312,7 +321,7 @@ impl ISPDevice {
         let page_size = self.device_spec.platform.page_size;
         let num_page = self.device_spec.num_pages();
 
-        self.init_write(start_addr).await?;
+        self.init_write(start_addr, num_page * page_size).await?;
 
         for i in 0..num_page {
             self.write_page(&buffer[(i * page_size)..((i + 1) * page_size)])
