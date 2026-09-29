@@ -480,3 +480,27 @@ fn test_device_num_pages() {
 fn test_device_total_flash_size() {
     assert_eq!(DEVICE_NUPHY_AIR60.total_flash_size(), 65536)
 }
+
+#[test]
+fn test_device_specs_are_consistent() {
+    for (name, spec) in DEVICES.entries() {
+        let platform = spec.platform;
+        assert_eq!(platform.firmware_size % platform.page_size, 0, "{name}");
+        assert!(spec.total_flash_size() <= 0x10000, "{name}");
+        assert_ne!(spec.vendor_id, 0, "{name}");
+        assert_ne!(spec.product_id, 0, "{name}");
+    }
+}
+
+#[test]
+fn test_bootloader_571ea8b3_transform_undoes_link_scrambling() {
+    for offset in [6, 100, 2047] {
+        for byte in 0..=255u8 {
+            let stored = bootloader_571ea8b3_write(offset, byte).wrapping_sub(0x5a);
+            let on_wire = stored.wrapping_add(0x5e);
+            assert_eq!(stored, byte);
+            assert_eq!(bootloader_571ea8b3_read(offset, on_wire), byte);
+        }
+    }
+    assert_eq!(bootloader_571ea8b3_read(0, 0x42), 0x42);
+}

@@ -1,3 +1,6 @@
+[workspace]
+members = ["testing"]
+
 [package]
 name = "sinowisp"
 description = """
@@ -59,6 +62,7 @@ features = ["stderr", "colors", "timestamps"]
 optional = true
 
 [dev-dependencies]
+sinowisp-testing = { path = "testing" }
 assert_cmd = "2.0.17"
 chrono = "0.4.41"
 predicates = "3.1.3"

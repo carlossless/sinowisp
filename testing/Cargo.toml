@@ -1,0 +1,12 @@
+[package]
+name = "sinowisp-testing"
+description = "An in-memory Sinowealth ISP bootloader for testing code built on sinowisp"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.88"
+publish = false
+
+[dependencies]
+sinowisp = { path = "..", default-features = false }
+hidra = "0.0.4"

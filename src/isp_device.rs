@@ -1,5 +1,5 @@
 use core::panic;
-use std::str::FromStr;
+use std::{future::Future, str::FromStr};
 
 use hidra::{HidDevice, HidError};
 #[cfg(not(target_arch = "wasm32"))]
@@ -88,17 +88,32 @@ impl ISPHandle {
     }
 }
 
+pub trait Transport {
+    fn send_feature_report(&self, data: &[u8]) -> impl Future<Output = Result<(), HidError>>;
+    fn get_feature_report(&self, buf: &mut [u8]) -> impl Future<Output = Result<usize, HidError>>;
+}
+
+impl Transport for ISPHandle {
+    fn send_feature_report(&self, data: &[u8]) -> impl Future<Output = Result<(), HidError>> {
+        ISPHandle::send_feature_report(self, data)
+    }
+
+    fn get_feature_report(&self, buf: &mut [u8]) -> impl Future<Output = Result<usize, HidError>> {
+        ISPHandle::get_feature_report(self, buf)
+    }
+}
+
 /// One open connection to a device in ISP bootloader mode.
 ///
 /// The methods are the individual protocol operations; they perform no
 /// sequencing, delays, or progress reporting. Callers compose them into full
 /// read/write cycles (and insert the settle delays after [`erase`](Self::erase)
 /// and [`reboot`](Self::reboot)).
-pub struct ISPDevice {
-    cmd_device: ISPHandle,
+pub struct ISPDevice<T: Transport = ISPHandle> {
+    cmd_device: T,
     /// Some platforms (Windows) expose the transfer report on a separate HID
     /// handle; everywhere else it is the same handle as `cmd_device`.
-    xfer_device: Option<ISPHandle>,
+    xfer_device: Option<T>,
     device_spec: DeviceSpec,
 }
 
@@ -160,8 +175,14 @@ impl ISPDevice {
         cmd_device: impl Into<ISPHandle>,
         xfer_device: Option<ISPHandle>,
     ) -> Self {
+        Self::with_transport(device_spec, cmd_device.into(), xfer_device)
+    }
+}
+
+impl<T: Transport> ISPDevice<T> {
+    pub fn with_transport(device_spec: DeviceSpec, cmd_device: T, xfer_device: Option<T>) -> Self {
         Self {
-            cmd_device: cmd_device.into(),
+            cmd_device,
             xfer_device,
             device_spec,
         }
@@ -172,7 +193,7 @@ impl ISPDevice {
         &self.device_spec
     }
 
-    fn xfer_device(&self) -> &ISPHandle {
+    fn xfer_device(&self) -> &T {
         self.xfer_device.as_ref().unwrap_or(&self.cmd_device)
     }
 
