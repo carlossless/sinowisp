@@ -88,11 +88,6 @@ impl ISPHandle {
     }
 }
 
-/// The HID feature-report calls the ISP protocol makes.
-///
-/// [`ISPHandle`] implements it for real devices. Implement it yourself to run
-/// [`ISPDevice`] over something else, such as the in-memory bootloader in
-/// `sinowisp::testing` (behind the `testing` feature).
 pub trait Transport {
     fn send_feature_report(&self, data: &[u8]) -> impl Future<Output = Result<(), HidError>>;
     fn get_feature_report(&self, buf: &mut [u8]) -> impl Future<Output = Result<usize, HidError>>;
@@ -185,7 +180,6 @@ impl ISPDevice {
 }
 
 impl<T: Transport> ISPDevice<T> {
-    /// Like [`ISPDevice::new`], over any [`Transport`].
     pub fn with_transport(device_spec: DeviceSpec, cmd_device: T, xfer_device: Option<T>) -> Self {
         Self {
             cmd_device,

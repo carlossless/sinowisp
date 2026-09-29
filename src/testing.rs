@@ -1,19 +1,3 @@
-//! An in-memory ISP bootloader for exercising [`ISPDevice`](crate::ISPDevice)
-//! without hardware.
-//!
-//! [`FakeBootloader`] implements [`Transport`] for `&FakeBootloader`, so a test
-//! keeps ownership and can inspect the flash and the reports sent after the
-//! device is done with it:
-//!
-//! ```
-//! # use sinowisp::{testing::FakeBootloader, ISPDevice, DEVICE_BASE_SH68F90};
-//! # use hidra::MaybeFuture;
-//! let fake = FakeBootloader::new(DEVICE_BASE_SH68F90);
-//! let device = ISPDevice::with_transport(DEVICE_BASE_SH68F90, &fake, None);
-//! device.erase().wait().unwrap();
-//! assert_eq!(fake.sent().len(), 1);
-//! ```
-
 use std::{
     cell::{Cell, RefCell},
     ops::Range,
@@ -29,22 +13,6 @@ use crate::{
     DeviceSpec, Transport,
 };
 
-/// Emulates the bootloader's command and transfer reports over a flat flash array.
-///
-/// Models how the factory bootloaders keep physical `0x0000` pointing at
-/// themselves while presenting the application's layout to the host:
-///
-/// - erase clears the application region and reprograms `0x0000-0x0002` as
-///   `LJMP <firmware_size>`, the bootloader;
-/// - writes to `0x0000` are dropped, writes to `0x0001-0x0002` land at
-///   `<firmware_size-4>-<firmware_size-3>`, and writes at or above
-///   `firmware_size` are ignored;
-/// - enabling the firmware programs the `0x02` marker at `<firmware_size-5>`;
-/// - reads of `0x0000-0x0002` return `02` and the relocated pair, and
-///   `<firmware_size-5>-<firmware_size-3>` read as `00 00 00`.
-///
-/// It does not model the byte mangling some bootloaders apply
-/// (`isp_transform`); transfer bytes are stored exactly as they arrive.
 pub struct FakeBootloader {
     firmware_size: usize,
     flash: RefCell<Vec<u8>>,
@@ -54,12 +22,10 @@ pub struct FakeBootloader {
 }
 
 impl FakeBootloader {
-    /// A blank bootloader sized for `spec`'s flash.
     pub fn new(spec: DeviceSpec) -> Self {
         Self::with_flash(spec, vec![0; spec.total_flash_size()])
     }
 
-    /// A bootloader whose physical flash starts out as `flash`.
     pub fn with_flash(spec: DeviceSpec, flash: Vec<u8>) -> Self {
         Self {
             firmware_size: spec.platform.firmware_size,
@@ -70,17 +36,14 @@ impl FakeBootloader {
         }
     }
 
-    /// The physical flash contents, without the read redirection applied.
     pub fn flash(&self) -> Vec<u8> {
         self.flash.borrow().clone()
     }
 
-    /// Every feature report sent to the device, in order.
     pub fn sent(&self) -> Vec<Vec<u8>> {
         self.sent.borrow().clone()
     }
 
-    /// Makes transfer reads answer with `read_type` in place of the read-page marker.
     pub fn set_read_type(&self, read_type: u8) {
         self.read_type.set(read_type);
     }

@@ -166,8 +166,7 @@ mod tests {
     const SPEC: DeviceSpec = DEVICE_BASE_SH68F90;
     const FW: usize = SPEC.platform.firmware_size;
 
-    /// An ISP-form image: reset vector at `0x0000`, boot marker bytes left zero.
-    fn firmware() -> Vec<u8> {
+    fn isp_form_firmware() -> Vec<u8> {
         let mut firmware: Vec<u8> = (0..FW).map(|i| (i * 7 + i / 256) as u8).collect();
         firmware[..3].copy_from_slice(&[0x02, 0x00, 0x66]);
         firmware[FW - 5..FW - 2].fill(0);
@@ -186,7 +185,7 @@ mod tests {
     fn test_write_cycle() {
         let fake = FakeBootloader::new(SPEC);
         let device = ISPDevice::with_transport(SPEC, &fake, None);
-        let mut firmware = firmware();
+        let mut firmware = isp_form_firmware();
 
         write_cycle(&device, &mut firmware).unwrap();
 
@@ -222,7 +221,7 @@ mod tests {
         let fake = FakeBootloader::new(spec);
         let device = ISPDevice::with_transport(spec, &fake, None);
 
-        write_cycle(&device, &mut firmware()).unwrap();
+        write_cycle(&device, &mut isp_form_firmware()).unwrap();
 
         assert_eq!(commands(&fake).last().unwrap()[1], 0x55);
     }
@@ -245,7 +244,7 @@ mod tests {
         let fake = FakeBootloader::new(spec);
         let device = ISPDevice::with_transport(spec, &fake, None);
 
-        let result = write_cycle(&device, &mut firmware());
+        let result = write_cycle(&device, &mut isp_form_firmware());
 
         assert!(matches!(
             result,
