@@ -6,7 +6,7 @@ use std::{
     str::FromStr,
 };
 
-use clap::{arg, value_parser, ArgMatches, Command};
+use clap::{arg, value_parser, Arg, ArgMatches, Command};
 use clap_num::maybe_hex;
 use dialoguer::Confirm;
 use simple_logger::SimpleLogger;
@@ -135,7 +135,7 @@ fn cli() -> Command {
                 .arg(arg!(--output_format <FORMAT>).value_parser(Format::available_formats()))
                 .arg(arg!(input_file: <INPUT_FILE> "file to convert"))
                 .arg(arg!(output_file: <OUTPUT_FILE> "file to write results to"))
-                .device_args(), // TODO: not all of these args are needed and should be removed
+                .platform_args(),
         )
 }
 
@@ -286,7 +286,7 @@ fn err_main() -> Result<(), CLIError> {
             let input_format = get_format_from_matches(sub_matches, input_file, "input_format");
             let output_format = get_format_from_matches(sub_matches, output_file, "output_format");
 
-            let device_spec = get_device_spec_from_matches(sub_matches);
+            let device_spec = get_platform_spec_from_matches(sub_matches);
 
             let mut firmware = read_with_format(input_file, input_format)?;
 
@@ -332,40 +332,50 @@ fn err_main() -> Result<(), CLIError> {
 
 trait DeviceCommand {
     fn device_args(self) -> Command;
+    fn platform_args(self) -> Command;
+}
+
+fn device_arg() -> Arg {
+    arg!(-d --device <DEVICE>).value_parser(DeviceSpec::available_devices())
+}
+
+fn platform_arg() -> Arg {
+    arg!(-p --platform <PLATFORM>)
+        .value_parser(PlatformSpec::available_platforms())
+        .required_unless_present("device")
 }
 
 impl DeviceCommand for Command {
     fn device_args(self) -> Command {
-        self.arg(
-            arg!(-d --device <DEVICE>)
-                .required_unless_present_all(["platform", "vendor_id", "product_id"])
-                .value_parser(DeviceSpec::available_devices()),
-        )
-        .arg(
-            arg!(-p --platform <PLATFORM>)
-                .value_parser(PlatformSpec::available_platforms())
-                .required_unless_present("device"),
-        )
-        .arg(
-            arg!(--vendor_id <VID>)
-                .required_unless_present("device")
-                .value_parser(maybe_hex::<u16>),
-        )
-        .arg(
-            arg!(--product_id <PID>)
-                .required_unless_present("device")
-                .value_parser(maybe_hex::<u16>),
-        )
-        .arg(
-            arg!(--firmware_size <SIZE>)
-                .required_unless_present_any(["device", "platform"])
-                .value_parser(maybe_hex::<usize>),
-        )
-        .arg(arg!(--bootloader_size <SIZE>).value_parser(maybe_hex::<usize>))
-        .arg(arg!(--page_size <SIZE>).value_parser(maybe_hex::<usize>))
-        .arg(arg!(--isp_iface_num <NUM>).value_parser(clap::value_parser!(i32)))
-        .arg(arg!(--isp_report_id <USAGE>).value_parser(maybe_hex::<u32>))
-        .arg(arg!(--reboot <BOOL>).value_parser(value_parser!(bool)))
+        self.arg(device_arg().required_unless_present_all(["platform", "vendor_id", "product_id"]))
+            .arg(platform_arg())
+            .arg(
+                arg!(--vendor_id <VID>)
+                    .required_unless_present("device")
+                    .value_parser(maybe_hex::<u16>),
+            )
+            .arg(
+                arg!(--product_id <PID>)
+                    .required_unless_present("device")
+                    .value_parser(maybe_hex::<u16>),
+            )
+            .arg(
+                arg!(--firmware_size <SIZE>)
+                    .required_unless_present_any(["device", "platform"])
+                    .value_parser(maybe_hex::<usize>),
+            )
+            .arg(arg!(--bootloader_size <SIZE>).value_parser(maybe_hex::<usize>))
+            .arg(arg!(--page_size <SIZE>).value_parser(maybe_hex::<usize>))
+            .arg(arg!(--isp_iface_num <NUM>).value_parser(clap::value_parser!(i32)))
+            .arg(arg!(--isp_report_id <USAGE>).value_parser(maybe_hex::<u32>))
+            .arg(arg!(--reboot <BOOL>).value_parser(value_parser!(bool)))
+    }
+
+    fn platform_args(self) -> Command {
+        self.arg(device_arg().required_unless_present("platform"))
+            .arg(platform_arg())
+            .arg(arg!(--firmware_size <SIZE>).value_parser(maybe_hex::<usize>))
+            .arg(arg!(--bootloader_size <SIZE>).value_parser(maybe_hex::<usize>))
     }
 }
 
@@ -408,22 +418,14 @@ fn get_format_from_matches(
     format
 }
 
-fn get_device_spec_from_matches(sub_matches: &ArgMatches) -> DeviceSpec {
+fn get_platform_spec_from_matches(sub_matches: &ArgMatches) -> DeviceSpec {
     let device_name = sub_matches.get_one::<String>("device").map(|s| s.as_str());
     let platform_name = sub_matches
         .get_one::<String>("platform")
         .map(|s| s.as_str());
 
-    let vendor_id = sub_matches.get_one::<u16>("vendor_id");
-    let product_id = sub_matches.get_one::<u16>("product_id");
-
     let firmware_size = sub_matches.get_one::<usize>("firmware_size");
     let bootloader_size = sub_matches.get_one::<usize>("bootloader_size");
-    let page_size = sub_matches.get_one::<usize>("page_size");
-
-    let isp_iface_num = sub_matches.get_one::<i32>("isp_iface_num");
-    let isp_report_id = sub_matches.get_one::<u32>("isp_report_id");
-    let reboot = sub_matches.get_one::<bool>("reboot");
 
     let mut device_spec = None;
     if let Some(device_name) = device_name {
@@ -440,18 +442,32 @@ fn get_device_spec_from_matches(sub_matches: &ArgMatches) -> DeviceSpec {
 
     let mut device_spec = device_spec.unwrap();
 
-    if let Some(vendor_id) = vendor_id {
-        device_spec.vendor_id = *vendor_id;
-    }
-    if let Some(product_id) = product_id {
-        device_spec.product_id = *product_id;
-    }
-
     if let Some(firmware_size) = firmware_size {
         device_spec.platform.firmware_size = *firmware_size;
     }
     if let Some(bootloader_size) = bootloader_size {
         device_spec.platform.bootloader_size = *bootloader_size;
+    }
+
+    device_spec
+}
+
+fn get_device_spec_from_matches(sub_matches: &ArgMatches) -> DeviceSpec {
+    let vendor_id = sub_matches.get_one::<u16>("vendor_id");
+    let product_id = sub_matches.get_one::<u16>("product_id");
+    let page_size = sub_matches.get_one::<usize>("page_size");
+
+    let isp_iface_num = sub_matches.get_one::<i32>("isp_iface_num");
+    let isp_report_id = sub_matches.get_one::<u32>("isp_report_id");
+    let reboot = sub_matches.get_one::<bool>("reboot");
+
+    let mut device_spec = get_platform_spec_from_matches(sub_matches);
+
+    if let Some(vendor_id) = vendor_id {
+        device_spec.vendor_id = *vendor_id;
+    }
+    if let Some(product_id) = product_id {
+        device_spec.product_id = *product_id;
     }
     if let Some(page_size) = page_size {
         device_spec.platform.page_size = *page_size;

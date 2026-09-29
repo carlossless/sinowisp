@@ -130,25 +130,7 @@ impl DeviceSelector {
     fn sorted_usb_device_list(&self) -> Vec<&DeviceInfo> {
         let mut devices = self.api.device_list();
         devices.retain(|d| d.bus_type() == BusType::Usb);
-        // TODO: move out the platform specific sorting
-        devices.sort_by_key(|d| {
-            #[cfg(not(target_os = "linux"))]
-            return (
-                d.vendor_id(),
-                d.product_id(),
-                d.interface_number(),
-                d.path(),
-                d.usage_page(),
-                d.usage(),
-            );
-            #[cfg(target_os = "linux")]
-            return (
-                d.vendor_id(),
-                d.product_id(),
-                d.interface_number(),
-                d.path(),
-            );
-        });
+        devices.sort_by_key(|d| d.sort_key());
         devices
     }
 
@@ -548,9 +530,29 @@ impl DeviceSelector {
 
 trait PlatformSpecificInfo {
     fn info(&self) -> String;
+    fn sort_key(&self) -> impl Ord + '_;
 }
 
 impl PlatformSpecificInfo for DeviceInfo {
+    fn sort_key(&self) -> impl Ord + '_ {
+        #[cfg(not(target_os = "linux"))]
+        return (
+            self.vendor_id(),
+            self.product_id(),
+            self.interface_number(),
+            self.path(),
+            self.usage_page(),
+            self.usage(),
+        );
+        #[cfg(target_os = "linux")]
+        (
+            self.vendor_id(),
+            self.product_id(),
+            self.interface_number(),
+            self.path(),
+        )
+    }
+
     fn info(&self) -> String {
         #[cfg(not(target_os = "linux"))]
         return format!(
