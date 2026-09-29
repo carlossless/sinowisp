@@ -20,6 +20,7 @@ use sinowisp::{
     DEVICE_BASE_SH68F90, PLATFORMS,
 };
 
+mod akira_read;
 #[cfg(test)]
 mod cli_tests;
 mod device_selector;
@@ -42,6 +43,8 @@ pub enum CLIError {
     PayloadConversionError(#[from] PayloadConversionError),
     #[error(transparent)]
     DeviceSelectorError(#[from] DeviceSelectorError),
+    #[error(transparent)]
+    RawReadError(#[from] akira_read::RawReadError),
 }
 
 #[derive(Clone, Copy)]
@@ -184,7 +187,7 @@ fn run<B: HidBackend>(
             let device = ds
                 .try_fetch_isp_device(device_spec, retry_count)
                 .map_err(CLIError::from)?;
-            let firmware = flasher::read_cycle(&device, section).map_err(CLIError::from)?;
+            let firmware = flasher::read_cycle(&device, section)?;
 
             if firmware.iter().all(|b| *b == 0) {
                 eprintln!("Warning: read {} bytes of zeros.", firmware.len());

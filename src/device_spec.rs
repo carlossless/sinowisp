@@ -1,13 +1,21 @@
 use phf::{phf_map, Map};
 
 use crate::platform_spec::{
-    PlatformSpec, PLATFORM_SH68F881, PLATFORM_SH68F89, PLATFORM_SH68F90, PLATFORM_SH68F902,
-    PLATFORM_SH68F903,
+    PlatformSpec, PLATFORM_SH68F83, PLATFORM_SH68F881, PLATFORM_SH68F89, PLATFORM_SH68F90,
+    PLATFORM_SH68F902, PLATFORM_SH68F903,
 };
 
 const DEFAULT_ISP_IFACE_NUM: i32 = 1;
 const DEFAULT_ISP_REPORT_ID: u32 = 5;
 const DEFAULT_REBOOT: bool = true;
+const DEFAULT_READ_MODE: ReadMode = ReadMode::Standard;
+const DEFAULT_CHECK_BOOTLOADER: bool = true;
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum ReadMode {
+    Standard,
+    Akira,
+}
 
 /// Undoes mangling some ISP bootloaders apply in transit; must invert each other.
 #[derive(Clone, Copy, PartialEq)]
@@ -43,6 +51,10 @@ pub struct DeviceSpec {
 
     pub reboot: bool,
 
+    pub read_mode: ReadMode,
+
+    pub check_bootloader: bool,
+
     pub isp_transform: Option<IspTransform>,
 }
 
@@ -53,6 +65,8 @@ pub const DEVICE_BASE_SH68F90: DeviceSpec = DeviceSpec {
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
+    read_mode: DEFAULT_READ_MODE,
+    check_bootloader: DEFAULT_CHECK_BOOTLOADER,
     isp_transform: None,
 };
 
@@ -63,6 +77,8 @@ pub const DEVICE_BASE_SH68F89: DeviceSpec = DeviceSpec {
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
+    read_mode: DEFAULT_READ_MODE,
+    check_bootloader: DEFAULT_CHECK_BOOTLOADER,
     isp_transform: None,
 };
 
@@ -73,6 +89,8 @@ pub const DEVICE_BASE_SH68F881: DeviceSpec = DeviceSpec {
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
+    read_mode: DEFAULT_READ_MODE,
+    check_bootloader: DEFAULT_CHECK_BOOTLOADER,
     isp_transform: None,
 };
 
@@ -83,6 +101,20 @@ pub const DEVICE_BASE_SH68F902: DeviceSpec = DeviceSpec {
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
+    read_mode: DEFAULT_READ_MODE,
+    check_bootloader: DEFAULT_CHECK_BOOTLOADER,
+    isp_transform: None,
+};
+
+pub const DEVICE_BASE_SH68F83: DeviceSpec = DeviceSpec {
+    vendor_id: 0x0000,
+    product_id: 0x0000,
+    platform: PLATFORM_SH68F83,
+    isp_iface_num: DEFAULT_ISP_IFACE_NUM,
+    isp_report_id: DEFAULT_ISP_REPORT_ID,
+    reboot: false,
+    read_mode: ReadMode::Akira,
+    check_bootloader: false,
     isp_transform: None,
 };
 
@@ -93,6 +125,8 @@ pub const DEVICE_BASE_SH68F903: DeviceSpec = DeviceSpec {
     isp_iface_num: DEFAULT_ISP_IFACE_NUM,
     isp_report_id: DEFAULT_ISP_REPORT_ID,
     reboot: DEFAULT_REBOOT,
+    read_mode: DEFAULT_READ_MODE,
+    check_bootloader: DEFAULT_CHECK_BOOTLOADER,
     isp_transform: None,
 };
 
@@ -124,6 +158,12 @@ pub const DEVICE_CIY_X77: DeviceSpec = DeviceSpec {
         write: bootloader_571ea8b3_write,
     }),
     ..DEVICE_BASE_SH68F89
+};
+
+pub const DEVICE_CROWVIEW_NOTE: DeviceSpec = DeviceSpec {
+    vendor_id: 0x6080,
+    product_id: 0x8060,
+    ..DEVICE_BASE_SH68F83
 };
 
 pub const DEVICE_DELTACO_WK95R: DeviceSpec = DeviceSpec {
@@ -403,6 +443,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "aula-f75" => DEVICE_AULA_F75,
     "aula-f87" => DEVICE_AULA_F87,
     "ciy-x77" => DEVICE_CIY_X77,
+    "crowview-note" => DEVICE_CROWVIEW_NOTE,
     "deltaco-wk95r" => DEVICE_DELTACO_WK95R,
     "dierya-dk68se" => DEVICE_DIERYA_DK68SE,
     "digitalalliance-meca-warrior-x" => DEVICE_DIGITALALLIANCE_MECA_WARRIOR_X,

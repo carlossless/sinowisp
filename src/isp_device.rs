@@ -125,6 +125,8 @@ pub enum ISPError {
     VerificationError(#[from] VerificationError),
     #[error("Read/Write operation mistmatch")]
     ReadWriteMismatch,
+    #[error("{0}")]
+    Unsupported(&'static str),
 }
 
 #[derive(Debug, Clone)]
@@ -208,16 +210,19 @@ impl<T: Transport> ISPDevice<T> {
         Ok(())
     }
 
-    /// Initializes the read operation / sets the initial read address
-    pub async fn init_read(&self, start_addr: usize) -> Result<(), ISPError> {
-        let cmd: [u8; COMMAND_LENGTH] = [
+    fn init_command(&self, command: u8, start_addr: usize) -> [u8; COMMAND_LENGTH] {
+        [
             REPORT_ID_CMD,
-            CMD_INIT_READ,
+            command,
             (start_addr & 0xff) as u8,
             (start_addr >> 8) as u8,
             0,
             0,
-        ];
+        ]
+    }
+
+    pub async fn init_read(&self, start_addr: usize) -> Result<(), ISPError> {
+        let cmd = self.init_command(CMD_INIT_READ, start_addr);
         self.cmd_device
             .send_feature_report(&cmd)
             .await
@@ -225,16 +230,8 @@ impl<T: Transport> ISPDevice<T> {
         Ok(())
     }
 
-    /// Initializes the write operation / sets the initial write address
     pub async fn init_write(&self, start_addr: usize) -> Result<(), ISPError> {
-        let cmd: [u8; COMMAND_LENGTH] = [
-            REPORT_ID_CMD,
-            CMD_INIT_WRITE,
-            (start_addr & 0xff) as u8,
-            (start_addr >> 8) as u8,
-            0,
-            0,
-        ];
+        let cmd = self.init_command(CMD_INIT_WRITE, start_addr);
         self.cmd_device
             .send_feature_report(&cmd)
             .await
@@ -349,7 +346,15 @@ impl<T: Transport> ISPDevice<T> {
     /// The device needs time to settle afterwards; the caller is responsible for
     /// the delay before issuing further commands.
     pub async fn erase(&self) -> Result<(), ISPError> {
-        let cmd: [u8; COMMAND_LENGTH] = [REPORT_ID_CMD, CMD_ERASE, 0, 0, 0, 0];
+        // Different bootloaders check a different amount of bytes of this erase command.
+        let cmd: [u8; COMMAND_LENGTH] = [
+            REPORT_ID_CMD,
+            CMD_ERASE,
+            CMD_ERASE,
+            CMD_ERASE,
+            CMD_ERASE,
+            CMD_ERASE,
+        ];
         self.cmd_device
             .send_feature_report(&cmd)
             .await

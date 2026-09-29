@@ -28,10 +28,10 @@ cli = [
     "dep:md5",
     "dep:simple_logger",
     "dep:log",
+    "nusb",
 ]
-# No-op, kept so an existing `--features nusb` still resolves: hidra compiles
-# both backends in and this crate names the one it wants.
-nusb = []
+# The CLI's sh68f83 unlock read drives nusb control transfers directly.
+nusb = ["dep:nusb"]
 
 [[bin]]
 name = "sinowisp"
@@ -54,6 +54,7 @@ indicatif = { version = "0.17.11", optional = true }
 itertools = { version = "0.14.0", optional = true }
 md5 = { version = "0.7", optional = true }
 log = { version = "0.4", features = ["max_level_debug"], optional = true }
+nusb = { version = "0.2", optional = true }
 
 [dependencies.simple_logger]
 version = "5.1"
