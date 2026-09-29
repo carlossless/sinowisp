@@ -480,3 +480,14 @@ fn test_device_num_pages() {
 fn test_device_total_flash_size() {
     assert_eq!(DEVICE_NUPHY_AIR60.total_flash_size(), 65536)
 }
+
+#[test]
+fn test_device_specs_are_consistent() {
+    for (name, spec) in DEVICES.entries() {
+        let platform = spec.platform;
+        assert_eq!(platform.firmware_size % platform.page_size, 0, "{name}");
+        assert!(spec.total_flash_size() <= 0x10000, "{name}");
+        assert_ne!(spec.vendor_id, 0, "{name}");
+        assert_ne!(spec.product_id, 0, "{name}");
+    }
+}

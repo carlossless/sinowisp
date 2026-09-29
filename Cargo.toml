@@ -29,6 +29,8 @@ cli = [
 # No-op, kept so an existing `--features nusb` still resolves: hidra compiles
 # both backends in and this crate names the one it wants.
 nusb = []
+# Exposes `sinowisp::testing`, an in-memory bootloader for exercising the protocol without hardware.
+testing = []
 
 [[bin]]
 name = "sinowisp"
@@ -59,6 +61,8 @@ features = ["stderr", "colors", "timestamps"]
 optional = true
 
 [dev-dependencies]
+# Turns on the `testing` feature for this crate's own tests.
+sinowisp = { path = ".", default-features = false, features = ["testing"] }
 assert_cmd = "2.0.17"
 chrono = "0.4.41"
 predicates = "3.1.3"

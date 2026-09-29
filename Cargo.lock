@@ -860,6 +860,7 @@ dependencies = [
  "predicates",
  "serial_test",
  "simple_logger",
+ "sinowisp",
  "stdext",
  "thiserror 2.0.18",
 ]

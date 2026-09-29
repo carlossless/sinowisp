@@ -164,22 +164,7 @@ impl DeviceSelector {
             .get_report_descriptor(&mut buf)
             .wait()
             .map_err(DeviceSelectorError::from)?;
-        self.get_feature_report_ids_from_descriptor(&buf[..size])
-    }
-
-    fn get_feature_report_ids_from_descriptor(
-        &self,
-        descriptor: &[u8],
-    ) -> Result<Vec<u32>, DeviceSelectorError> {
-        let report_descriptor = parse_report_descriptor(descriptor)
-            .map_err(DeviceSelectorError::ReportDescriptorError)?;
-        let res = report_descriptor
-            .features
-            .iter()
-            .filter_map(|item| item.report_id)
-            .map(|report_id| report_id.into())
-            .collect();
-        Ok(res)
+        parse_feature_report_ids(&buf[..size])
     }
 
     fn get_report_descriptor(&self, dev: &ISPHandle) -> Result<Vec<u8>, DeviceSelectorError> {
@@ -205,7 +190,7 @@ impl DeviceSelector {
                 descriptor = self.get_report_descriptor(dev);
                 match descriptor {
                     Ok(ref report) => {
-                        feature_report_ids = self.get_feature_report_ids_from_descriptor(report);
+                        feature_report_ids = parse_feature_report_ids(report);
                     }
                     Err(_) => {
                         feature_report_ids = Err(DeviceSelectorError::NotFound);
@@ -528,6 +513,18 @@ impl DeviceSelector {
     }
 }
 
+fn parse_feature_report_ids(descriptor: &[u8]) -> Result<Vec<u32>, DeviceSelectorError> {
+    let report_descriptor =
+        parse_report_descriptor(descriptor).map_err(DeviceSelectorError::ReportDescriptorError)?;
+    let res = report_descriptor
+        .features
+        .iter()
+        .filter_map(|item| item.report_id)
+        .map(|report_id| report_id.into())
+        .collect();
+    Ok(res)
+}
+
 trait PlatformSpecificInfo {
     fn info(&self) -> String;
     fn sort_key(&self) -> impl Ord + '_;
@@ -571,5 +568,52 @@ impl PlatformSpecificInfo for DeviceInfo {
             self.product_id(),
             self.path()
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Boot keyboard interface of a Sinowealth keyboard in normal mode.
+    const KEYBOARD_DESCRIPTOR: &[u8] = &[
+        0x05, 0x01, 0x09, 0x06, 0xA1, 0x01, 0x05, 0x07, 0x19, 0xE0, 0x29, 0xE7, 0x15, 0x00, 0x25,
+        0x01, 0x75, 0x01, 0x95, 0x08, 0x81, 0x02, 0x75, 0x08, 0x95, 0x01, 0x81, 0x01, 0x05, 0x07,
+        0x19, 0x00, 0x29, 0xFF, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95, 0x06, 0x81, 0x00,
+        0x05, 0x08, 0x19, 0x01, 0x29, 0x05, 0x15, 0x00, 0x25, 0x01, 0x75, 0x01, 0x95, 0x05, 0x91,
+        0x02, 0x75, 0x03, 0x95, 0x01, 0x91, 0x01, 0xC0,
+    ];
+
+    /// Second interface of the same keyboard, carrying the ISP feature report (id 5).
+    const VENDOR_DESCRIPTOR: &[u8] = &[
+        0x05, 0x01, 0x09, 0x80, 0xA1, 0x01, 0x85, 0x01, 0x19, 0x81, 0x29, 0x83, 0x15, 0x00, 0x25,
+        0x01, 0x75, 0x01, 0x95, 0x03, 0x81, 0x02, 0x95, 0x05, 0x81, 0x01, 0xC0, 0x05, 0x0C, 0x09,
+        0x01, 0xA1, 0x01, 0x85, 0x02, 0x19, 0x00, 0x2A, 0x3C, 0x02, 0x15, 0x00, 0x26, 0x3C, 0x02,
+        0x75, 0x10, 0x95, 0x01, 0x81, 0x00, 0xC0, 0x06, 0x00, 0xFF, 0x09, 0x01, 0xA1, 0x01, 0x85,
+        0x05, 0x19, 0x01, 0x29, 0x02, 0x15, 0x00, 0x26, 0xFF, 0x00, 0x75, 0x08, 0x95, 0x05, 0xB1,
+        0x02, 0xC0, 0x05, 0x01, 0x09, 0x06, 0xA1, 0x01, 0x85, 0x06, 0x05, 0x07, 0x19, 0xE0, 0x29,
+        0xE7, 0x15, 0x00, 0x25, 0x01, 0x75, 0x01, 0x95, 0x08, 0x81, 0x02, 0x05, 0x07, 0x19, 0x00,
+        0x29, 0x9F, 0x15, 0x00, 0x25, 0x01, 0x75, 0x01, 0x95, 0xA0, 0x81, 0x02, 0xC0,
+    ];
+
+    #[test]
+    fn test_parse_feature_report_ids() {
+        assert_eq!(
+            parse_feature_report_ids(KEYBOARD_DESCRIPTOR).unwrap(),
+            vec![]
+        );
+        assert_eq!(
+            parse_feature_report_ids(VENDOR_DESCRIPTOR).unwrap(),
+            vec![5]
+        );
+    }
+
+    #[test]
+    fn test_parse_feature_report_ids_rejects_malformed_descriptor() {
+        let pop_without_push = &[0xb4];
+        assert!(matches!(
+            parse_feature_report_ids(pop_without_push),
+            Err(DeviceSelectorError::ReportDescriptorError(_))
+        ));
     }
 }

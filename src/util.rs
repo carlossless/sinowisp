@@ -163,6 +163,12 @@ pub fn is_expected_error(err: &HidError) -> bool {
 }
 
 #[test]
+fn test_to_hex_string() {
+    assert_eq!(to_hex_string(&[]), "");
+    assert_eq!(to_hex_string(&[0x00, 0x0a, 0xff]), "00 0A FF");
+}
+
+#[test]
 fn test_verify_success() {
     assert!(verify(&[1, 2, 3, 4], &[1, 2, 3, 4]).is_ok());
 }

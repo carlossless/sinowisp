@@ -123,3 +123,16 @@ fn test_from_ihex_err_address_too_high() {
     }));
     assert_eq!(result, expected);
 }
+
+#[test]
+fn test_to_ihex() {
+    let result = to_ihex(&[0x02, 0x00, 0x66]).unwrap();
+    assert_eq!(result, ":0300000002006695\n:00000001FF\n");
+}
+
+#[test]
+fn test_ihex_round_trip() {
+    let firmware: Vec<u8> = (0..0x10000).map(|i| (i * 7 + i / 256) as u8).collect();
+    let ihex = to_ihex(&firmware).unwrap();
+    assert_eq!(from_ihex(&ihex, firmware.len()).unwrap(), firmware);
+}
