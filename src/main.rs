@@ -17,7 +17,7 @@ use hid_tree::TreeDisplay;
 use sinowisp::{
     convert_to_isp_payload, convert_to_jtag_payload, from_ihex, to_ihex, ConversionError,
     DeviceSpec, ISPError, PayloadConversionError, PlatformSpec, ReadSection, DEVICES,
-    DEVICE_BASE_SH68F881, DEVICE_BASE_SH68F90,
+    DEVICE_BASE_SH68F90, PLATFORMS,
 };
 
 mod device_selector;
@@ -433,11 +433,10 @@ fn get_platform_spec_from_matches(sub_matches: &ArgMatches) -> DeviceSpec {
     }
 
     if let Some(platform_name) = platform_name {
-        device_spec = match platform_name {
-            "sh68f90" => Some(DEVICE_BASE_SH68F90),
-            "sh68f881" => Some(DEVICE_BASE_SH68F881),
-            _ => panic!("Invalid platform"),
-        }
+        device_spec = Some(DeviceSpec {
+            platform: *PLATFORMS.get(platform_name).unwrap(),
+            ..DEVICE_BASE_SH68F90
+        });
     }
 
     let mut device_spec = device_spec.unwrap();
@@ -507,5 +506,24 @@ fn write_with_format(file: &str, data: &[u8], format: Format) -> Result<(), CLIE
             fs::write(file, ihex).map_err(CLIError::from)
         }
         Format::Binary => fs::write(file, data).map_err(CLIError::from),
+    }
+}
+
+#[test]
+fn test_platform_spec_for_every_platform() {
+    for platform in PlatformSpec::available_platforms() {
+        let matches = cli().get_matches_from([
+            "sinowisp",
+            "convert",
+            "--platform",
+            platform,
+            "--direction",
+            "to_jtag",
+            "in.bin",
+            "out.bin",
+        ]);
+        let (_, sub_matches) = matches.subcommand().unwrap();
+        let spec = get_platform_spec_from_matches(sub_matches);
+        assert!(spec.platform == PLATFORMS[platform], "{platform}");
     }
 }
