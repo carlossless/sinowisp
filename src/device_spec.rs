@@ -334,6 +334,16 @@ pub const DEVICE_ROYALKLUDGE_RKG68: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_STOGA_MK25: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0016,
+    isp_transform: Some(IspTransform {
+        read: bootloader_571ea8b3_read,
+        write: bootloader_571ea8b3_write,
+    }),
+    ..DEVICE_BASE_SH68F89
+};
+
 pub const DEVICE_SUPERFRAME_PHANTOM: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x019d,
@@ -430,6 +440,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "royalkludge-rk71" => DEVICE_ROYALKLUDGE_RK71,
     "royalkludge-rk84-iso-return" => DEVICE_ROYALKLUDGE_RK84_ISO_RETURN,
     "royalkludge-rkg68" => DEVICE_ROYALKLUDGE_RKG68,
+    "stoga-mk25" => DEVICE_STOGA_MK25,
     "superframe-phantom" => DEVICE_SUPERFRAME_PHANTOM,
     "terport-tr95" => DEVICE_TERPORT_TR95,
     "trust-gxt-960" => DEVICE_TRUST_GXT_960,

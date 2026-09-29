@@ -109,6 +109,7 @@ sinowisp write \
 | [Royal Kludge RK71](http://en.rkgaming.com/product/12/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | ❓ | ✅ | ✅ |
 | [Royal Kludge RK84](http://en.rkgaming.com/product/16/) | cfc8661da8c9d7e351b36c0a763426aa | SH68F90? | BYK916 | ✅ | ✅ |
 | Royal Kludge RKG68 | cfc8661da8c9d7e351b36c0a763426aa | SH68F90A | SH68F90AS | ✅ | ✅ |
+| STOGA MK25 | 571ea8b315654c39046e4cc3b1e43777 | SH68F89 | BYK816 | ✅ | ✅ |
 | [SuperFrame Phantom](https://www.terabyteshop.com.br/produto/37211/teclado-mecanico-gamer-superframe-phantom-rgb-wirelessbluetooth-switch-ktt-winered-linear-abnt2-preto-sf-kb-gtktfsbrtab) | 3e0ebd0c440af5236d7ff8872343f85d | SH68F90A | ❓ | ✅ | ✅ |
 | Terport TR95 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90A (?) | BYK916 (?) | ✅ | ✅ |
 | Weikav Sugar65 | 2d169670eae0d36eae8188562c1f66e8 | SH68F90 | SH68F90S | ✅ | ✅ |
