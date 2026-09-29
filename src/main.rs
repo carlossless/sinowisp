@@ -12,7 +12,7 @@ use dialoguer::Confirm;
 use simple_logger::SimpleLogger;
 use thiserror::Error;
 
-use device_selector::{DeviceSelector, DeviceSelectorError};
+use device_selector::{DeviceSelector, DeviceSelectorError, HidBackend};
 use hid_tree::TreeDisplay;
 use sinowisp::{
     convert_to_isp_payload, convert_to_jtag_payload, from_ihex, to_ihex, ConversionError,
@@ -20,7 +20,11 @@ use sinowisp::{
     DEVICE_BASE_SH68F881, DEVICE_BASE_SH68F90,
 };
 
+#[cfg(test)]
+mod cli_tests;
 mod device_selector;
+#[cfg(test)]
+mod fake_hid;
 mod flasher;
 mod hid_tree;
 
@@ -147,8 +151,13 @@ fn err_main() -> Result<(), CLIError> {
         .init()
         .unwrap();
 
-    let matches = cli().get_matches();
+    run(&cli().get_matches(), DeviceSelector::new)
+}
 
+fn run<B: HidBackend>(
+    matches: &ArgMatches,
+    open_selector: impl FnOnce() -> Result<DeviceSelector<B>, DeviceSelectorError>,
+) -> Result<(), CLIError> {
     match matches.subcommand() {
         Some(("read", sub_matches)) => {
             let output_file = sub_matches
@@ -171,7 +180,7 @@ fn err_main() -> Result<(), CLIError> {
 
             let device_spec = get_device_spec_from_matches(sub_matches);
 
-            let mut ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
+            let mut ds = open_selector().map_err(CLIError::DeviceSelectorError)?;
             let device = ds
                 .try_fetch_isp_device(device_spec, retry_count)
                 .map_err(CLIError::from)?;
@@ -232,7 +241,7 @@ fn err_main() -> Result<(), CLIError> {
                 firmware.resize(device_spec.platform.firmware_size, 0);
             }
 
-            let mut ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
+            let mut ds = open_selector().map_err(CLIError::DeviceSelectorError)?;
             let device = ds
                 .try_fetch_isp_device(device_spec, retry_count)
                 .map_err(CLIError::from)?;
@@ -244,7 +253,7 @@ fn err_main() -> Result<(), CLIError> {
             let vendor_id = sub_matches.get_one::<u16>("vendor_id");
             let product_id = sub_matches.get_one::<u16>("product_id");
 
-            let ds = DeviceSelector::new().map_err(CLIError::DeviceSelectorError)?;
+            let ds = open_selector().map_err(CLIError::DeviceSelectorError)?;
             let devices = ds
                 .connected_devices_tree()
                 .map_err(CLIError::DeviceSelectorError)?;

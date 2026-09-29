@@ -284,3 +284,39 @@ fn test_convert_to_isp_payload() {
     assert_eq!(firmware[0..3], [0x02, 0x00, 0x66]);
     assert_eq!(firmware[0xeffb..0xeffe], [0x00, 0x00, 0x00]);
 }
+
+#[test]
+fn test_convert_payload_errors() {
+    let spec = DEVICE_BASE_SH68F90;
+    let mut firmware = [0u8; 65536];
+    assert!(matches!(
+        convert_to_jtag_payload(&mut firmware, spec),
+        Err(PayloadConversionError::LJMPNotFoundError { addr: 0 })
+    ));
+    assert!(matches!(
+        convert_to_isp_payload(&mut firmware, spec),
+        Err(PayloadConversionError::LJMPNotFoundError { addr: 0 })
+    ));
+
+    firmware[..3].copy_from_slice(&[0x02, 0xf8, 0x00]);
+    assert!(matches!(
+        convert_to_jtag_payload(&mut firmware, spec),
+        Err(PayloadConversionError::UnexpectedAddressError {
+            source_addr: 0x0001,
+            target_addr: 0xf800
+        })
+    ));
+    assert!(matches!(
+        convert_to_isp_payload(&mut firmware, spec),
+        Err(PayloadConversionError::LJMPNotFoundError { addr: 0 })
+    ));
+
+    firmware[0xeffb..0xeffe].copy_from_slice(&[0x02, 0xf8, 0x00]);
+    assert!(matches!(
+        convert_to_isp_payload(&mut firmware, spec),
+        Err(PayloadConversionError::UnexpectedAddressError {
+            source_addr: 0xeffc,
+            target_addr: 0xf800
+        })
+    ));
+}

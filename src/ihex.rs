@@ -125,6 +125,28 @@ fn test_from_ihex_err_address_too_high() {
 }
 
 #[test]
+fn test_from_ihex_rejects_extended_addresses() {
+    for record in [":020000040001F9", ":020000021000EC"] {
+        let result = from_ihex(&format!("{record}\n:00000001FF"), 16);
+        assert!(
+            matches!(
+                result,
+                Err(ConversionError::Unpacking(
+                    UnpackingError::UnsupportedRecordType(_)
+                ))
+            ),
+            "{record}"
+        );
+    }
+}
+
+#[test]
+fn test_from_ihex_ignores_start_address() {
+    let result = from_ihex(":0400000500000000F7\n:0100000002FD\n:00000001FF", 16);
+    assert_eq!(result, Ok(vec![0x02]));
+}
+
+#[test]
 fn test_to_ihex() {
     let result = to_ihex(&[0x02, 0x00, 0x66]).unwrap();
     assert_eq!(result, ":0300000002006695\n:00000001FF\n");

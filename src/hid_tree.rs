@@ -11,23 +11,19 @@ pub struct DeviceNode {
 
 pub struct InterfaceNode {
     pub interface_number: i32,
-    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    #[cfg(not(target_os = "windows"))]
     pub path: String,
-    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    #[cfg(not(target_os = "windows"))]
     pub descriptor: Result<Vec<u8>, DeviceSelectorError>,
-    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    #[cfg(not(target_os = "windows"))]
     pub feature_report_ids: Result<Vec<u32>, DeviceSelectorError>,
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
     pub children: Vec<ItemNode>,
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows"))]
 pub struct ItemNode {
     #[cfg(target_os = "windows")]
     pub path: String,
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
     pub usage_page: u16,
-    #[cfg(any(target_os = "macos", target_os = "windows"))]
     pub usage: u16,
     #[cfg(target_os = "windows")]
     pub descriptor: Result<Vec<u8>, DeviceSelectorError>,
@@ -75,7 +71,7 @@ impl TreeDisplay for InterfaceNode {
     fn to_tree_string(self, level: usize) -> String {
         let indent = " ".repeat(INDENT_SIZE).repeat(level);
         let mut s: Vec<String> = vec![];
-        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        #[cfg(not(target_os = "windows"))]
         s.push(format!(
             "{indent}path=\"{}\" interface_number={}",
             self.path, self.interface_number
@@ -85,7 +81,7 @@ impl TreeDisplay for InterfaceNode {
             "{indent}interface_number={}",
             self.interface_number
         ));
-        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        #[cfg(not(target_os = "windows"))]
         {
             let descriptor = self.descriptor.as_ref();
             match descriptor {
@@ -116,7 +112,6 @@ impl TreeDisplay for InterfaceNode {
                 }
             }
         }
-        #[cfg(any(target_os = "macos", target_os = "windows"))]
         {
             for child in self.children {
                 s.push(child.to_tree_string(level + 1));
@@ -126,12 +121,11 @@ impl TreeDisplay for InterfaceNode {
     }
 }
 
-#[cfg(any(target_os = "macos", target_os = "windows"))]
 impl TreeDisplay for ItemNode {
     fn to_tree_string(self, level: usize) -> String {
         let indent = " ".repeat(INDENT_SIZE).repeat(level);
         let mut s: Vec<String> = vec![];
-        #[cfg(target_os = "macos")]
+        #[cfg(not(target_os = "windows"))]
         s.push(format!(
             "{indent}usage_page={:#06x} usage={:#06x}",
             self.usage_page, self.usage
