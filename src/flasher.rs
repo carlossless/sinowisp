@@ -166,9 +166,11 @@ mod tests {
     const SPEC: DeviceSpec = DEVICE_BASE_SH68F90;
     const FW: usize = SPEC.platform.firmware_size;
 
+    /// An ISP-form image: reset vector at `0x0000`, boot marker bytes left zero.
     fn firmware() -> Vec<u8> {
         let mut firmware: Vec<u8> = (0..FW).map(|i| (i * 7 + i / 256) as u8).collect();
         firmware[..3].copy_from_slice(&[0x02, 0x00, 0x66]);
+        firmware[FW - 5..FW - 2].fill(0);
         firmware
     }
 
@@ -190,11 +192,15 @@ mod tests {
 
         let flash = fake.flash();
         assert_eq!(
-            flash[FW - 4..FW - 2],
-            [0x00, 0x66],
-            "reset vector relocated"
+            flash[..3],
+            [0x02, 0xf0, 0x00],
+            "bootloader keeps the reset vector"
         );
-        assert_eq!(flash[FW - 5], 0x02, "firmware enabled");
+        assert_eq!(
+            flash[FW - 5..FW - 2],
+            [0x02, 0x00, 0x66],
+            "firmware enabled through the relocated vector"
+        );
         assert_eq!(
             commands(&fake),
             vec![
@@ -244,7 +250,7 @@ mod tests {
         assert!(matches!(
             result,
             Err(ISPError::VerificationError(
-                VerificationError::ByteMismatch { addr: 0, .. }
+                VerificationError::ByteMismatch { .. }
             ))
         ));
         assert!(
@@ -268,9 +274,9 @@ mod tests {
 
             let mut expected = flash[addr..addr + len].to_vec();
             if addr == 0 {
+                expected[0] = 0x02;
                 expected[1..3].copy_from_slice(&flash[FW - 4..FW - 2]);
-                expected[FW - 5] = 0x02;
-                expected[FW - 4..FW - 2].fill(0);
+                expected[FW - 5..FW - 2].fill(0);
             }
             assert_eq!(result, expected, "{section:?}");
             assert_eq!(

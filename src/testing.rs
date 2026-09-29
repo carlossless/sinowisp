@@ -31,11 +31,20 @@ use crate::{
 
 /// Emulates the bootloader's command and transfer reports over a flat flash array.
 ///
-/// Models the address redirection documented in the README: `0x0001-0x0002` map
-/// to `<firmware_size-4>-<firmware_size-3>` on both read and write, and that
-/// relocated pair reads back as zero at its own address. It does not model the
-/// byte mangling some bootloaders apply (`isp_transform`); transfer bytes are
-/// stored exactly as they arrive.
+/// Models how the factory bootloaders keep physical `0x0000` pointing at
+/// themselves while presenting the application's layout to the host:
+///
+/// - erase clears the application region and reprograms `0x0000-0x0002` as
+///   `LJMP <firmware_size>`, the bootloader;
+/// - writes to `0x0000` are dropped, writes to `0x0001-0x0002` land at
+///   `<firmware_size-4>-<firmware_size-3>`, and writes at or above
+///   `firmware_size` are ignored;
+/// - enabling the firmware programs the `0x02` marker at `<firmware_size-5>`;
+/// - reads of `0x0000-0x0002` return `02` and the relocated pair, and
+///   `<firmware_size-5>-<firmware_size-3>` read as `00 00 00`.
+///
+/// It does not model the byte mangling some bootloaders apply
+/// (`isp_transform`); transfer bytes are stored exactly as they arrive.
 pub struct FakeBootloader {
     firmware_size: usize,
     flash: RefCell<Vec<u8>>,
@@ -76,14 +85,30 @@ impl FakeBootloader {
         self.read_type.set(read_type);
     }
 
-    fn relocated(&self) -> Range<usize> {
-        self.firmware_size - 4..self.firmware_size - 2
+    fn masked(&self) -> Range<usize> {
+        self.firmware_size - 5..self.firmware_size - 2
     }
 
     fn physical(&self, addr: usize) -> usize {
         match addr {
             1 | 2 => self.firmware_size - 4 + (addr - 1),
             _ => addr,
+        }
+    }
+
+    fn program(&self, addr: usize, byte: u8) {
+        if addr != 0 && addr < self.firmware_size {
+            self.flash.borrow_mut()[self.physical(addr)] = byte;
+        }
+    }
+
+    fn read(&self, addr: usize) -> u8 {
+        if addr == 0 {
+            0x02
+        } else if self.masked().contains(&addr) {
+            0
+        } else {
+            self.flash.borrow()[self.physical(addr)]
         }
     }
 
@@ -95,17 +120,20 @@ impl FakeBootloader {
                     .set(u16::from_le_bytes([data[2], data[3]]) as usize);
             }
             (REPORT_ID_CMD, CMD_ERASE) => {
-                self.flash.borrow_mut()[..self.firmware_size].fill(0);
+                let mut flash = self.flash.borrow_mut();
+                flash[..self.firmware_size].fill(0);
+                flash[0] = 0x02;
+                flash[1..3].copy_from_slice(&(self.firmware_size as u16).to_be_bytes());
             }
             (REPORT_ID_CMD, CMD_ENABLE_FIRMWARE) => {
                 self.flash.borrow_mut()[self.firmware_size - 5] = 0x02;
             }
             (REPORT_ID_XFER, XFER_WRITE_PAGE) => {
-                let mut flash = self.flash.borrow_mut();
+                let start = self.addr.get();
                 for (i, byte) in data[2..].iter().enumerate() {
-                    flash[self.physical(self.addr.get() + i)] = *byte;
+                    self.program(start + i, *byte);
                 }
-                self.addr.set(self.addr.get() + data.len() - 2);
+                self.addr.set(start + data.len() - 2);
             }
             _ => {}
         }
@@ -117,15 +145,9 @@ impl FakeBootloader {
             "transfer read with the wrong report id"
         );
         buf[1] = self.read_type.get();
-        let flash = self.flash.borrow();
         let start = self.addr.get();
         for (i, byte) in buf[2..].iter_mut().enumerate() {
-            let addr = start + i;
-            *byte = if self.relocated().contains(&addr) {
-                0
-            } else {
-                flash[self.physical(addr)]
-            };
+            *byte = self.read(start + i);
         }
         self.addr.set(start + buf.len() - 2);
         buf.len()
