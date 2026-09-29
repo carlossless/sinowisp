@@ -57,7 +57,7 @@ jobs:
             ./target
           key: test-cargo-registry
       - name: Run tests
-        run: cargo test --workspace --lib --bins --verbose
+        run: cargo test --workspace --lib --bins --test protocol_test --verbose
 
   wasm:
     runs-on: ubuntu-latest

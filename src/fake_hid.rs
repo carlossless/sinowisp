@@ -4,7 +4,8 @@ use std::{
 };
 
 use hidra::HidError;
-use sinowisp::{testing::FakeBootloader, Transport};
+use sinowisp::Transport;
+use sinowisp_testing::FakeBootloader;
 
 use crate::device_selector::{DeviceSelectorError, HidBackend, HidInfo};
 

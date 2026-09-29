@@ -4,14 +4,18 @@ use std::{
 };
 
 use hidra::HidError;
+use sinowisp::{DeviceSpec, Transport};
 
-use crate::{
-    isp_device::{
-        CMD_ENABLE_FIRMWARE, CMD_ERASE, CMD_INIT_READ, CMD_INIT_WRITE, REPORT_ID_CMD,
-        REPORT_ID_XFER, XFER_READ_PAGE, XFER_WRITE_PAGE,
-    },
-    DeviceSpec, Transport,
-};
+const REPORT_ID_CMD: u8 = 0x05;
+const REPORT_ID_XFER: u8 = 0x06;
+
+const CMD_ENABLE_FIRMWARE: u8 = 0x55;
+const CMD_INIT_READ: u8 = 0x52;
+const CMD_INIT_WRITE: u8 = 0x57;
+const CMD_ERASE: u8 = 0x45;
+
+const XFER_READ_PAGE: u8 = 0x72;
+const XFER_WRITE_PAGE: u8 = 0x77;
 
 pub struct FakeBootloader {
     firmware_size: usize,

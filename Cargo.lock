@@ -860,9 +860,17 @@ dependencies = [
  "predicates",
  "serial_test",
  "simple_logger",
- "sinowisp",
+ "sinowisp-testing",
  "stdext",
  "thiserror 2.0.18",
+]
+
+[[package]]
+name = "sinowisp-testing"
+version = "0.1.0"
+dependencies = [
+ "hidra",
+ "sinowisp",
 ]
 
 [[package]]

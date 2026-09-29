@@ -655,7 +655,8 @@ fn parse_feature_report_ids(descriptor: &[u8]) -> Result<Vec<u32>, DeviceSelecto
 #[cfg(test)]
 mod tests {
     use hidra::MaybeFuture;
-    use sinowisp::{testing::FakeBootloader, DEVICE_BASE_SH68F90};
+    use sinowisp::DEVICE_BASE_SH68F90;
+    use sinowisp_testing::FakeBootloader;
 
     use super::*;
     use crate::fake_hid::{

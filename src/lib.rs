@@ -15,8 +15,6 @@ mod device_spec;
 mod ihex;
 mod isp_device;
 mod platform_spec;
-#[cfg(any(test, feature = "testing"))]
-pub mod testing;
 mod util;
 
 pub use device_spec::*;

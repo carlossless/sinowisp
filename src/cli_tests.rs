@@ -1,6 +1,7 @@
 use std::fs;
 
-use sinowisp::{testing::FakeBootloader, DEVICES};
+use sinowisp::DEVICES;
+use sinowisp_testing::FakeBootloader;
 
 use super::*;
 use crate::fake_hid::{FakeDevice, FakeHid};

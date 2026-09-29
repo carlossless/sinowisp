@@ -157,9 +157,8 @@ fn reboot<T: Transport>(device: &ISPDevice<T>) {
 
 #[cfg(test)]
 mod tests {
-    use sinowisp::{
-        testing::FakeBootloader, DeviceSpec, IspTransform, VerificationError, DEVICE_BASE_SH68F90,
-    };
+    use sinowisp::{DeviceSpec, IspTransform, VerificationError, DEVICE_BASE_SH68F90};
+    use sinowisp_testing::FakeBootloader;
 
     use super::*;
 

@@ -1,3 +1,6 @@
+[workspace]
+members = ["testing"]
+
 [package]
 name = "sinowisp"
 description = """
@@ -29,7 +32,6 @@ cli = [
 # No-op, kept so an existing `--features nusb` still resolves: hidra compiles
 # both backends in and this crate names the one it wants.
 nusb = []
-testing = []
 
 [[bin]]
 name = "sinowisp"
@@ -60,7 +62,7 @@ features = ["stderr", "colors", "timestamps"]
 optional = true
 
 [dev-dependencies]
-sinowisp = { path = ".", default-features = false, features = ["testing"] }
+sinowisp-testing = { path = "testing" }
 assert_cmd = "2.0.17"
 chrono = "0.4.41"
 predicates = "3.1.3"
