@@ -291,7 +291,7 @@ impl ISPDevice {
 
         self.init_read(start_addr).await?;
 
-        let mut result: Vec<u8> = vec![];
+        let mut result: Vec<u8> = Vec::with_capacity(num_page * page_size);
         for i in 0..num_page {
             self.read_page(&mut result).await?;
             progress(i + 1, num_page);

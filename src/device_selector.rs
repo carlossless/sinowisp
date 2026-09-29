@@ -128,12 +128,8 @@ impl DeviceSelector {
     }
 
     fn sorted_usb_device_list(&self) -> Vec<&DeviceInfo> {
-        let mut devices: Vec<_> = self
-            .api
-            .device_list()
-            .into_iter()
-            .filter(|d| d.bus_type() == BusType::Usb)
-            .collect();
+        let mut devices = self.api.device_list();
+        devices.retain(|d| d.bus_type() == BusType::Usb);
         // TODO: move out the platform specific sorting
         devices.sort_by_key(|d| {
             #[cfg(not(target_os = "linux"))]
@@ -186,8 +182,7 @@ impl DeviceSelector {
             .get_report_descriptor(&mut buf)
             .wait()
             .map_err(DeviceSelectorError::from)?;
-        let descriptor = buf[..size].to_vec();
-        self.get_feature_report_ids_from_descriptor(&descriptor)
+        self.get_feature_report_ids_from_descriptor(&buf[..size])
     }
 
     fn get_feature_report_ids_from_descriptor(
@@ -265,13 +260,10 @@ impl DeviceSelector {
             }
         }
 
-        if matched_devices.iter().all(|d| d.is_some()) {
-            let matched_devices: Vec<&DeviceInfo> =
-                matched_devices.into_iter().map(|d| d.unwrap()).collect();
-            Ok(matched_devices)
-        } else {
-            Err(DeviceSelectorError::NotFound)
-        }
+        matched_devices
+            .into_iter()
+            .collect::<Option<Vec<_>>>()
+            .ok_or(DeviceSelectorError::NotFound)
     }
 
     #[cfg(any(target_os = "macos", target_os = "linux"))]
@@ -297,19 +289,15 @@ impl DeviceSelector {
     }
 
     fn find_isp_device(&self, device_spec: DeviceSpec) -> Result<ISPDevice, DeviceSelectorError> {
-        let sorted_devices = self.unique_usb_device_list();
-        let isp_devices: Vec<_> = sorted_devices
-            .clone()
-            .into_iter()
-            .filter(|d| {
-                d.vendor_id() == GAMING_KB_VENDOR_ID
-                    && matches!(
-                        d.product_id(),
-                        GAMING_KB_PRODUCT_ID | GAMING_KB_V2_PRODUCT_ID
-                    )
-                    && d.interface_number() == GAMING_KB_IFACE
-            })
-            .collect();
+        let mut isp_devices = self.unique_usb_device_list();
+        isp_devices.retain(|d| {
+            d.vendor_id() == GAMING_KB_VENDOR_ID
+                && matches!(
+                    d.product_id(),
+                    GAMING_KB_PRODUCT_ID | GAMING_KB_V2_PRODUCT_ID
+                )
+                && d.interface_number() == GAMING_KB_IFACE
+        });
 
         let device_count = isp_devices.len();
         if device_count == 0 {
@@ -319,7 +307,7 @@ impl DeviceSelector {
         #[cfg(any(target_os = "macos", target_os = "linux"))]
         return {
             let device = self.get_device_for_report_ids(
-                isp_devices.clone(),
+                isp_devices,
                 &[REPORT_ID_ISP as u32, REPORT_ID_XFER as u32],
             )?;
             debug!("ISP device: {}", device.info());
@@ -332,7 +320,7 @@ impl DeviceSelector {
         #[cfg(target_os = "windows")]
         return {
             let devices = self.get_devices_for_report_ids(
-                isp_devices.clone(),
+                isp_devices,
                 &[REPORT_ID_ISP as u32, REPORT_ID_XFER as u32],
             )?;
 
@@ -549,8 +537,8 @@ impl DeviceSelector {
             device_tree_devices.push(DeviceNode {
                 vendor_id: vid,
                 product_id: pid,
-                manufacturer_string: manufacturer_string.clone().unwrap_or("None".to_string()),
-                product_string: product_string.clone().unwrap_or("None".to_string()),
+                manufacturer_string: manufacturer_string.unwrap_or_else(|| "None".to_string()),
+                product_string: product_string.unwrap_or_else(|| "None".to_string()),
                 children: interface_nodes,
             });
         }
