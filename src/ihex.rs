@@ -56,9 +56,7 @@ fn unpack_records(
                         result.resize(end_addr, 0);
                     }
 
-                    for (n, b) in value.iter().enumerate() {
-                        result[offset as usize + n] = *b;
-                    }
+                    result[offset as usize..end_addr].copy_from_slice(&value);
                 }
                 Record::ExtendedSegmentAddress(_base) => {
                     return Err(UnpackingError::UnsupportedRecordType(rec))
