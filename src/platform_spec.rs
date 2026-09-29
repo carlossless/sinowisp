@@ -35,6 +35,11 @@ pub const PLATFORM_SH68F902: PlatformSpec = PlatformSpec {
     firmware_size: 16384 - 3072, // 13312 until bootloader
     bootloader_size: 3072,
     page_size: 1024,
+};
+
+pub const PLATFORM_SH68F83: PlatformSpec = PlatformSpec {
+    firmware_size: 16384 - 2048,
+    bootloader_size: 2048,
     ..PLATFORM_DEFAULT
 };
 
@@ -44,6 +49,7 @@ pub const PLATFORM_SH68F903: PlatformSpec = PlatformSpec {
 };
 
 pub static PLATFORMS: Map<&'static str, PlatformSpec> = phf_map! {
+    "sh68f83" => PLATFORM_SH68F83,
     "sh68f89" => PLATFORM_SH68F89,
     "sh68f881" => PLATFORM_SH68F881,
     "sh68f90" => PLATFORM_SH68F90,

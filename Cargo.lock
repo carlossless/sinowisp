@@ -856,6 +856,7 @@ dependencies = [
  "itertools",
  "log",
  "md5",
+ "nusb",
  "phf",
  "predicates",
  "serial_test",

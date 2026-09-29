@@ -8,8 +8,11 @@ use hidra::MaybeFuture;
 use indicatif::ProgressBar;
 use log::{debug, error, warn};
 use sinowisp::{
-    check_bootloader, is_expected_error, verify, ISPDevice, ISPError, ReadSection, Transport,
+    check_bootloader, is_expected_error, verify, ISPDevice, ISPError, ReadMode, ReadSection,
+    Transport,
 };
+
+use crate::{akira_read, CLIError};
 
 /// Time the device needs to settle after an erase or reboot before it will
 /// accept (or has finished acting on) further commands.
@@ -22,11 +25,8 @@ const SETTLE_DELAY: Duration = if cfg!(test) {
 pub fn read_cycle<T: Transport>(
     device: &ISPDevice<T>,
     section: ReadSection,
-) -> Result<Vec<u8>, ISPError> {
+) -> Result<Vec<u8>, CLIError> {
     let spec = *device.device_spec();
-
-    eprintln!("Enabling firmware...");
-    device.enable_firmware().wait()?;
 
     let (start_addr, length) = match section {
         ReadSection::Firmware => (0, spec.platform.firmware_size),
@@ -37,14 +37,32 @@ pub fn read_cycle<T: Transport>(
         ),
     };
 
-    let firmware = read(device, start_addr, length)?;
+    let firmware = match spec.read_mode {
+        ReadMode::Standard => {
+            eprintln!("Enabling firmware...");
+            device.enable_firmware().wait()?;
+            read(device, start_addr, length)?
+        }
+        ReadMode::Akira => {
+            if !cfg!(any(target_os = "macos", target_os = "windows")) {
+                return Err(ISPError::Unsupported(
+                    "reading this device requires the raw AKIRA unlock, which only works on macOS and Windows",
+                )
+                .into());
+            }
+            read_akira(start_addr, length)?
+        }
+    };
 
     let bootloader = match section {
         ReadSection::Firmware => None,
         ReadSection::Bootloader => Some(&firmware[..]),
         ReadSection::Full => firmware.get(spec.platform.firmware_size..),
     };
-    if let Some(Err(err)) = bootloader.map(check_bootloader) {
+    if let Some(Err(err)) = bootloader
+        .filter(|_| spec.check_bootloader)
+        .map(check_bootloader)
+    {
         warn!("{err}");
     }
 
@@ -106,6 +124,18 @@ fn read<T: Transport>(
             bar.set_position(done as u64);
         })
         .wait()?;
+
+    bar.finish();
+    Ok(result)
+}
+
+fn read_akira(start_addr: usize, length: usize) -> Result<Vec<u8>, CLIError> {
+    eprintln!("Reading...");
+    let bar = ProgressBar::new(length as u64);
+
+    let result = akira_read::read(start_addr, length, &|done, _total| {
+        bar.set_position(done as u64);
+    })?;
 
     bar.finish();
     Ok(result)
@@ -202,7 +232,7 @@ mod tests {
         assert_eq!(
             commands(&fake),
             vec![
-                [0x05, 0x45, 0x00, 0x00],
+                [0x05, 0x45, 0x45, 0x45],
                 [0x05, 0x57, 0x00, 0x00],
                 [0x05, 0x52, 0x00, 0x00],
                 [0x05, 0x55, 0x00, 0x00],

@@ -19,10 +19,10 @@ const CMD_ISP_MODE: u8 = 0x75;
 
 const REPORT_ID_XFER: u8 = 0x06;
 
-const GAMING_KB_VENDOR_ID: u16 = 0x0603;
-const GAMING_KB_PRODUCT_ID: u16 = 0x1020;
-const GAMING_KB_V2_PRODUCT_ID: u16 = 0x1021;
-const GAMING_KB_IFACE: i32 = 0;
+pub(crate) const GAMING_KB_VENDOR_ID: u16 = 0x0603;
+pub(crate) const GAMING_KB_PRODUCT_ID: u16 = 0x1020;
+pub(crate) const GAMING_KB_V2_PRODUCT_ID: u16 = 0x1021;
+pub(crate) const GAMING_KB_IFACE: i32 = 0;
 
 const COMMAND_LENGTH: usize = 6;
 
@@ -716,7 +716,10 @@ mod tests {
             state.sent(),
             vec![
                 ("kbd1".to_string(), ISP_MODE.to_vec()),
-                (ISP_PATH.to_string(), vec![0x05, 0x45, 0, 0, 0, 0]),
+                (
+                    ISP_PATH.to_string(),
+                    vec![0x05, 0x45, 0x45, 0x45, 0x45, 0x45]
+                ),
             ]
         );
     }
