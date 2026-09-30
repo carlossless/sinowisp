@@ -162,6 +162,12 @@ pub const DEVICE_EYOOSO_Z82: DeviceSpec = DeviceSpec {
     ..DEVICE_BASE_SH68F90
 };
 
+pub const DEVICE_EYOOSO_Z88: DeviceSpec = DeviceSpec {
+    vendor_id: 0x258a,
+    product_id: 0x0049,
+    ..DEVICE_BASE_SH68F90
+};
+
 pub const DEVICE_GENESIS_THOR_300: DeviceSpec = DeviceSpec {
     vendor_id: 0x258a,
     product_id: 0x001f,
@@ -409,6 +415,7 @@ pub static DEVICES: Map<&'static str, DeviceSpec> = phf_map! {
     "eweadn-v20" => DEVICE_EWEADN_V20,
     "eyooso-z11" => DEVICE_EYOOSO_Z11,
     "eyooso-z82" => DEVICE_EYOOSO_Z82,
+    "eyooso-z88" => DEVICE_EYOOSO_Z88,
     "genesis-thor-300" => DEVICE_GENESIS_THOR_300,
     "genesis-thor-300-rgb" => DEVICE_GENESIS_THOR_300_RGB,
     "glorious-model-o" => DEVICE_GLORIOUS_MODEL_O,
